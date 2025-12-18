@@ -25,12 +25,15 @@ class UsuariosService {
     }
 
     func buscarUsuario(token: String, dispositivoID: String, email: String) async throws -> Usuario {
-        let emailEncoded = email.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? email
-        guard let url = URL(string: "\(usuariosURL)/buscar?email=\(emailEncoded)&dispositivoID=\(dispositivoID)") else { throw URLError(.badURL) }
+        
+        guard let url = URL(string: "\(usuariosURL)/buscar/\(email)") else {
+            throw URLError(.badURL)
+        }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,

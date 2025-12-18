@@ -16,6 +16,7 @@ class LoginViewModel: ObservableObject {
     
     func handleAuthorization(
         _ authorization: ASAuthorization,
+        _ perfilUsuarioState: PerfilUsuarioState,
         _ currentNonce: String?
     ) {
         if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
@@ -34,7 +35,6 @@ class LoginViewModel: ObservableObject {
                 return
             }
 
-            // ✅ API ACTUAL (no deprecated)
             let credential = OAuthProvider.appleCredential(
                 withIDToken: tokenString,
                 rawNonce: nonce,
@@ -53,7 +53,7 @@ class LoginViewModel: ObservableObject {
                 }
 
                 Task {
-                    // lógica async si la necesitás
+                    perfilUsuarioState.inicializacion()
                 }
 
                 self.logueado = true

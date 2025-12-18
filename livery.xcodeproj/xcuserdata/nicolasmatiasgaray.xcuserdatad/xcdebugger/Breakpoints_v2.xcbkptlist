@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "EED53D77-053E-4A53-9C49-18865265C73D"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "8B37C1B4-6331-4906-A16C-C80920D4404F"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "livery/viewmodel/LoginViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "29"
+            endingLineNumber = "29"
+            landmarkName = "handleAuthorization(_:_:_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F6360341-C884-4493-B551-4DCF244D0647"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "livery/data/api/UsuariosService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "33"
+            endingLineNumber = "33"
+            landmarkName = "buscarUsuario(token:dispositivoID:email:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "F6360341-C884-4493-B551-4DCF244D0647 - dc11d866c76cf31a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for livery.UsuariosService.buscarUsuario(token: Swift.String, dispositivoID: Swift.String, email: Swift.String) async throws -&gt; livery.Usuario"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/data/api/UsuariosService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "34"
+                  endingLineNumber = "34">
+               </Location>
+               <Location
+                  uuid = "F6360341-C884-4493-B551-4DCF244D0647 - dc11d866c76cf339"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for livery.UsuariosService.buscarUsuario(token: Swift.String, dispositivoID: Swift.String, email: Swift.String) async throws -&gt; livery.Usuario"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/data/api/UsuariosService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "33"
+                  endingLineNumber = "33">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6688F657-797E-42D4-9A68-7A34153AE3C0"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "livery/data/api/UsuariosService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "44"
+            endingLineNumber = "44"
+            landmarkName = "buscarUsuario(token:dispositivoID:email:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "6688F657-797E-42D4-9A68-7A34153AE3C0 - c4eb7da492bbbd87"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for livery.UsuariosService.buscarUsuario(token: Swift.String, dispositivoID: Swift.String, email: Swift.String) async throws -&gt; livery.Usuario"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/data/api/UsuariosService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "45"
+                  endingLineNumber = "45">
+               </Location>
+               <Location
+                  uuid = "6688F657-797E-42D4-9A68-7A34153AE3C0 - c4eb7da492bbbda6"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for livery.UsuariosService.buscarUsuario(token: Swift.String, dispositivoID: Swift.String, email: Swift.String) async throws -&gt; livery.Usuario"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/data/api/UsuariosService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "44"
+                  endingLineNumber = "44">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "485EDD8B-EC06-4FE5-83BD-A12B47DCD9DB"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "livery/singleton/PerfilUsuarioState.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "69"
+            endingLineNumber = "69"
+            landmarkName = "buscarUsuario()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "9344045D-CB84-4B5E-B484-BAAE1A359CB0"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "livery/singleton/PerfilUsuarioState.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "62"
+            endingLineNumber = "62"
+            landmarkName = "buscarUsuario()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "9344045D-CB84-4B5E-B484-BAAE1A359CB0 - 5ca1affd206e615a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for livery.PerfilUsuarioState.buscarUsuario() async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/singleton/PerfilUsuarioState.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "62"
+                  endingLineNumber = "62">
+               </Location>
+               <Location
+                  uuid = "9344045D-CB84-4B5E-B484-BAAE1A359CB0 - 947c5fccc0543c4f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(4) await resume partial function for livery.PerfilUsuarioState.buscarUsuario() async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/singleton/PerfilUsuarioState.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "62"
+                  endingLineNumber = "62">
+               </Location>
+               <Location
+                  uuid = "9344045D-CB84-4B5E-B484-BAAE1A359CB0 - b2f25840aa912b5c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(5) suspend resume partial function for livery.PerfilUsuarioState.buscarUsuario() async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/singleton/PerfilUsuarioState.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "62"
+                  endingLineNumber = "62">
+               </Location>
+               <Location
+                  uuid = "9344045D-CB84-4B5E-B484-BAAE1A359CB0 - bbeb9f85e990705f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(6) suspend resume partial function for livery.PerfilUsuarioState.buscarUsuario() async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/singleton/PerfilUsuarioState.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "62"
+                  endingLineNumber = "62">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6B5ACFD2-4DA8-4512-ABDC-BC4A6DD908E5"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "livery/data/api/UsuariosService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "29"
+            endingLineNumber = "29"
+            landmarkName = "buscarUsuario(token:dispositivoID:email:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "6B5ACFD2-4DA8-4512-ABDC-BC4A6DD908E5 - dc11d866c76cf396"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for livery.UsuariosService.buscarUsuario(token: Swift.String, dispositivoID: Swift.String, email: Swift.String) async throws -&gt; livery.Usuario"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/data/api/UsuariosService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "30"
+                  endingLineNumber = "30">
+               </Location>
+               <Location
+                  uuid = "6B5ACFD2-4DA8-4512-ABDC-BC4A6DD908E5 - dc11d866c76cf3b5"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for livery.UsuariosService.buscarUsuario(token: Swift.String, dispositivoID: Swift.String, email: Swift.String) async throws -&gt; livery.Usuario"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/data/api/UsuariosService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "29"
+                  endingLineNumber = "29">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

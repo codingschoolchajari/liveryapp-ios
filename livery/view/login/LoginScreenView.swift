@@ -46,6 +46,8 @@ struct LoginView: View {
 struct SignInView: View {
     @StateObject private var loginViewModel = LoginViewModel()
     
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    
     @State private var currentNonce: String?
     
     var body: some View {
@@ -61,7 +63,11 @@ struct SignInView: View {
                 onCompletion: { result in
                     switch result {
                     case .success(let authorization):
-                        loginViewModel.handleAuthorization(authorization, currentNonce)
+                        loginViewModel.handleAuthorization(
+                            authorization,
+                            perfilUsuarioState,
+                            currentNonce
+                        )
                     case .failure(let error):
                         print("Error en la autenticación: \(error.localizedDescription)")
                     }

@@ -16,6 +16,10 @@ class PerfilUsuarioState: ObservableObject {
     @Published var currentUser: FirebaseAuth.User?
     @Published var usuario: Usuario? = nil
     
+    @Published var ciudadSeleccionada: String? = nil
+    
+    var categoriaSeleccionadaHome: String? = nil
+    
     private let usuariosService = UsuariosService()
     private var authListenerHandle: AuthStateDidChangeListenerHandle?
     

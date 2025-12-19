@@ -42,7 +42,7 @@ struct Usuario: Codable {
     var nombre: String = ""
     var tokenFCM: String = ""
     var datosPersonales: UsuarioDatosPersonales? = UsuarioDatosPersonales()
-    var direcciones: [UsuarioDireccion] = []
+    var direcciones: [UsuarioDireccion]? = []
     var favoritos: [UsuarioFavorito]? = []
     var premios: UsuarioPremios? = UsuarioPremios()
 }

@@ -9,6 +9,8 @@ import SwiftUI
 struct SplashScreenView: View {
     @State private var animacionFinalizada: Bool = false
     
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    
     var body: some View {
         if animacionFinalizada {
             LoginScreenView()
@@ -21,7 +23,9 @@ struct SplashScreenView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea()
             .onAppear {
-                Task{}
+                Task{
+                    perfilUsuarioState.inicializacion()
+                }
             }
         }
     }

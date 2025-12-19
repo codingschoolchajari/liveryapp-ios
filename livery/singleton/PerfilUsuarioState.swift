@@ -21,7 +21,7 @@ class PerfilUsuarioState: ObservableObject {
     
     func inicializacion() {
         iniciarAlmacenamientoLocal()
-        iniciarListenerAuth()
+        iniciarCurrentUser()
     }
     
     func iniciarAlmacenamientoLocal(){
@@ -36,20 +36,9 @@ class PerfilUsuarioState: ObservableObject {
             print("Nuevo DispositivoID: \(nuevoDispositivoID)")
         }
     }
-    func iniciarListenerAuth() {
-        authListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            guard let self else { return }
-            
-            self.currentUser = user
-            
-            if let user {
-                Task {
-                    await self.buscarUsuario()
-                }
-            } else {
-                self.usuario = nil
-            }
-        }
+    
+    func iniciarCurrentUser() {
+        self.currentUser = Auth.auth().currentUser
     }
     
     func buscarUsuario() async {
@@ -70,6 +59,28 @@ class PerfilUsuarioState: ObservableObject {
         }
     }
     
+    func actualizarUsuario() async {
+        await TokenRepository.repository.validarToken(perfilUsuarioState: self)
+        let accessToken = TokenRepository.repository.accessToken ?? ""
+        
+        do{
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.DISPOSITIVO_ID_KEY) ?? ""
+            
+            let usuarioActualizado = Usuario (
+                email: currentUser?.email ?? "",
+                nombre: currentUser?.displayName ?? ""
+            )
+            
+            try await usuariosService.actualizarUsuario(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                usuario: usuarioActualizado
+            )
+        }
+        catch {
+            print("Error al actualizar usuario: \(error)")
+        }
+    }
     func obtenerFirebaseIdToken() async -> String? {
         try? await Auth.auth().currentUser?.getIDToken()
     }

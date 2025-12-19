@@ -54,7 +54,7 @@ class LoginViewModel: ObservableObject {
 
                 Task {
                     perfilUsuarioState.inicializacion()
-                }
+                    await perfilUsuarioState.actualizarUsuario()                }
 
                 self.logueado = true
             }

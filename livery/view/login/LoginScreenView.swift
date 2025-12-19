@@ -9,12 +9,28 @@ import AuthenticationServices
 import FirebaseAuth
 
 struct LoginScreenView: View {
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+
     // Controla si el usuario está logueado
     @AppStorage("logueado") var logueado: Bool = false
     
+    @State private var buscandoUsuario = true
+    
     var body: some View {
         if logueado {
-            //SeccionesView()
+            if buscandoUsuario {
+                // Muestra un indicador de carga mientras se busca el usuario
+                ProgressView("")
+                    .onAppear {
+                        Task {
+                            await perfilUsuarioState.actualizarUsuario()
+                            await perfilUsuarioState.buscarUsuario()
+                            buscandoUsuario = false
+                        }
+                    }
+            } else {
+                SeccionesView()
+            }
         } else {
             LoginView()
         }

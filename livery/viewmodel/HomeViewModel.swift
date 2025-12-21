@@ -10,9 +10,9 @@ import Combine
 @MainActor
 final class HomeViewModel: ObservableObject {
 
-    private let comerciosService: ComerciosService
     private let perfilUsuarioState: PerfilUsuarioState
-
+    private let comerciosService = ComerciosService()
+    
     @Published private(set) var modoComercioSeleccionado: Bool = true
 
     // Modo Comercio
@@ -42,15 +42,11 @@ final class HomeViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    init(
-        comerciosService: ComerciosService,
-        perfilUsuarioState: PerfilUsuarioState
-    ) {
-        self.comerciosService = comerciosService
+    init(perfilUsuarioState: PerfilUsuarioState) {
         self.perfilUsuarioState = perfilUsuarioState
-
+        
         self.categoriaSeleccionada = perfilUsuarioState.categoriaSeleccionadaHome ?? ListUtils.categorias.randomElement()?.idInterno
-
+        
         configurarObservers()
     }
 
@@ -104,7 +100,6 @@ final class HomeViewModel: ObservableObject {
 
     func onCategoriaSeleccionadaChange(_ valor: String) {
         categoriaSeleccionada = valor
-        perfilUsuarioState.categoriaSeleccionadaHome = valor
     }
 
     func onPalabraClaveSeleccionadaChange(_ valor: String?) {
@@ -124,6 +119,7 @@ final class HomeViewModel: ObservableObject {
 
         Task {
             let nuevos = try await comerciosService.buscarPorCategoria(
+                perfilUsuarioState: perfilUsuarioState,
                 localidad: ciudad,
                 categoria: categoria,                
                 skip: paginaActualComercios * tamanoPaginaComercios,
@@ -154,6 +150,7 @@ final class HomeViewModel: ObservableObject {
 
         Task {
             let nuevos = try await comerciosService.buscarProductosPorPalabraClave(
+                perfilUsuarioState: perfilUsuarioState,
                 localidad: ciudad,
                 palabraClave: palabraClave,
                 skip: paginaActualComerciosProductos * tamanoPaginaComerciosProductos,
@@ -176,7 +173,10 @@ final class HomeViewModel: ObservableObject {
         idProducto: String
     ) async {
         do {
-            comercio = try await comerciosService.buscarComercio(idInterno: idComercio)
+            comercio = try await comerciosService.buscarComercio(
+                perfilUsuarioState: perfilUsuarioState,
+                idInterno: idComercio
+            )
 
             guard let comercio else { return }
 
@@ -200,7 +200,9 @@ final class HomeViewModel: ObservableObject {
     ) async {
         do {
             
-            comercio = try await comerciosService.buscarComercio(idInterno: idComercio)
+            comercio = try await comerciosService.buscarComercio(
+                perfilUsuarioState: perfilUsuarioState,
+                idInterno: idComercio)
             
             guard let comercio else { return }
             

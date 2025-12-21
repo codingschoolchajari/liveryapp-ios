@@ -18,7 +18,7 @@ class TokenRepository {
     func solicitarToken(
         firebaseIdToken: String
     ) async {
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.DISPOSITIVO_ID_KEY) ?? ""
+        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
         
         do {
             let respuesta = try await tokenService.solicitarToken(

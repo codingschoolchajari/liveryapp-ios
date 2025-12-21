@@ -8,18 +8,13 @@ import Foundation
 
 class ComerciosService {
     
-    private let perfilUsuarioState: PerfilUsuarioState
-
-    init(perfilUsuarioState: PerfilUsuarioState) {
-        self.perfilUsuarioState = perfilUsuarioState
-    }
-    
     func buscarComercio(
+        perfilUsuarioState: PerfilUsuarioState,
         idInterno: String,
         datosPrincipales: Bool = false
     ) async throws -> Comercio {
 
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.DISPOSITIVO_ID_KEY) ?? ""
+        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
         
         await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
         let accessToken = TokenRepository.repository.accessToken ?? ""
@@ -37,11 +32,12 @@ class ComerciosService {
     }
 
     func buscarComercioPorProducto(
+        perfilUsuarioState: PerfilUsuarioState,
         idInterno: String,
         idProducto: String
     ) async throws -> Comercio {
         
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.DISPOSITIVO_ID_KEY) ?? ""
+        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
         
         await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
         let accessToken = TokenRepository.repository.accessToken ?? ""
@@ -59,13 +55,14 @@ class ComerciosService {
     }
 
     func buscarPorCategoria(
+        perfilUsuarioState: PerfilUsuarioState,
         localidad: String,
         categoria: String,
         skip: Int,
         limit: Int
     ) async throws -> [Comercio] {
 
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.DISPOSITIVO_ID_KEY) ?? ""
+        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
         
         await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
         let accessToken = TokenRepository.repository.accessToken ?? ""
@@ -85,12 +82,13 @@ class ComerciosService {
     }
 
     func buscarDescuentos(
+        perfilUsuarioState: PerfilUsuarioState,
         localidad: String,
         skip: Int,
         limit: Int
     ) async throws -> [ComercioDescuentos] {
         
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.DISPOSITIVO_ID_KEY) ?? ""
+        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
         
         await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
         let accessToken = TokenRepository.repository.accessToken ?? ""
@@ -109,13 +107,14 @@ class ComerciosService {
     }
 
     func buscarProductosPorPalabraClave(
+        perfilUsuarioState: PerfilUsuarioState,
         localidad: String,
         palabraClave: String,
         skip: Int,
         limit: Int
     ) async throws -> [ComercioProductos] {
         
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.DISPOSITIVO_ID_KEY) ?? ""
+        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
         
         await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
         let accessToken = TokenRepository.repository.accessToken ?? ""
@@ -135,10 +134,11 @@ class ComerciosService {
     }
 
     func comercioAbierto(
+        perfilUsuarioState: PerfilUsuarioState,
         idInterno: String
     ) async throws -> BooleanResponse {
 
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.DISPOSITIVO_ID_KEY) ?? ""
+        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
         
         await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
         let accessToken = TokenRepository.repository.accessToken ?? ""

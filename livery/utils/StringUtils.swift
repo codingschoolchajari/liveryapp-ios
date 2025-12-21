@@ -22,24 +22,18 @@ struct StringUtils {
     }
     
     static func formatearDireccion(
-        calle: String?,
-        numero: String?,
-        departamento: String?
+        _ calle: String?,
+        _ numero: String?,
+        _ departamento: String?
     ) -> String {
-        
-        let calleYNumero: String
-        
-        if let numero = numero, !numero.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            calleYNumero = "\(calle ?? "") \(numero)"
-        } else {
-            calleYNumero = calle ?? ""
-        }
-        
-        if let departamento = departamento,
-           !departamento.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "\(calleYNumero) - \(departamento)"
-        } else {
-            return calleYNumero
-        }
+
+        let calleYNumero =
+            !(numero?.isEmpty ?? true)
+            ? "\(calle ?? "") \(numero!)"
+            : (calle ?? "")
+
+        return !(departamento?.isEmpty ?? true)
+            ? "\(calleYNumero) - \(departamento!)"
+            : calleYNumero
     }
 }

@@ -157,9 +157,9 @@ struct BottomSheetDireccionesView: View {
                         Image(systemName: "mappin.and.ellipse")
                         Text(
                             StringUtils.formatearDireccion(
-                                calle : direccion.calle,
-                                numero: direccion.numero,
-                                departamento: direccion.departamento
+                                direccion.calle,
+                                direccion.numero,
+                                direccion.departamento
                             )
                         )
                         .font(.custom("Barlow", size: 14))

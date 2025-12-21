@@ -24,7 +24,7 @@ struct SplashScreenView: View {
             .ignoresSafeArea()
             .onAppear {
                 Task{
-                    perfilUsuarioState.inicializacion()
+                    await perfilUsuarioState.inicializacion()
                 }
             }
         }

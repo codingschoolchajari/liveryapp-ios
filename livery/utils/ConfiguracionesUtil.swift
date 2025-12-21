@@ -6,6 +6,8 @@
 //
 struct ConfiguracionesUtil {
     
-    static let DISPOSITIVO_ID_KEY = "dispositivoID"
+    static let ID_DISPOSITIVO_KEY = "idDispositivo"
+    
+    static let ID_DIRECCION_KEY = "idDireccionSeleccionada"
     
 }

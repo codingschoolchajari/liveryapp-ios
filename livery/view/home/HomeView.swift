@@ -9,30 +9,36 @@ import SwiftUI
 struct HomeView: View {
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    @StateObject var homeViewModel = HomeViewModel()
+    @StateObject var homeViewModel : HomeViewModel
+    
+    init(perfilUsuarioState: PerfilUsuarioState) {
+        _homeViewModel = StateObject(
+            wrappedValue: HomeViewModel(perfilUsuarioState: perfilUsuarioState)
+        )
+    }
 
     var body: some View {
         ZStack {
-            Color.verdePrincipal.ignoresSafeArea()
-
             VStack(spacing: 0) {
-
+                
                 FranjaPrincipal()
-
+                
                 BusquedaModos(homeViewModel: homeViewModel)
 
+                Spacer()
+                
                 if perfilUsuarioState.cargaInicialFinalizada {
-                    if perfilUsuarioState.ciudadSeleccionada.isEmpty {
-                        DireccionFueraDeCobertura()
+                    if (perfilUsuarioState.ciudadSeleccionada?.isEmpty ?? true) {
+                        //DireccionFueraDeCobertura()
                     } else {
                         if homeViewModel.modoComercioSeleccionado {
                             Spacer().frame(height: 8)
-                            SelectorCategorias(homeViewModel: homeViewModel)
+                            //SelectorCategorias(homeViewModel: homeViewModel)
                             Spacer().frame(height: 32)
                             ListaComercios(homeViewModel: homeViewModel)
                         } else {
-                            FranjaBusqueda(homeViewModel: homeViewModel)
-                            ListaComerciosProductos(homeViewModel: homeViewModel)
+                            //FranjaBusqueda(homeViewModel: homeViewModel)
+                            //ListaComerciosProductos(homeViewModel: homeViewModel)
                         }
                     }
                 }
@@ -58,30 +64,38 @@ struct FranjaPrincipal: View {
             } label: {
                 HStack(spacing: 6) {
                     Text(
-                        perfilUsuarioState.idDireccionSeleccionada.isEmpty
+                        perfilUsuarioState.idDireccionSeleccionada?.isEmpty ?? true
                         ? "Seleccionar dirección"
                         : perfilUsuarioState.obtenerDireccionSeleccionada()
                     )
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.custom("Barlow", size: 16))
+                    .bold()
+                    .foregroundColor(.blanco)
 
                     Image("icono_flecha_abajo")
                         .resizable()
-                        .frame(width: 16, height: 16)
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            HStack(spacing: 12) {
+            HStack(spacing: 16) {
 
                 Button {
                     mostrarNotificaciones = true
                 } label: {
                     ZStack(alignment: .topTrailing) {
                         Image("icono_notificaciones")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(.blanco)
+                        /*
                         if !notificacionesState.noLeidas.isEmpty {
-                            BadgeView(count: notificacionesState.noLeidas.count)
+                            //BadgeView(count: notificacionesState.noLeidas.count)
                         }
+                         */
                     }
                 }
 
@@ -90,22 +104,27 @@ struct FranjaPrincipal: View {
                 } label: {
                     ZStack(alignment: .topTrailing) {
                         Image("icono_premios")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(.blanco)
                         
                         let giros = perfilUsuarioState.usuario?.premios?.girosRestantes
-                        if giros > 0 {
-                            BadgeView(count: giros)
+                        if let giros, giros > 0 {
+                            //BadgeView(count: giros)
                         }
                     }
                 }
             }
         }
-        .padding()
-        .background(Color.themePrimary)
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .background(.verdePrincipal)
         .sheet(isPresented: $mostrarDirecciones) {
-            BottomSheetDirecciones()
+            //BottomSheetDirecciones()
         }
         .sheet(isPresented: $mostrarNotificaciones) {
-            BottomSheetNotificaciones()
+            //BottomSheetNotificaciones()
         }
     }
 }
@@ -116,25 +135,55 @@ struct BusquedaModos: View {
 
     var body: some View {
         HStack {
-            Button {
-                homeViewModel.onModoComercioSeleccionadoChange(true)
-            } label: {
-                Image("icono_busqueda_comercios")
-                    .foregroundColor(homeViewModel.modoComercioSeleccionado ? .white : .gray)
-            }
+            // Contenedor blanco
+            HStack(spacing: 16) {
 
-            Button {
-                homeViewModel.onModoComercioSeleccionadoChange(false)
-            } label: {
-                Image("icono_busqueda_productos")
-                    .foregroundColor(!homeViewModel.modoComercioSeleccionado ? .white : .gray)
+                Button {
+                    homeViewModel.onModoComercioSeleccionadoChange(true)
+                } label: {
+                    Image("icono_busqueda_comercios")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 32, height: 32)
+                        .foregroundColor(
+                            homeViewModel.modoComercioSeleccionado
+                            ? .verdePrincipal
+                            : .grisSecundario
+                        )
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    homeViewModel.onModoComercioSeleccionadoChange(false)
+                } label: {
+                    Image("icono_busqueda_productos")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 32, height: 32)
+                        .foregroundColor(
+                            !homeViewModel.modoComercioSeleccionado
+                            ? .verdePrincipal
+                            : .grisSecundario
+                        )
+                }
+                .buttonStyle(.plain)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 32))
         }
-        .padding()
-        .background(Color.themePrimary)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(Color.verdePrincipal)
+        .clipShape(
+            RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight])
+        )
     }
 }
 
+
+/*
 struct SelectorCategorias: View {
 
     @ObservedObject var homeViewModel: HomeViewModel
@@ -142,7 +191,7 @@ struct SelectorCategorias: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(spacing: 10) {
-                ForEach(categorias) { categoria in
+                ForEach(ListUtils.categorias, id: \.idInterno) { categoria in
                     VStack {
                         Button {
                             homeViewModel.onCategoriaSeleccionadaChange(categoria.idInterno)
@@ -157,7 +206,7 @@ struct SelectorCategorias: View {
                                     RoundedRectangle(cornerRadius: 12)
                                         .stroke(
                                             homeViewModel.categoriaSeleccionada == categoria.idInterno
-                                            ? Color.themePrimary
+                                            ? .verdePrincipal
                                             : .clear,
                                             lineWidth: 3
                                         )
@@ -173,6 +222,7 @@ struct SelectorCategorias: View {
         }
     }
 }
+ */
 
 struct ListaComercios: View {
 
@@ -181,9 +231,7 @@ struct ListaComercios: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 24) {
-                ForEach(homeViewModel.comercios.indices, id: \.self) { index in
-                    let comercio = homeViewModel.comercios[index]
-
+                ForEach(homeViewModel.comercios, id: \.idInterno) { comercio in
                     Button {
                         //NavigationManager.shared.navigate("comercio/\(comercio.idInterno)")
                     } label: {
@@ -196,29 +244,30 @@ struct ListaComercios: View {
                             .frame(height: 100)
                             .clipped()
 
-                            ComercioTitulo(comercio: comercio)
+                            //ComercioTitulo(comercio: comercio)
                         }
-                        .background(Color.surface)
+                        .background(.grisSecundario)
                         .cornerRadius(12)
                     }
 
+                    /*
                     if index == homeViewModel.comercios.count - 1 {
                         ProgressView()
                             .onAppear {
                                 homeViewModel.cargarMasComercios()
                             }
                     }
+                     */
                 }
             }
             .padding(.horizontal)
         }
     }
 }
-
+/*
 struct BottomSheetDirecciones: View {
-
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    @EnvironmentObject var carritoViewModel: CarritoViewModel
+    
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -238,6 +287,7 @@ struct BottomSheetDirecciones: View {
                 LazyVStack(spacing: 8) {
                     ForEach(perfilUsuarioState.usuario?.direcciones ?? []) { direccion in
                         Button {
+                            /*
                             Task {
                                 await perfilUsuarioState.actualizarDireccionSeleccionada(direccion.id)
                                 carritoViewModel.calcularCostoEnvio(
@@ -245,6 +295,7 @@ struct BottomSheetDirecciones: View {
                                 )
                                 dismiss()
                             }
+                             */
                         } label: {
                             HStack {
                                 Image(systemName: "location")
@@ -259,3 +310,4 @@ struct BottomSheetDirecciones: View {
         .presentationDetents([.medium])
     }
 }
+*/

@@ -28,7 +28,7 @@ struct UsuarioFavorito: Codable {
     var imagenURL: String? = ""
 }
 
-struct UsuarioDireccion: Codable {
+struct UsuarioDireccion: Codable, Identifiable {
     var id: String = ""
     var calle: String = ""
     var numero: String = ""

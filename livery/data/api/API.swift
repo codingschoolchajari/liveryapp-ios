@@ -8,8 +8,8 @@ import Foundation
 
 struct API {
     static var baseURL: String {
-        guard let url = Bundle.main.object(forInfoDictionaryKey: "APIBaseURL") as? String else {
-            fatalError("APIBaseURL not set in Info.plist")
+        guard let url = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String else {
+            fatalError("API_BASE_URL not set in Info.plist")
         }
         return url
     }

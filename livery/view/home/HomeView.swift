@@ -21,7 +21,6 @@ struct HomeView: View {
         VStack(spacing: 0) {
             
             FranjaPrincipal()
-            
             BusquedaModos(homeViewModel: homeViewModel)
             
             if perfilUsuarioState.cargaInicialFinalizada {
@@ -50,6 +49,7 @@ struct FranjaPrincipal: View {
     //@EnvironmentObject var notificacionesState: NotificacionesState
 
     @State private var mostrarDirecciones = false
+    @State private var mostrarNuevaDireccion = false
     @State private var mostrarNotificaciones = false
 
     var body: some View {
@@ -117,7 +117,16 @@ struct FranjaPrincipal: View {
         .padding(.top, 8)
         .background(.verdePrincipal)
         .sheet(isPresented: $mostrarDirecciones) {
-            //BottomSheetDirecciones()
+            BottomSheetDirecciones(
+                onNuevaDireccion: {
+                    mostrarDirecciones = false
+                    mostrarNuevaDireccion = true
+                }
+            )
+            .presentationDetents([.medium])
+        }
+        .navigationDestination(isPresented: $mostrarNuevaDireccion) {
+            DireccionView()
         }
         .sheet(isPresented: $mostrarNotificaciones) {
             //BottomSheetNotificaciones()
@@ -227,9 +236,9 @@ struct ListaComercios: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 24) {
-                ForEach(homeViewModel.comercios, id: \.idInterno) { comercio in
+                ForEach(homeViewModel.comercios) { comercio in
                     Button {
-                        //NavigationManager.shared.navigate("comercio/\(comercio.idInterno)")
+                        // navegación
                     } label: {
                         VStack {
                             AsyncImage(url: URL(string: comercio.imagenURL)) { image in
@@ -239,71 +248,87 @@ struct ListaComercios: View {
                             }
                             .frame(height: 100)
                             .clipped()
-
-                            //ComercioTitulo(comercio: comercio)
                         }
                         .background(.grisSecundario)
                         .cornerRadius(12)
                     }
-
-                    /*
-                    if index == homeViewModel.comercios.count - 1 {
-                        ProgressView()
-                            .onAppear {
-                                homeViewModel.cargarMasComercios()
-                            }
-                    }
-                     */
-                }
-            }
-            .padding(.horizontal)
-        }
-    }
-}
-/*
-struct BottomSheetDirecciones: View {
-    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    
-    @Environment(\.dismiss) var dismiss
-
-    var body: some View {
-        VStack(spacing: 12) {
-
-            Text("Elegir dirección")
-                .font(.headline)
-
-            Button {
-                dismiss()
-                //NavigationManager.shared.navigate("direccion")
-            } label: {
-                Label("Nueva dirección", systemImage: "plus")
-            }
-
-            ScrollView {
-                LazyVStack(spacing: 8) {
-                    ForEach(perfilUsuarioState.usuario?.direcciones ?? []) { direccion in
-                        Button {
-                            /*
-                            Task {
-                                await perfilUsuarioState.actualizarDireccionSeleccionada(direccion.id)
-                                carritoViewModel.calcularCostoEnvio(
-                                    perfilUsuarioState.obtenerUsuarioDireccion()
-                                )
-                                dismiss()
-                            }
-                             */
-                        } label: {
-                            HStack {
-                                Image(systemName: "location")
-                                Text(direccion.formateada)
-                            }
+                    .onAppear {
+                        if comercio.idInterno == homeViewModel.comercios.last?.idInterno {
+                            homeViewModel.cargarMasComercios()
                         }
                     }
                 }
             }
         }
-        .padding()
-        .presentationDetents([.medium])
     }
 }
-*/
+
+struct BottomSheetDirecciones: View {
+    let onNuevaDireccion: () -> Void
+
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    
+    var direcciones: [UsuarioDireccion] {
+        perfilUsuarioState.usuario?.direcciones ?? []
+    }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            
+            Text("Elegir dirección")
+                .font(.custom("Barlow", size: 18))
+                .bold()
+            
+            Button {
+                onNuevaDireccion()
+            } label: {
+                HStack(spacing: 6) {
+                    Image("icono_add")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.negro)
+                    
+                    Text(
+                        "Nueva dirección"
+                    )
+                    .font(.custom("Barlow", size: 16))
+                    .bold()
+                    .foregroundColor(.negro)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            ScrollView {
+                LazyVStack(spacing: 8) {
+                    ForEach(Array(direcciones.enumerated()), id: \.offset) { _, direccion in
+                        Button {
+                            // acción
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image("icono_ubicacion")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(.negro)
+                                
+                                Text(
+                                    StringUtils.formatearDireccion(
+                                        direccion.calle,
+                                        direccion.numero,
+                                        direccion.departamento)
+                                )
+                                .font(.custom("Barlow", size: 16))
+                                .foregroundColor(.negro)
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(maxHeight: 250)
+            Spacer()
+        }
+        .padding()
+    }
+}
+

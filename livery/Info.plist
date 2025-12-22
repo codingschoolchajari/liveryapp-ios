@@ -2,13 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>APIBaseURL</key>
+	<key>CFBundleIdentifier</key>
+	<string></string>
+	<key>API_BASE_URL</key>
 	<string>https://api-info-360.com:8201/livery</string>
+	<key>GOOGLE_MAPS_API_KEY</key>
+	<string>AIzaSyBguwdIXWSNVla3AeWj5OGWX5apj0nVFrM</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>barlow_bold.ttf</string>
 		<string>barlow_italic.ttf</string>
 		<string>barlow_regular.ttf</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Necesitamos tu ubicación para guardar la dirección</string>
 </dict>
 </plist>

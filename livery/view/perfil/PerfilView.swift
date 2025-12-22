@@ -68,11 +68,11 @@ struct SeccionPerfil: View {
 
             TituloSeccion(text: "Perfil")
 
-            FilaPerfil(icon: "mappin.and.ellipse", text: "Direcciones") {
+            FilaPerfil(icon: "icono_ubicacion", text: "Direcciones") {
                 mostrarBottomSheetDirecciones = true
             }
 
-            FilaPerfil(icon: "heart", text: "Favoritos") {
+            FilaPerfil(icon: "icono_favoritos", text: "Favoritos") {
                 print("Navegar a favoritos")
             }
         }
@@ -87,8 +87,12 @@ struct FilaPerfil: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 24))
+                Image(icon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
+                    .foregroundColor(.negro)
+                
                 Text(text)
                     .font(.custom("Barlow", size: 16))
                 Spacer()
@@ -122,9 +126,13 @@ struct SeccionSesion: View {
             Button {
                 loginViewModel.signOut()
             } label: {
-                HStack(spacing: 10) {
-                    Image(systemName: "rectangle.portrait.and.arrow.right")
-                        .font(.system(size: 24))
+                HStack(spacing: 12) {
+                    Image("icono_logout")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundColor(.negro)
+                    
                     Text("Cerrar Sesión")
                         .font(.custom("Barlow", size: 16))
                     Spacer()
@@ -154,7 +162,11 @@ struct BottomSheetDireccionesView: View {
             List {
                 ForEach(direcciones, id: \.id) { direccion in
                     HStack {
-                        Image(systemName: "mappin.and.ellipse")
+                        Image("icono_ubicacion")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(.negro)
                         Text(
                             StringUtils.formatearDireccion(
                                 direccion.calle,

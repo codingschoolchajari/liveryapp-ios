@@ -36,8 +36,10 @@ struct SeccionesView: View {
             // Renderizar la vista seleccionada
             switch selectedSection {
             case .home:
-                HomeView(perfilUsuarioState: perfilUsuarioState)
-                    .environmentObject(perfilUsuarioState)
+                NavigationStack {
+                    HomeView(perfilUsuarioState: perfilUsuarioState)
+                        .environmentObject(perfilUsuarioState)
+                }                
             case .descuentos:
                 DescuentosView()
             case .carrito:

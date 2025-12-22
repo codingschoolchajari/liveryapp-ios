@@ -8,7 +8,7 @@ import Foundation
 import Combine
 
 @MainActor
-final class HomeViewModel: ObservableObject {
+class HomeViewModel: ObservableObject {
 
     private let perfilUsuarioState: PerfilUsuarioState
     private let comerciosService = ComerciosService()

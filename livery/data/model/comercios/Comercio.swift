@@ -29,7 +29,7 @@ struct ComercioDireccion: Codable {
     var coordenadas: Point = Point()
 }
 
-struct Comercio: Codable {
+struct Comercio: Codable, Identifiable {
     var idInterno: String = ""
     var localidad: String = ""
     var nombre: String = ""
@@ -42,6 +42,10 @@ struct Comercio: Codable {
     var categoriasPrincipales: [String] = []
     var categorias: [Categoria] = []
     var promociones: [Promocion] = []
+    
+    var id: String {
+        idInterno
+    }
 }
 
 extension Comercio {

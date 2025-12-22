@@ -11,6 +11,7 @@
 		B3AFD2572EF3A9AE00C9EDB2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD2562EF3A9AE00C9EDB2 /* FirebaseAuth */; };
 		B3AFD2592EF3A9AE00C9EDB2 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD2582EF3A9AE00C9EDB2 /* FirebaseMessaging */; };
 		B3AFD3012EF448DF00C9EDB2 /* JWTDecode in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD3002EF448DF00C9EDB2 /* JWTDecode */; };
+		B3CEC5DB2EF9BFB2003052F9 /* GoogleMaps in Frameworks */ = {isa = PBXBuildFile; productRef = B3CEC5DA2EF9BFB2003052F9 /* GoogleMaps */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +75,7 @@
 			files = (
 				B3AFD2592EF3A9AE00C9EDB2 /* FirebaseMessaging in Frameworks */,
 				B3AFD24F2EF3A14A00C9EDB2 /* Lottie in Frameworks */,
+				B3CEC5DB2EF9BFB2003052F9 /* GoogleMaps in Frameworks */,
 				B3AFD3012EF448DF00C9EDB2 /* JWTDecode in Frameworks */,
 				B3AFD2572EF3A9AE00C9EDB2 /* FirebaseAuth in Frameworks */,
 			);
@@ -140,6 +142,7 @@
 				B3AFD2562EF3A9AE00C9EDB2 /* FirebaseAuth */,
 				B3AFD2582EF3A9AE00C9EDB2 /* FirebaseMessaging */,
 				B3AFD3002EF448DF00C9EDB2 /* JWTDecode */,
+				B3CEC5DA2EF9BFB2003052F9 /* GoogleMaps */,
 			);
 			productName = livery;
 			productReference = B3D0DD532EDFD53600DF1EDF /* livery.app */;
@@ -227,6 +230,7 @@
 				B3AFD24D2EF3A14A00C9EDB2 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 				B3AFD2552EF3A9AE00C9EDB2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				B3AFD2FF2EF447F900C9EDB2 /* XCRemoteSwiftPackageReference "JWTDecode" */,
+				B3CEC5D92EF9BFB2003052F9 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B3D0DD542EDFD53600DF1EDF /* Products */;
@@ -656,6 +660,14 @@
 				minimumVersion = 3.3.0;
 			};
 		};
+		B3CEC5D92EF9BFB2003052F9 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googlemaps/ios-maps-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.7.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -678,6 +690,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B3AFD2FF2EF447F900C9EDB2 /* XCRemoteSwiftPackageReference "JWTDecode" */;
 			productName = JWTDecode;
+		};
+		B3CEC5DA2EF9BFB2003052F9 /* GoogleMaps */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B3CEC5D92EF9BFB2003052F9 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */;
+			productName = GoogleMaps;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

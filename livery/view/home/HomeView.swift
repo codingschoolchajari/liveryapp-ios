@@ -18,33 +18,29 @@ struct HomeView: View {
     }
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                
-                FranjaPrincipal()
-                
-                BusquedaModos(homeViewModel: homeViewModel)
-
-                Spacer()
-                
-                if perfilUsuarioState.cargaInicialFinalizada {
-                    if (perfilUsuarioState.ciudadSeleccionada?.isEmpty ?? true) {
-                        //DireccionFueraDeCobertura()
+        VStack(spacing: 0) {
+            
+            FranjaPrincipal()
+            
+            BusquedaModos(homeViewModel: homeViewModel)
+            
+            if perfilUsuarioState.cargaInicialFinalizada {
+                //if (perfilUsuarioState.ciudadSeleccionada?.isEmpty ?? true) {
+                    //DireccionFueraDeCobertura()
+                //} else {
+                    if homeViewModel.modoComercioSeleccionado {
+                        SelectorCategorias(homeViewModel: homeViewModel)
+                        Spacer()
+                        //Spacer().frame(height: 32)
+                        //ListaComercios(homeViewModel: homeViewModel)
                     } else {
-                        if homeViewModel.modoComercioSeleccionado {
-                            Spacer().frame(height: 8)
-                            //SelectorCategorias(homeViewModel: homeViewModel)
-                            Spacer().frame(height: 32)
-                            ListaComercios(homeViewModel: homeViewModel)
-                        } else {
-                            //FranjaBusqueda(homeViewModel: homeViewModel)
-                            //ListaComerciosProductos(homeViewModel: homeViewModel)
-                        }
+                        //FranjaBusqueda(homeViewModel: homeViewModel)
+                        //ListaComerciosProductos(homeViewModel: homeViewModel)
                     }
-                }
+                //}
             }
-            .padding(.bottom, 16)
         }
+        .padding(.bottom, 16)
     }
 }
 
@@ -182,15 +178,13 @@ struct BusquedaModos: View {
     }
 }
 
-
-/*
 struct SelectorCategorias: View {
 
     @ObservedObject var homeViewModel: HomeViewModel
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: 10) {
+            LazyHStack(spacing: 16) {
                 ForEach(ListUtils.categorias, id: \.idInterno) { categoria in
                     VStack {
                         Button {
@@ -199,30 +193,32 @@ struct SelectorCategorias: View {
                             Image(categoria.imagenGenerica)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 64, height: 64)
-                                .padding()
-                                .background(Color.surface)
+                                .frame(width: 70, height: 60)
+                                .padding(.all, 2)
+                                .background(.grisSurface)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
+                                    RoundedRectangle(cornerRadius: 16)
                                         .stroke(
                                             homeViewModel.categoriaSeleccionada == categoria.idInterno
                                             ? .verdePrincipal
                                             : .clear,
-                                            lineWidth: 3
+                                            lineWidth: 4
                                         )
                                 )
                         }
 
                         Text(categoria.nombre)
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.custom("Barlow", size: 12))
+                            .bold()
                     }
                 }
             }
             .padding(.horizontal)
         }
+        .frame(height: 100)
     }
 }
- */
 
 struct ListaComercios: View {
 

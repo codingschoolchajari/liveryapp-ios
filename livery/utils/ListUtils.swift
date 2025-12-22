@@ -9,7 +9,7 @@ import Foundation
 struct ListUtils {
     
     static let categorias: [Categoria] = [
-        Categoria(idInterno: "pizzas", nombre: "Pizzas", imagenGenerica: "categorias_pizzas"),
+        Categoria(idInterno: "pizzas", nombre: "Pizzas", imagenGenerica: "categoria_pizzas"),
         Categoria(idInterno: "hamburguesas", nombre: "Hamburguesas", imagenGenerica: "categoria_hamburguesas"),
         Categoria(idInterno: "milanesas", nombre: "Milanesas", imagenGenerica: "categoria_milanesas"),
         Categoria(idInterno: "pastas", nombre: "Pastas", imagenGenerica: "categoria_pastas"),

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "categoria_sandwiches.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

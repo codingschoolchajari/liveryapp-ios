@@ -13,13 +13,17 @@ class ConfiguracionesService {
         dispositivoID: String
     ) async throws -> Configuracion {
 
-        let url = URL(string: configuracionesURL)!
+        guard let url = URL(string: "\(configuracionesURL)/buscar") else {
+            throw URLError(.badURL)
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
         let (data, _) = try await URLSession.shared.data(for: request)
+        
         return try JSONDecoder().decode(Configuracion.self, from: data)
     }
 }

@@ -129,7 +129,7 @@ class PerfilUsuarioState: ObservableObject {
                 dispositivoID: dispositivoID
             )
         } catch {
-            print("Error al buscar configuracion")
+            print("Error al buscar configuracion: \(error)")
         }
     }
     

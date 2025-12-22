@@ -127,6 +127,7 @@ struct FranjaPrincipal: View {
         }
         .navigationDestination(isPresented: $mostrarNuevaDireccion) {
             DireccionView()
+                .navigationBarBackButtonHidden(true)
         }
         .sheet(isPresented: $mostrarNotificaciones) {
             //BottomSheetNotificaciones()

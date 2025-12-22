@@ -7,7 +7,7 @@
 	<key>API_BASE_URL</key>
 	<string>https://api-info-360.com:8201/livery</string>
 	<key>GOOGLE_MAPS_API_KEY</key>
-	<string>AIzaSyBguwdIXWSNVla3AeWj5OGWX5apj0nVFrM</string>
+	<string>AIzaSyChvS2Uv41XckRN2b1Q6MLHmk8zFzg1U6A</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>barlow_bold.ttf</string>

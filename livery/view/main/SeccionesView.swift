@@ -39,7 +39,7 @@ struct SeccionesView: View {
                 NavigationStack {
                     HomeView(perfilUsuarioState: perfilUsuarioState)
                         .environmentObject(perfilUsuarioState)
-                }                
+                }
             case .descuentos:
                 DescuentosView()
             case .carrito:

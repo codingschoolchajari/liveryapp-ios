@@ -15,8 +15,8 @@ class CoberturasService {
         longitud: Double
     ) async throws -> CiudadResponse {
 
-        var components = URLComponents(string: coberturasURL + "/ciudad")!
-
+        var components = URLComponents(string: coberturasURL + "/buscarCiudadPorUbicacion")!
+  
         components.queryItems = [
             URLQueryItem(name: "latitud", value: String(latitud)),
             URLQueryItem(name: "longitud", value: String(longitud))

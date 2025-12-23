@@ -23,20 +23,24 @@ struct HomeView: View {
             FranjaPrincipal()
             BusquedaModos(homeViewModel: homeViewModel)
             
-            if perfilUsuarioState.cargaInicialFinalizada {
-                //if (perfilUsuarioState.ciudadSeleccionada?.isEmpty ?? true) {
-                    //DireccionFueraDeCobertura()
-                //} else {
-                    if homeViewModel.modoComercioSeleccionado {
-                        SelectorCategorias(homeViewModel: homeViewModel)
-                        Spacer()
-                        //Spacer().frame(height: 32)
-                        //ListaComercios(homeViewModel: homeViewModel)
-                    } else {
-                        //FranjaBusqueda(homeViewModel: homeViewModel)
-                        //ListaComerciosProductos(homeViewModel: homeViewModel)
-                    }
-                //}
+            if  ( perfilUsuarioState.ciudadSeleccionada != nil
+                  && perfilUsuarioState.ciudadSeleccionada == StringUtils.sinCobertura
+                ) || (
+                    perfilUsuarioState.usuario != nil
+                    && perfilUsuarioState.usuario!.direcciones?.isEmpty ?? true
+                )
+            {
+                DireccionFueraDeCobertura()
+            } else {
+                if homeViewModel.modoComercioSeleccionado {
+                    SelectorCategorias(homeViewModel: homeViewModel)
+                    Spacer()
+                    //Spacer().frame(height: 32)
+                    //ListaComercios(homeViewModel: homeViewModel)
+                } else {
+                    //FranjaBusqueda(homeViewModel: homeViewModel)
+                    //ListaComerciosProductos(homeViewModel: homeViewModel)
+                }
             }
         }
         .padding(.bottom, 16)
@@ -357,3 +361,26 @@ struct BottomSheetDirecciones: View {
     }
 }
 
+struct DireccionFueraDeCobertura: View {
+    var body: some View {
+        VStack(alignment: .center, spacing: 16) {
+            Spacer()
+                .frame(height: 100)
+            
+            Image("icono_fuera_cobertura")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 150)
+            
+            Text("Dirección inválida o fuera de nuestro rango de cobertura, por favor selecciona otra dirección.")
+                .font(.custom("Barlow", size: 16))
+                .bold()
+                .foregroundColor(.negro)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}

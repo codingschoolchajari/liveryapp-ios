@@ -14,6 +14,7 @@ class UsuariosService {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(usuario)
 
@@ -42,6 +43,29 @@ class UsuariosService {
         }
 
         return try JSONDecoder().decode(Usuario.self, from: data)
+    }
+    
+    func actualizarDatosPersonales(
+        token: String,
+        dispositivoID: String,
+        email: String,
+        datosPersonales: UsuarioDatosPersonales
+    ) async throws {
+        guard let url = URL(string: "\(usuariosURL)/actualizarDatosPersonales") else { throw URLError(.badURL) }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+        request.setValue(email, forHTTPHeaderField: "email")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(datosPersonales)
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
     }
 
     func guardarDireccion(

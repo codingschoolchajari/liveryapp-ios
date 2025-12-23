@@ -8,6 +8,8 @@ import Foundation
 
 struct StringUtils {
     
+    static let sinCobertura = "SIN_COBERTURA"
+    
     static func inferMimeType(for fileExtension: String) -> String {
         switch fileExtension.lowercased() {
         case "png":

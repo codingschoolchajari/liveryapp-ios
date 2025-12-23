@@ -7,18 +7,33 @@
 import SwiftUI
 
 class NavigationManager: ObservableObject {
+    // Definimos las fases principales de la app
+    enum AppPhase {
+        case loading
+        case auth        // Pantalla de Login
+        case registration // Datos Personales
+        case main        // El TabView (SeccionesView)
+    }
+    
+    @Published var currentPhase: AppPhase = .loading
     @Published var selectedSection: SeccionesView.Section = .home
     
+    // Tus paths actuales se mantienen para la navegación interna de cada pestaña
     @Published var homePath = NavigationPath()
     @Published var pedidosPath = NavigationPath()
     @Published var perfilPath = NavigationPath()
 
+    // Función para cambiar de fase (Equivalente a cambiar el Root en Android)
+    func replaceRoot(with phase: AppPhase) {
+        withAnimation(.easeInOut) {
+            self.currentPhase = phase
+        }
+    }
+    
     func select(_ section: SeccionesView.Section) {
         if selectedSection == section {
-            // POP TO ROOT: Limpia el path de la sección actual
             resetPath(for: section)
         } else {
-            // CAMBIO DE PESTAÑA
             selectedSection = section
         }
     }

@@ -9,7 +9,7 @@ import SwiftUI
 struct SeccionesView: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     
-    @StateObject private var navManager = NavigationManager()
+    @EnvironmentObject var navManager: NavigationManager
     
     enum Section {
         case home, descuentos, carrito, pedidos, perfil
@@ -63,7 +63,6 @@ struct SeccionesView: View {
                     }
                 }
             }
-            .environmentObject(navManager)
             
             // Barra de navegación personalizada
             VStack(spacing: 0) {

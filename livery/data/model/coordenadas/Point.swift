@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct Point: Codable {
+struct Point: Codable, Equatable {
     var type: String = "Point"
     var coordinates: [Double] = []
 }

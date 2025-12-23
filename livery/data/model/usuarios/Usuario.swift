@@ -6,18 +6,18 @@
 //
 import Foundation
 
-struct UsuarioPremios: Codable {
+struct UsuarioPremios: Codable, Equatable {
     var girosRestantes: Int = 0
     var historialPremios: [Premio] = []
 }
 
-struct UsuarioDatosPersonales: Codable {
+struct UsuarioDatosPersonales: Codable, Equatable {
     var nombre: String = ""
     var apellido: String = ""
     var dni: Int = 0
 }
 
-struct UsuarioFavorito: Codable {
+struct UsuarioFavorito: Codable, Equatable {
     var id: String = ""
     var idComercio: String = ""
     let nombreComercio: String
@@ -28,7 +28,7 @@ struct UsuarioFavorito: Codable {
     var imagenURL: String? = ""
 }
 
-struct UsuarioDireccion: Codable, Identifiable {
+struct UsuarioDireccion: Codable, Identifiable, Equatable {
     var id: String = ""
     var calle: String = ""
     var numero: String = ""
@@ -37,7 +37,7 @@ struct UsuarioDireccion: Codable, Identifiable {
     var coordenadas: Point = Point()
 }
 
-struct Usuario: Codable {
+struct Usuario: Codable, Equatable {
     var email: String = ""
     var nombre: String = ""
     var tokenFCM: String = ""
@@ -85,5 +85,20 @@ extension Usuario {
         return favoritos.first {
             $0.idComercio == idComercio && $0.idPromocion == idPromocion
         }?.id
+    }
+    
+    var tienePerfilCompleto: Bool {
+        // 1. Verificamos que el objeto datosPersonales no sea nulo
+        guard let datos = self.datosPersonales else {
+            return false
+        }
+        
+        // 2. Verificamos que los campos esenciales no estén vacíos
+        let nombreValido = !datos.nombre.trimmingCharacters(in: .whitespaces).isEmpty
+        let apellidoValido = !datos.apellido.trimmingCharacters(in: .whitespaces).isEmpty
+        let dniValido = datos.dni != 0
+        
+        // Solo si todo es true, el perfil está completo
+        return nombreValido && apellidoValido && dniValido
     }
 }

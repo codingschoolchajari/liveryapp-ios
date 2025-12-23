@@ -8,21 +8,52 @@ import SwiftUI
 
 @main
 struct liveryApp: App {
-    
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
-    @StateObject private var perfilUsuarioState: PerfilUsuarioState
+    @StateObject var navManager = NavigationManager()
+    @StateObject var perfilUsuarioState = PerfilUsuarioState()
 
-    init() {
-        let perfilUsuarioState = PerfilUsuarioState()
-        
-        self._perfilUsuarioState = StateObject(wrappedValue: perfilUsuarioState)
-    }
-    
     var body: some Scene {
         WindowGroup {
-            SplashScreenView()
+            // RootContainerView decidirá qué pantalla mostrar según la fase
+            RootContainerView()
+                .environmentObject(navManager)
                 .environmentObject(perfilUsuarioState)
+        }
+    }
+}
+
+struct RootContainerView: View {
+    @EnvironmentObject var navManager: NavigationManager
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @AppStorage("logueado") var logueado: Bool = false
+
+    var body: some View {
+        Group {
+            switch navManager.currentPhase {
+            case .loading:
+                SplashScreenView()
+            case .auth:
+                LoginView()
+            case .registration:
+                DatosPersonalesView()
+            case .main:
+                SeccionesView()
+            }
+        }
+        .onChange(of: perfilUsuarioState.usuario) { oldUser, newUser in
+            // Solo navegamos si el usuario realmente cambió y estamos logueados
+            guard logueado, let user = newUser else {
+                if !logueado { navManager.replaceRoot(with: .auth) }
+                return
+            }
+            
+            // Decidimos la fase final (Navegación real)
+            if user.tienePerfilCompleto {
+                navManager.replaceRoot(with: .main)
+            } else {
+                navManager.replaceRoot(with: .registration)
+            }
         }
     }
 }

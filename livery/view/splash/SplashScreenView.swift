@@ -7,26 +7,32 @@
 import SwiftUI
 
 struct SplashScreenView: View {
-    @State private var animacionFinalizada: Bool = false
-    
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @EnvironmentObject var navManager: NavigationManager
+    @AppStorage("logueado") var logueado: Bool = false
     
     var body: some View {
-        if animacionFinalizada {
-            LoginScreenView()
-        } else {
-            LottieView(animationName: "splash_screen") {
-                withAnimation {
-                    animacionFinalizada = true
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .ignoresSafeArea()
-            .onAppear {
-                Task{
-                    await perfilUsuarioState.inicializacion()
+        LottieView(animationName: "splash_screen") {
+            Task {
+                // 1. Ejecutamos TODA la inicialización
+                await perfilUsuarioState.inicializacion()
+                
+                // 2. Si está logueado, buscamos al usuario
+                if logueado {
+                    await perfilUsuarioState.buscarUsuario()
+                    
+                    // Si el usuario se encontró, el .onChange del Root lo mandará a Main
+                    // Si NO se encontró (perfilUsuarioState.usuario == nil), forzamos salida:
+                    if perfilUsuarioState.usuario == nil {
+                        navManager.replaceRoot(with: .auth)
+                    }
+                } else {
+                    // No está logueado, vamos a Auth
+                    navManager.replaceRoot(with: .auth)
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .ignoresSafeArea()
     }
 }

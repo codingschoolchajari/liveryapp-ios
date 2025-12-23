@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct Premio: Codable {
+struct Premio: Codable, Equatable {
     var idInterno: String = ""
     var emailUsuario: String = ""
     var idComercio: String = ""

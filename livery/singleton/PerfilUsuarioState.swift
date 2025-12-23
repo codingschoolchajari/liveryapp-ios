@@ -20,8 +20,6 @@ class PerfilUsuarioState: ObservableObject {
     @Published var idDireccionSeleccionada: String? = nil
     @Published var ciudadSeleccionada: String? = nil
     
-    @Published var cargaInicialFinalizada: Bool = false
-    
     var categoriaSeleccionadaHome: String? = nil
     
     private let configuracionesService = ConfiguracionesService()
@@ -36,10 +34,7 @@ class PerfilUsuarioState: ObservableObject {
         iniciarCurrentUser()
         await buscarConfiguracion()
         await cargarDireccionSeleccionada()
-        await obtenerCiudadSeleccionada()
         
-        cargaInicialFinalizada = true
-    
         Publishers.CombineLatest(
             $idDireccionSeleccionada,
             $usuario
@@ -112,6 +107,36 @@ class PerfilUsuarioState: ObservableObject {
         }
     }
     
+    func actualizarDatosPersonales(nombre: String, apellido: String, dni: Int) async {
+        await TokenRepository.repository.validarToken(perfilUsuarioState: self)
+        let accessToken = TokenRepository.repository.accessToken ?? ""
+        
+        do {
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            let datosPersonales = UsuarioDatosPersonales(
+                nombre: nombre,
+                apellido: apellido,
+                dni: dni
+            )
+
+            guard let email = currentUser?.email else {
+                print("No hay sesión de usuario activa")
+                return
+            }
+
+            try await usuariosService.actualizarDatosPersonales(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email,
+                datosPersonales: datosPersonales
+            )
+            
+        } catch {
+            print("Error al actualizar Datos Personales: \(error.localizedDescription)")
+        }
+    }
+    
     func obtenerFirebaseIdToken() async -> String? {
         try? await Auth.auth().currentUser?.getIDToken()
     }
@@ -181,13 +206,17 @@ class PerfilUsuarioState: ObservableObject {
                 let ciudadResponse : CiudadResponse = try await coberturasService.buscarCiudadPorUbicacion(
                     token: accessToken,
                     dispositivoID: dispositivoID,
-                    latitud: point.coordinates[1],
-                    longitud: point.coordinates[0]
+                    latitud: point.coordinates[0],
+                    longitud: point.coordinates[1]
                 )
-                self.ciudadSeleccionada = ciudadResponse.ciudad
+                if ciudadResponse.ciudad.isEmpty {
+                    self.ciudadSeleccionada = StringUtils.sinCobertura
+                } else {
+                    self.ciudadSeleccionada = ciudadResponse.ciudad
+                }
             }
         } catch {
-            print("Error al obtener ciudad seleccionada")
+            print("Error al obtener ciudad seleccionada: \(error)")
         }
     }
     

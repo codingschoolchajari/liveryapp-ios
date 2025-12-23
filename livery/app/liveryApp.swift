@@ -51,8 +51,20 @@ struct RootContainerView: View {
             // Decidimos la fase final (Navegación real)
             if user.tienePerfilCompleto {
                 navManager.replaceRoot(with: .main)
+                navManager.select(.home)
             } else {
                 navManager.replaceRoot(with: .registration)
+            }
+        }
+        .onChange(of: logueado) { oldVal, newVal in
+            if newVal == true && perfilUsuarioState.usuario != nil {
+                // Caso donde ya teníamos el usuario pero apenas nos enteramos que estamos logueados
+                if perfilUsuarioState.usuario!.tienePerfilCompleto {
+                    navManager.replaceRoot(with: .main)
+                    navManager.select(.home)
+                } else {
+                    navManager.replaceRoot(with: .registration)
+                }
             }
         }
     }

@@ -43,30 +43,45 @@ class LoginViewModel: ObservableObject {
 
             Auth.auth().signIn(with: credential) { authResult, error in
                 if let error = error {
-                    print("Error al autenticar con Firebase: \(error.localizedDescription)")
+                    print("Error: \(error.localizedDescription)")
                     return
                 }
 
-                // Usuario autenticado correctamente
-                if let uid = authResult?.user.uid {
-                    print("Usuario autenticado con UID: \(uid)")
-                }
-
                 Task {
+                    // 1. Preparamos el estado (Token, CurrentUser, etc)
                     await perfilUsuarioState.inicializacion()
-                    await perfilUsuarioState.actualizarUsuario()                }
+                    await perfilUsuarioState.actualizarUsuario()
+                    
+                    // 2. Activamos el flag de logueado ANTES de buscar el usuario
+                    // Esto permite que el RootContainer esté listo para escuchar el cambio del objeto usuario
+                    await MainActor.run {
+                        self.logueado = true
+                    }
 
-                self.logueado = true
+                    // 3. Buscamos el usuario en el backend.
+                    // Al asignarse self.usuario dentro de esta función, el RootContainer reaccionará.
+                    await perfilUsuarioState.buscarUsuario()
+                }
             }
         }
     }
     
     // Método para desloguearse
-    func signOut() {
+    func signOut(
+        perfilUsuarioState: PerfilUsuarioState
+    ) {
         do {
             try Auth.auth().signOut()
-            logueado = false
-            print("Usuario deslogueado correctamente")
+            
+            // IMPORTANTE: Limpiar el estado en memoria
+            DispatchQueue.main.async {
+                perfilUsuarioState.usuario = nil
+                perfilUsuarioState.currentUser = nil
+                // Aquí reseteamos el flag que observa el RootContainer
+                UserDefaults.standard.set(false, forKey: "logueado")
+            }
+            
+            print("Usuario deslogueado y estado limpiado")
         } catch let error as NSError {
             print("Error al desloguear: \(error)")
         }

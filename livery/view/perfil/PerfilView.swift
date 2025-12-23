@@ -116,15 +116,18 @@ struct TituloSeccion: View {
 }
 
 struct SeccionSesion: View {
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @StateObject private var loginViewModel = LoginViewModel()
     
     var body: some View {
         VStack(spacing: 16) {
 
             TituloSeccion(text: "Sesión")
-
+            
             Button {
-                loginViewModel.signOut()
+                loginViewModel.signOut(
+                    perfilUsuarioState: perfilUsuarioState
+                )
             } label: {
                 HStack(spacing: 12) {
                     Image("icono_logout")

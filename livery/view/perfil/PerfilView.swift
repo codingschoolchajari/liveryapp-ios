@@ -153,46 +153,49 @@ struct BottomSheetDireccionesView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-
             Text("Direcciones")
                 .font(.custom("Barlow", size: 16))
                 .bold()
+                .padding(.top, 8)
 
             let direcciones: [UsuarioDireccion] = perfilUsuarioState.usuario?.direcciones ?? []
-            List {
-                ForEach(direcciones, id: \.id) { direccion in
-                    HStack {
-                        Image("icono_ubicacion")
+            ForEach(direcciones, id: \.id) { direccion in
+                HStack {
+                    Image("icono_ubicacion")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.negro)
+                    Text(
+                        StringUtils.formatearDireccion(
+                            direccion.calle,
+                            direccion.numero,
+                            direccion.departamento
+                        )
+                    )
+                    .font(.custom("Barlow", size: 16))
+                    
+                    Spacer()
+                    Button {
+                        Task {
+                            await perfilUsuarioState.eliminarDireccion(
+                                idDireccion: direccion.id
+                            )
+                            //await carritoViewModel.calcularCostoEnvio(
+                            //    direccion:
+                            //)
+                        }
+                    } label: {
+                        Image("icono_delete")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 24, height: 24)
-                            .foregroundColor(.negro)
-                        Text(
-                            StringUtils.formatearDireccion(
-                                direccion.calle,
-                                direccion.numero,
-                                direccion.departamento
-                            )
-                        )
-                        .font(.custom("Barlow", size: 14))
-                        
-                        Spacer()
-                        Button {
-                            Task {
-                                //await perfilUsuarioState.eliminarDireccion(id: direccion.id)
-                                //await carritoViewModel.calcularCostoEnvio(
-                                //    direccion: perfilUsuarioState.obtenerUsuarioDireccion()
-                                //)
-                            }
-                        } label: {
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                        }
+                            .foregroundColor(.rojoError)
                     }
                 }
+                .padding(.horizontal, 20)
             }
-            .listStyle(.plain)
+            Spacer()
         }
-        .padding()
     }
 }

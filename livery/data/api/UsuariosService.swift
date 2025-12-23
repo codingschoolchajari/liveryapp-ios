@@ -44,44 +44,49 @@ class UsuariosService {
         return try JSONDecoder().decode(Usuario.self, from: data)
     }
 
-    func guardarDireccion(token: String, dispositivoID: String, email: String, usuarioDireccion: UsuarioDireccion) async throws {
-        guard let url = URL(string: "\(usuariosURL)/guardarDireccion") else { throw URLError(.badURL) }
-
+    func guardarDireccion(
+        token: String,
+        dispositivoID: String,
+        email: String,
+        usuarioDireccion: UsuarioDireccion
+    ) async throws {
+        guard let url = URL(string: "\(usuariosURL)/guardarDireccion/\(email)") else {
+            throw URLError(.badURL)
+        }
+        
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
+        request.httpMethod = "PUT"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let body: [String: Any] = [
-            "email": email,
-            "dispositivoID": dispositivoID,
-            "direccion": usuarioDireccion
-        ]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        request.httpBody = try JSONEncoder().encode(usuarioDireccion)
 
         let (_, response) = try await URLSession.shared.data(for: request)
+        
         guard let httpResponse = response as? HTTPURLResponse,
               200...299 ~= httpResponse.statusCode else {
             throw URLError(.badServerResponse)
         }
     }
 
-    func eliminarDireccion(token: String, dispositivoID: String, email: String, idDireccion: String) async throws {
-        guard let url = URL(string: "\(usuariosURL)/eliminarDireccion") else { throw URLError(.badURL) }
-
+    func eliminarDireccion(
+        token: String,
+        dispositivoID: String,
+        email: String,
+        idDireccion: String)
+    async throws {
+        guard let url = URL(string: "\(usuariosURL)/eliminarDireccion/\(email)/\(idDireccion)") else {
+            throw URLError(.badURL)
+        }
+        
         var request = URLRequest(url: url)
-        request.httpMethod = "DELETE"
+        request.httpMethod = "PUT"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body: [String: Any] = [
-            "email": email,
-            "dispositivoID": dispositivoID,
-            "idDireccion": idDireccion
-        ]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
         let (_, response) = try await URLSession.shared.data(for: request)
+        
         guard let httpResponse = response as? HTTPURLResponse,
               200...299 ~= httpResponse.statusCode else {
             throw URLError(.badServerResponse)

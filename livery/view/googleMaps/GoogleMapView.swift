@@ -15,6 +15,11 @@ struct GoogleMapView: UIViewRepresentable {
         let map = GMSMapView(options: GMSMapViewOptions())
         map.isMyLocationEnabled = true
         map.settings.myLocationButton = true
+        map.settings.zoomGestures = true
+        map.settings.scrollGestures = true
+        map.settings.rotateGestures = true
+        map.settings.tiltGestures = true
+    
         map.delegate = context.coordinator
         return map
     }

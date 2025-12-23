@@ -47,9 +47,9 @@ struct FranjaPrincipal: View {
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     //@EnvironmentObject var notificacionesState: NotificacionesState
+    @EnvironmentObject var navManager: NavigationManager
 
     @State private var mostrarDirecciones = false
-    @State private var mostrarNuevaDireccion = false
     @State private var mostrarNotificaciones = false
 
     var body: some View {
@@ -120,14 +120,10 @@ struct FranjaPrincipal: View {
             BottomSheetDirecciones(
                 onNuevaDireccion: {
                     mostrarDirecciones = false
-                    mostrarNuevaDireccion = true
+                    navManager.homePath.append("DireccionView")
                 }
             )
             .presentationDetents([.medium])
-        }
-        .navigationDestination(isPresented: $mostrarNuevaDireccion) {
-            DireccionView()
-                .navigationBarBackButtonHidden(true)
         }
         .sheet(isPresented: $mostrarNotificaciones) {
             //BottomSheetNotificaciones()
@@ -322,6 +318,7 @@ struct BottomSheetDirecciones: View {
                                 .font(.custom("Barlow", size: 16))
                                 .foregroundColor(.negro)
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
                 }

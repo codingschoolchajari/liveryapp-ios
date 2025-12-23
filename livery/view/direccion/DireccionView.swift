@@ -46,17 +46,15 @@ struct DireccionView: View {
 }
 
 struct FormularioDireccionView: View {
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @EnvironmentObject var navManager: NavigationManager
     
     @ObservedObject var direccionViewModel: DireccionViewModel
-    
-    @State private var calle: String = ""
-    @State private var numero: String = ""
-    @State private var departamento: String = ""
-    @State private var indicaciones: String = ""
 
     var body: some View {
         VStack(spacing: 8) {
-            TextField("Calle", text: $calle)
+            TextField("Calle", text: $direccionViewModel.calle)
+                .tint(.verdePrincipal)
                 .autocapitalization(.words)
                 .disableAutocorrection(true)
                 .font(.custom("Barlow", size: 16))
@@ -68,7 +66,8 @@ struct FormularioDireccionView: View {
                         .stroke(Color.grisSecundario, lineWidth: 1)
                 )
             
-            TextField("Número", text: $numero)
+            TextField("Número", text: $direccionViewModel.numero)
+                .tint(.verdePrincipal)
                 .autocapitalization(.words)
                 .disableAutocorrection(true)
                 .font(.custom("Barlow", size: 16))
@@ -80,7 +79,8 @@ struct FormularioDireccionView: View {
                         .stroke(Color.grisSecundario, lineWidth: 1)
                 )
             
-            TextField("Departamento", text: $departamento)
+            TextField("Departamento", text: $direccionViewModel.departamento)
+                .tint(.verdePrincipal)
                 .autocapitalization(.words)
                 .disableAutocorrection(true)
                 .font(.custom("Barlow", size: 16))
@@ -100,7 +100,8 @@ struct FormularioDireccionView: View {
                 .padding(.leading, 6)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
-            TextEditor(text: $indicaciones)
+            TextEditor(text: $direccionViewModel.indicaciones)
+                .tint(.verdePrincipal)
                 .font(.custom("Barlow", size: 16))
                 .bold()
                 .frame(minHeight: 70, maxHeight: 70) // ≈ 3 líneas
@@ -110,9 +111,9 @@ struct FormularioDireccionView: View {
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.grisSecundario, lineWidth: 1)
                 )
-                .onChange(of: indicaciones) { oldValue, newValue in
+                .onChange(of: direccionViewModel.indicaciones) { oldValue, newValue in
                     if newValue.count > 100 {
-                        indicaciones = String(newValue.prefix(100))
+                        direccionViewModel.indicaciones = String(newValue.prefix(100))
                     }
                 }
         }
@@ -121,31 +122,50 @@ struct FormularioDireccionView: View {
         HStack {
             Spacer()
             Button {
-                guardarDireccion(direccionViewModel: direccionViewModel)
+                guardarDireccion(
+                    navManager: navManager,
+                    perfilUsuarioState: perfilUsuarioState,
+                    direccionViewModel: direccionViewModel
+                )
             } label : {
                 Text("Guardar Dirección")
                     .font(.custom("Barlow", size: 16))
                     .bold()
                     .frame(width: 250, height: 40)
                     .foregroundColor(.blanco)
-                    .background(esFormularioValido() ?
+                    .background(esFormularioValido(direccionViewModel) ?
                         .verdePrincipal : .grisSecundario)
                     .cornerRadius(16)
             }
-            .disabled(!esFormularioValido())
+            .disabled(!esFormularioValido(direccionViewModel))
             Spacer()
         }
     }
     
-    private func esFormularioValido() -> Bool {
-        return !calle.isEmpty && !numero.isEmpty
+    private func esFormularioValido(
+        _ direccionViewModel: DireccionViewModel
+    ) -> Bool {
+        return !direccionViewModel.calle.isEmpty && !direccionViewModel.numero.isEmpty
     }
     
-    private func guardarDireccion(direccionViewModel: DireccionViewModel) {
-        Task {
-            //await direccionViewModel.guardarDireccion(
+    private func guardarDireccion(
+        navManager: NavigationManager,
+        perfilUsuarioState: PerfilUsuarioState,
+        direccionViewModel: DireccionViewModel
+    ) {
+        if let email = perfilUsuarioState.usuario?.email {
+            Task {
+                let idDireccion = UUID().uuidString
                 
-            //)
+                await direccionViewModel.guardarDireccion(
+                    perfilUsuarioState: perfilUsuarioState,
+                    email: email,
+                    idDireccion: idDireccion
+                )
+                await perfilUsuarioState.actualizarDireccionSeleccionada(idDireccion: idDireccion)
+                await perfilUsuarioState.buscarUsuario()
+                navManager.select(.home)
+            }
         }
     }
 }

@@ -178,7 +178,7 @@ class PerfilUsuarioState: ObservableObject {
             if let usuarioDireccion {
                 let point = usuarioDireccion.coordenadas
                 
-                var ciudadResponse : CiudadResponse = try await coberturasService.buscarCiudadPorUbicacion(
+                let ciudadResponse : CiudadResponse = try await coberturasService.buscarCiudadPorUbicacion(
                     token: accessToken,
                     dispositivoID: dispositivoID,
                     latitud: point.coordinates[1],
@@ -188,6 +188,40 @@ class PerfilUsuarioState: ObservableObject {
             }
         } catch {
             print("Error al obtener ciudad seleccionada")
+        }
+    }
+    
+    func eliminarDireccion(idDireccion: String) async {
+        await TokenRepository.repository.validarToken(perfilUsuarioState: self)
+        let accessToken = TokenRepository.repository.accessToken ?? ""
+        
+        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+    
+        guard let email = currentUser?.email, !email.isEmpty else {
+            return
+        }
+
+        do {
+            // 3. Llamada al repositorio/servicio (Equivalente a usuariosRepository)
+            // Usamos 'try await' para el concepto de 'suspend'
+            try await usuariosService.eliminarDireccion(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email,
+                idDireccion: idDireccion
+            )
+            
+            await buscarUsuario()
+
+            if self.idDireccionSeleccionada == idDireccion {
+                let nuevaDireccionID = usuario?.direcciones?.first?.id ?? ""
+                
+                self.idDireccionSeleccionada = nuevaDireccionID
+                UserDefaults.standard.set(nuevaDireccionID, forKey: ConfiguracionesUtil.ID_DIRECCION_KEY)
+            }
+            
+        } catch {
+            print("Error al eliminar dirección: \(error)")
         }
     }
 }

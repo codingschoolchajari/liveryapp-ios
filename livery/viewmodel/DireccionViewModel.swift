@@ -10,6 +10,7 @@ import CoreLocation
 @MainActor
 class DireccionViewModel: ObservableObject {
 
+    private let usuariosService = UsuariosService()
     private let locationService: LocationServicing
 
     @Published var coordenadas: CLLocationCoordinate2D?
@@ -43,6 +44,44 @@ class DireccionViewModel: ObservableObject {
     func verificarPermisoUbicacion() {
         if locationService.authorizationStatus == .notDetermined {
             locationService.requestPermission()
+        }
+    }
+    
+    func guardarDireccion(
+        perfilUsuarioState: PerfilUsuarioState,
+        email: String,
+        idDireccion: String
+    ) async {
+        await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+        let accessToken = TokenRepository.repository.accessToken ?? ""
+        
+        guard let coords = self.coordenadas else {
+            print("Error: El objeto coordenadas es nulo")
+            return
+        }
+        
+        do {
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            let usuarioDireccion = UsuarioDireccion(
+                id: idDireccion,
+                calle: self.calle,
+                numero: self.numero,
+                departamento: self.departamento,
+                indicaciones: self.indicaciones,
+                coordenadas: Point(coordinates: [coords.latitude, coords.longitude])
+            )
+
+            try await usuariosService.guardarDireccion(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email,
+                usuarioDireccion: usuarioDireccion
+            )
+
+        } catch {
+            // En Swift 'error' es una variable implícita en el bloque catch
+            print("Error al guardar direccion: \(error.localizedDescription)")
         }
     }
 }

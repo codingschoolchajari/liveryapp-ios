@@ -121,6 +121,9 @@ struct FranjaPrincipal: View {
                 onNuevaDireccion: {
                     mostrarDirecciones = false
                     navManager.homePath.append("DireccionView")
+                },
+                onDireccionSeleccionada: {
+                    mostrarDirecciones = false
                 }
             )
             .presentationDetents([.medium])
@@ -189,40 +192,58 @@ struct SelectorCategorias: View {
     @ObservedObject var homeViewModel: HomeViewModel
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: 16) {
-                ForEach(ListUtils.categorias, id: \.idInterno) { categoria in
-                    VStack {
-                        Button {
-                            homeViewModel.onCategoriaSeleccionadaChange(categoria.idInterno)
-                        } label: {
-                            Image(categoria.imagenGenerica)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 70, height: 60)
-                                .padding(.all, 2)
-                                .background(.grisSurface)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .stroke(
-                                            homeViewModel.categoriaSeleccionada == categoria.idInterno
-                                            ? .verdePrincipal
-                                            : .clear,
-                                            lineWidth: 4
-                                        )
-                                )
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 16) {
+                    ForEach(ListUtils.categorias, id: \.idInterno) { categoria in
+                        VStack {
+                            Button {
+                                homeViewModel.onCategoriaSeleccionadaChange(categoria.idInterno)
+                            } label: {
+                                Image(categoria.imagenGenerica)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 70, height: 60)
+                                    .padding(.all, 2)
+                                    .background(.grisSurface)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(
+                                                homeViewModel.categoriaSeleccionada == categoria.idInterno
+                                                ? .verdePrincipal
+                                                : .clear,
+                                                lineWidth: 4
+                                            )
+                                    )
+                            }
+                            
+                            Text(categoria.nombre)
+                                .font(.custom("Barlow", size: 11))
+                                .bold()
                         }
-
-                        Text(categoria.nombre)
-                            .font(.custom("Barlow", size: 12))
-                            .bold()
+                        .id(categoria.idInterno)
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .frame(height: 100)
+            .onChange(of: homeViewModel.categoriaSeleccionada) { oldValue, newValue in
+                withAnimation(.spring()) {
+                    proxy.scrollTo(newValue, anchor: .center)
+                }
+            }
+            .onAppear {
+                if let seleccionada = homeViewModel.categoriaSeleccionada, !seleccionada.isEmpty {
+                    // Damos un respiro de 0.1 o 0.2 segundos
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation(.spring()) {
+                            proxy.scrollTo(seleccionada, anchor: .center)
+                        }
                     }
                 }
             }
-            .padding(.horizontal)
         }
-        .frame(height: 100)
     }
 }
 
@@ -262,6 +283,7 @@ struct ListaComercios: View {
 
 struct BottomSheetDirecciones: View {
     let onNuevaDireccion: () -> Void
+    let onDireccionSeleccionada: () -> Void
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     
@@ -300,7 +322,12 @@ struct BottomSheetDirecciones: View {
                 LazyVStack(spacing: 8) {
                     ForEach(Array(direcciones.enumerated()), id: \.offset) { _, direccion in
                         Button {
-                            // acción
+                            Task {
+                                await perfilUsuarioState.actualizarDireccionSeleccionada(
+                                    idDireccion: direccion.id
+                                )
+                                onDireccionSeleccionada()
+                            }
                         } label: {
                             HStack(spacing: 6) {
                                 Image("icono_ubicacion")

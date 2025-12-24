@@ -16,32 +16,23 @@ struct SeccionesView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            
-            // Fondo azul para el área segura superior
-            GeometryReader { geometry in
-                VStack(spacing: 0) {
-                    Color.verdePrincipal
-                        .frame(height: geometry.safeAreaInsets.top) // Altura del área segura superior
-                        .ignoresSafeArea(edges: .top)
-                    
-                    Spacer() // El contenido principal de la vista va debajo del área segura
-                }
-            }
-            
+        VStack(spacing: 0) {
             // Usamos el path del navManager
             Group {
                 switch navManager.selectedSection {
                 case .home:
                     NavigationStack(path: $navManager.homePath) {
                         HomeView(perfilUsuarioState: perfilUsuarioState)
-                            .environmentObject(perfilUsuarioState)
                             .navigationDestination(for: String.self) { view in
                                 if view == "DireccionView" {
                                     DireccionView()
                                         .navigationBarBackButtonHidden(true)
                                 }
                             }
+                    }
+                    .safeAreaInset(edge: .top) {
+                        Color.verdePrincipal
+                            .frame(height: 0)
                     }
                 case .descuentos:
                     DescuentosView()
@@ -145,6 +136,8 @@ struct SeccionesView: View {
                     Spacer()
                 }
                 .padding(.vertical, 10)
+                .background(Color.blanco)
+                .shadow(color: Color.negro.opacity(0.1), radius: 5, x: 0, y: -2)
             }
         }
     }

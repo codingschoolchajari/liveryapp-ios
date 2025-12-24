@@ -58,6 +58,7 @@ class HomeViewModel: ObservableObject {
             $categoriaSeleccionada,
             perfilUsuarioState.$ciudadSeleccionada
         )
+        .receive(on: DispatchQueue.main)
         .sink { [weak self] categoria, ciudad in
             guard
                 let self,
@@ -66,10 +67,15 @@ class HomeViewModel: ObservableObject {
                 !ciudad.isEmpty
             else { return }
 
+            // 2. Limpiamos estado
             self.paginaActualComercios = 0
             self.comercios = []
             self.noHayMasComercios = false
-            self.cargarMasComercios()
+            
+            // 3. Pequeño respiro para que el estado se asiente
+            Task {
+                await self.cargarMasComercios()
+            }
         }
         .store(in: &cancellables)
 
@@ -106,20 +112,25 @@ class HomeViewModel: ObservableObject {
         palabraClaveSeleccionada = valor
     }
 
-    func cargarMasComercios() {
+    func cargarMasComercios() async {
         guard
             !cargandoComercios,
             !noHayMasComercios,
             let categoria = categoriaSeleccionada,
-            let ciudad = perfilUsuarioState.ciudadSeleccionada,
-            !ciudad.isEmpty
+            let ciudad = perfilUsuarioState.ciudadSeleccionada
         else { return }
 
         cargandoComercios = true
 
-        Task {
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
             let nuevos = try await comerciosService.buscarPorCategoria(
-                perfilUsuarioState: perfilUsuarioState,
+                token: accessToken,
+                dispositivoID: dispositivoID,
                 localidad: ciudad,
                 categoria: categoria,                
                 skip: paginaActualComercios * tamanoPaginaComercios,
@@ -133,6 +144,9 @@ class HomeViewModel: ObservableObject {
                 paginaActualComercios += 1
             }
 
+            cargandoComercios = false
+        } catch {
+            print("Error cargando más comercios: \(error)")
             cargandoComercios = false
         }
     }
@@ -148,6 +162,7 @@ class HomeViewModel: ObservableObject {
 
         cargandoComerciosProductos = true
 
+        /*
         Task {
             let nuevos = try await comerciosService.buscarProductosPorPalabraClave(
                 perfilUsuarioState: perfilUsuarioState,
@@ -166,12 +181,14 @@ class HomeViewModel: ObservableObject {
 
             cargandoComerciosProductos = false
         }
+         */
     }
 
     func inicializarProductoSeleccionado(
         idComercio: String,
         idProducto: String
     ) async {
+        /*
         do {
             comercio = try await comerciosService.buscarComercio(
                 perfilUsuarioState: perfilUsuarioState,
@@ -186,6 +203,7 @@ class HomeViewModel: ObservableObject {
         } catch {
             print("Error iniciando producto seleccionado: \(error)")
         }
+         */
     }
 
     func limpiarProductoSeleccionado() {
@@ -198,6 +216,7 @@ class HomeViewModel: ObservableObject {
         idComercio: String,
         idPromocion: String
     ) async {
+        /*
         do {
             
             comercio = try await comerciosService.buscarComercio(
@@ -211,6 +230,7 @@ class HomeViewModel: ObservableObject {
         } catch {
             print("Error iniciando promoción seleccionada: \(error)")
         }
+         */
     }
 
     func limpiarPromocionSeleccionada() {

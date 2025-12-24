@@ -19,4 +19,6 @@ struct ListUtils {
         Categoria(idInterno: "helados", nombre: "Helados", imagenGenerica: "categoria_helados"),
         Categoria(idInterno: "picadas", nombre: "Picadas", imagenGenerica: "categoria_picadas")
     ]
+    
+    static let diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
 }

@@ -8,30 +8,29 @@ import Foundation
 
 class ComerciosService {
     
-    /*
     func buscarComercio(
-        perfilUsuarioState: PerfilUsuarioState,
+        token: String,
+        dispositivoID: String, 
         idInterno: String,
         datosPrincipales: Bool = false
     ) async throws -> Comercio {
 
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
-        
-        await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
-        let accessToken = TokenRepository.repository.accessToken ?? ""
-        
-        var components = URLComponents(string: comerciosURL + "/buscar")!
+        guard var components = URLComponents(string: "\(comerciosURL)/buscar/\(idInterno)") else { throw URLError(.badURL) }
+
         components.queryItems = [
-            URLQueryItem(name: "idInterno", value: idInterno),
             URLQueryItem(name: "datosPrincipales", value: String(datosPrincipales))
         ]
 
-        let request = buildRequest(url: components.url!, token: accessToken, dispositivoID: dispositivoID)
+        guard let url = components.url else { throw URLError(.badURL) }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
         let (data, _) = try await URLSession.shared.data(for: request)
         return try JSONDecoder().decode(Comercio.self, from: data)
     }
-     */
 
     /*
     func buscarComercioPorProducto(

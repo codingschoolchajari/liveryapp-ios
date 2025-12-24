@@ -9,7 +9,7 @@ import Foundation
 struct Categoria: Codable {
     let idInterno: String
     var nombre: String = ""
-    var imagenGenerica: String = ""
+    var imagenGenerica: String? = ""
     var productos: [Producto] = []
     var seleccionables: [Seleccionable]? = []
 }

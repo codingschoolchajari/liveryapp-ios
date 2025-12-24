@@ -22,7 +22,7 @@ class NavigationManager: ObservableObject {
     @Published var homePath = NavigationPath()
     @Published var pedidosPath = NavigationPath()
     @Published var perfilPath = NavigationPath()
-
+    
     // Función para cambiar de fase (Equivalente a cambiar el Root en Android)
     func replaceRoot(with phase: AppPhase) {
         withAnimation(.easeInOut) {
@@ -45,5 +45,23 @@ class NavigationManager: ObservableObject {
         case .perfil: perfilPath = NavigationPath()
         default: break
         }
+    }
+    
+    // Pantallas internas
+    enum HomeDestination: Hashable {
+        case direccion
+        case comercio(idComercio: String)
+    }
+    
+    enum PedidosDestination: Hashable {
+        case pedido
+    }
+    
+    enum PerfilDestination: Hashable {
+        case favoritos
+    }
+    
+    func irAComercio(idComercio: String) {
+        homePath.append(HomeDestination.comercio(idComercio: idComercio))
     }
 }

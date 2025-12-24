@@ -203,7 +203,7 @@ struct SelectorCategorias: View {
                             Button {
                                 homeViewModel.onCategoriaSeleccionadaChange(categoria.idInterno)
                             } label: {
-                                Image(categoria.imagenGenerica)
+                                Image(categoria.imagenGenerica!)
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 70, height: 60)
@@ -251,8 +251,9 @@ struct SelectorCategorias: View {
 }
 
 struct ListaComercios: View {
-
     @ObservedObject var homeViewModel: HomeViewModel
+    
+    @EnvironmentObject var navManager: NavigationManager
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -266,6 +267,9 @@ struct ListaComercios: View {
                                     await homeViewModel.cargarMasComercios()
                                 }
                             }
+                        }
+                        .onTapGesture {
+                            navManager.irAComercio(idComercio: comercio.idInterno)
                         }
                 }
             }
@@ -305,85 +309,6 @@ struct TarjetaComercio: View {
     }
 }
 
-struct ComercioTitulo: View {
-    let comercio: Comercio
-    var mostrarPuntuacion: Bool = true
-    var mostrarBotonAdd: Bool = false
-    var mostrarHorarios: Bool = false
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            
-            // 1. Horarios (Alineado a la derecha arriba)
-            if mostrarHorarios, let horarios = comercio.horarios {
-                HStack {
-                    Spacer()
-                    Text(DateUtils.obtenerHorariosHoy(horarios: horarios))
-                        .font(.custom("Barlow", size: 14))
-                        .bold()
-                        .foregroundColor(.grisTerciario)
-                }
-            }
-            
-            HStack(alignment: .center) {
-                
-                // Grupo Izquierdo: Logo + Nombre/Categorías
-                HStack(spacing: 14) {
-                    // Box equivalente: AsyncImage con clip
-                    AsyncImage(url: URL(string: API.baseURL + "/" + comercio.logoURL)) { phase in
-                        if let image = phase.image {
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } else {
-                            Color.grisSurface
-                        }
-                    }
-                    .frame(width: 50, height: 50)
-                    .cornerRadius(12)
-                    .clipped()
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(comercio.nombre)
-                            .font(.custom("Barlow", size: 18))
-                            .bold()
-                            .foregroundColor(.negro)
-                        
-                        if !comercio.categoriasPrincipales.isEmpty {
-                            Text(comercio.categoriasPrincipalesToString())
-                                .font(.custom("Barlow", size: 16))
-                                .foregroundColor(.negro)
-                        }
-                    }
-                }
-                
-                Spacer()
-                
-                // Grupo Derecho: Estrella + Puntuación o Botón Add
-                HStack(spacing: 8) {
-                    if mostrarPuntuacion {
-                        Image("icono_estrella_relleno")
-                            .resizable()
-                            .frame(width: 20, height: 20)
-                        
-                        Text(String(format: "%.1f", comercio.puntuacion))
-                            .font(.custom("Barlow", size: 18))
-                            .bold()
-                            .foregroundColor(.negro)
-                    }
-                    
-                    if mostrarBotonAdd {
-                        if mostrarPuntuacion {
-                            Image("icono_add_circle")
-                                .resizable()
-                                .frame(width: 20, height: 20)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 struct BottomSheetDirecciones: View {
     let onNuevaDireccion: () -> Void
     let onDireccionSeleccionada: () -> Void

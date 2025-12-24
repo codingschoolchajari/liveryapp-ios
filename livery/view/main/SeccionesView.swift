@@ -23,9 +23,19 @@ struct SeccionesView: View {
                 case .home:
                     NavigationStack(path: $navManager.homePath) {
                         HomeView(perfilUsuarioState: perfilUsuarioState)
-                            .navigationDestination(for: String.self) { view in
-                                if view == "DireccionView" {
+                            .navigationDestination(for: NavigationManager.HomeDestination.self) { destination in
+                                switch destination {
+                                case .direccion:
                                     DireccionView()
+                                        .navigationBarBackButtonHidden(true)
+                                    
+                                case .comercio(let idComercio):
+                                    ComercioView(
+                                        comercioViewModel: ComercioViewModel(
+                                            perfilUsuarioState: perfilUsuarioState,
+                                            idComercio: idComercio
+                                        )
+                                    )
                                         .navigationBarBackButtonHidden(true)
                                 }
                             }

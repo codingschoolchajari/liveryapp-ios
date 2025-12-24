@@ -255,18 +255,9 @@ struct ListaComercios: View {
     @ObservedObject var homeViewModel: HomeViewModel
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 16) {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 14) {
                 ForEach(homeViewModel.comercios) { comercio in
-                    TarjetaComercio(comercio: comercio)
-                        .padding(.horizontal, 16)
-                        .onAppear {
-                            if comercio.idInterno == homeViewModel.comercios.last?.idInterno {
-                                Task {
-                                    await homeViewModel.cargarMasComercios()
-                                }
-                            }
-                        }
                     TarjetaComercio(comercio: comercio)
                         .padding(.horizontal, 16)
                         .onAppear {
@@ -311,10 +302,6 @@ struct TarjetaComercio: View {
         }
         .frame(maxWidth: .infinity)
         .cornerRadius(12)
-        .onAppear {
-            print("Cargando tarjeta para: \(comercio.nombre)")
-            print("URL completa: \(API.baseURL + "/" + comercio.imagenURL)")
-        }
     }
 }
 
@@ -332,7 +319,7 @@ struct ComercioTitulo: View {
                 HStack {
                     Spacer()
                     Text(DateUtils.obtenerHorariosHoy(horarios: horarios))
-                        .font(.custom("Barlow", size: 16))
+                        .font(.custom("Barlow", size: 14))
                         .bold()
                         .foregroundColor(.grisTerciario)
                 }

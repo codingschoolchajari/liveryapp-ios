@@ -6,10 +6,12 @@
 //
 import Foundation
 
-struct Categoria: Codable {
+struct Categoria: Codable, Identifiable {
     let idInterno: String
     var nombre: String = ""
     var imagenGenerica: String? = ""
     var productos: [Producto] = []
     var seleccionables: [Seleccionable]? = []
+    
+    var id: String { idInterno }
 }

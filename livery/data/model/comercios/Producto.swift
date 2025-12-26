@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct Producto: Codable {
+struct Producto: Codable, Identifiable {
     let idInterno: String
     let nombre: String
     var descripcion: String = ""
@@ -21,4 +21,6 @@ struct Producto: Codable {
     var procesosExtras: [String] = []
     var esPremio: Bool? = nil
     var idPremio: String? = nil
+    
+    var id: String { idInterno }
 }

@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct Promocion: Codable {
+struct Promocion: Codable, Identifiable {
     let idInterno: String
     var nombre: String = ""
     var descripcion: String = ""
@@ -15,4 +15,6 @@ struct Promocion: Codable {
     var imagenURL: String = ""
     var productosNoSeleccionables: [String] = []
     var productosSeleccionables: [String] = []
+    
+    var id: String { idInterno }
 }

@@ -140,11 +140,10 @@ struct ComercioTitulo: View {
                     }
                     
                     if mostrarBotonAdd {
-                        if mostrarPuntuacion {
-                            Image("icono_add_circle")
-                                .resizable()
-                                .frame(width: 20, height: 20)
-                        }
+                        Image("icono_add_circle")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(.negro)
                     }
                 }
             }
@@ -208,48 +207,48 @@ struct Productos: View {
     
     var body: some View {
         if let comercio = comercioViewModel.comercio {
-            LazyVStack(spacing: 0) {
-                
-                if !comercio.promociones.isEmpty && comercio.hayPromocionesDisponibles() {
-                    TituloPromociones()
-                    
-                    ForEach(comercio.promociones) { promocion in
-                        if promocion.disponible {
-                            PromocionTitulo(
-                                comercioViewModel: comercioViewModel,
-                                promocion: promocion
-                            )
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 2)
-                        }
-                    }
-                }
-            
-                ForEach(comercio.categorias) { categoria in
-                    VStack(spacing: 0) {
-                        // Nombre de la Categoría
-                        Text(categoria.nombre)
-                            .font(.custom("Barlow", size: 18))
-                            .bold()
-                            .foregroundColor(.grisSecundario)
-                            .padding(.vertical, 8)
-                            .frame(maxWidth: .infinity, alignment: .center)
+            ScrollView(showsIndicators: false) {
+                LazyVStack(spacing: 0) {
+                    if !comercio.promociones.isEmpty && comercio.hayPromocionesDisponibles() {
+                        TituloPromociones()
                         
-                        ForEach(categoria.productos) { producto in
-                            if producto.disponible {
-                                ProductoTitulo(
+                        ForEach(comercio.promociones) { promocion in
+                            if promocion.disponible {
+                                PromocionTitulo(
                                     comercioViewModel: comercioViewModel,
-                                    producto: producto,
-                                    categoria: categoria
+                                    promocion: promocion
                                 )
                                 .padding(.horizontal, 16)
-                                .padding(.vertical, 2)
+                                .padding(.vertical, 4)
+                            }
+                        }
+                    }
+                    
+                    ForEach(comercio.categorias) { categoria in
+                        VStack(spacing: 0) {
+                            // Nombre de la Categoría
+                            Text(categoria.nombre)
+                                .font(.custom("Barlow", size: 18))
+                                .bold()
+                                .foregroundColor(.grisSecundario)
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                            
+                            ForEach(categoria.productos) { producto in
+                                if producto.disponible {
+                                    ProductoTitulo(
+                                        comercioViewModel: comercioViewModel,
+                                        producto: producto,
+                                        categoria: categoria
+                                    )
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 4)
+                                }
                             }
                         }
                     }
                 }
             }
-            .padding(.bottom, 100) // Padding bottom = 100.dp
         }
     }
 }

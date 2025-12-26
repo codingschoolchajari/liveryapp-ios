@@ -37,8 +37,8 @@ struct HomeView: View {
                     Spacer().frame(height: 8)
                     ListaComercios(homeViewModel: homeViewModel)
                 } else {
-                    //FranjaBusqueda(homeViewModel: homeViewModel)
-                    //ListaComerciosProductos(homeViewModel: homeViewModel)
+                    FranjaBusqueda(homeViewModel: homeViewModel)
+                    ListaComerciosProductos(homeViewModel: homeViewModel)
                 }
             }
         }
@@ -182,11 +182,110 @@ struct BusquedaModos: View {
             .clipShape(RoundedRectangle(cornerRadius: 32))
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .padding(.vertical, 4)
         .background(Color.verdePrincipal)
         .clipShape(
-            RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight])
+            RoundedCorners(
+                radius: homeViewModel.modoComercioSeleccionado ? 32 : 0,
+                corners: [.bottomLeft, .bottomRight]
+            )
         )
+        .animation(.easeInOut, value: homeViewModel.modoComercioSeleccionado)
+    }
+}
+
+struct FranjaBusqueda: View {
+    @ObservedObject var homeViewModel: HomeViewModel
+    
+    var body: some View {
+        ZStack(alignment: .top) {
+            Rectangle()
+                .fill(Color.verdePrincipal)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .clipShape(RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight]))
+            
+            Buscador(homeViewModel: homeViewModel)
+                .offset(y: 5)
+        }
+        .zIndex(100)
+    }
+}
+
+struct Buscador: View {
+    @ObservedObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    
+    @State private var estaExpandido = false
+        
+    var body: some View {
+        let configuracion = perfilUsuarioState.configuracion
+        let palabrasClave = configuracion?.palabrasClave.map { $0.capitalized } ?? []
+        
+        let palabraSeleccionada = homeViewModel.palabraClaveSeleccionada
+        let placeholder = (palabraSeleccionada?.isEmpty ?? true) ? "¿Qué se te antoja hoy?" : palabraSeleccionada!.capitalized
+
+        HStack {
+            Text(placeholder)
+                .font(.custom("Barlow", size: 14))
+                .bold()
+                .foregroundColor(Color.grisSecundario)
+            Spacer()
+            Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
+                .foregroundColor(Color.grisSecundario)
+                .font(.custom("Barlow", size: 14))
+                .bold()
+        }
+        .padding(.horizontal, 20)
+        .frame(height: 44)
+        .background(Color.blanco)
+        .clipShape(RoundedCorners(
+            radius: 32,
+            corners: estaExpandido ? [.topLeft, .topRight] : .allCorners
+        ))
+        .onTapGesture {
+            withAnimation(.spring()) {
+                estaExpandido.toggle()
+            }
+        }
+        .overlay(alignment: .top) {
+            if estaExpandido {
+                VStack(spacing: 0) {
+                    // Este espacio vacío empuja la lista exactamente debajo del botón blanco
+                    Color.clear.frame(height: 44)
+                    
+                    VStack(spacing: 0) {
+                        Divider().background(Color.grisSecundario)
+                        
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 0) {
+                                ForEach(palabrasClave, id: \.self) { palabra in
+                                    Button(action: {
+                                        homeViewModel.onPalabraClaveSeleccionadaChange(palabra)
+                                        withAnimation { estaExpandido = false }
+                                    }) {
+                                        Text(palabra)
+                                            .font(.custom("Barlow", size: 14))
+                                            .bold()
+                                            .foregroundColor(.negro)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.vertical, 12)
+                                            .padding(.horizontal, 20)
+                                    }
+                                }
+                            }
+                        }
+                        .frame(maxHeight: 200)
+                    }
+                    .background(Color.blanco)
+                    .clipShape(RoundedCorners(radius: 22, corners: [.bottomLeft, .bottomRight]))
+                    .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.horizontal, 24)
+        .zIndex(100)
     }
 }
 
@@ -306,6 +405,92 @@ struct TarjetaComercio: View {
         }
         .frame(maxWidth: .infinity)
         .cornerRadius(12)
+    }
+}
+
+struct ListaComerciosProductos: View {
+    @ObservedObject var homeViewModel: HomeViewModel
+    
+    // Estados para manejar los BottomSheets
+    @State private var promocionSeleccionada: Promocion?
+    @State private var productoSeleccionado: Producto?
+    @State private var idComercioActual: String = ""
+
+    var body: some View {
+        let comerciosProductos = homeViewModel.comerciosProductos
+        
+        ScrollView (showsIndicators: false){
+            LazyVStack(spacing: 4) {
+                ForEach(comerciosProductos, id: \.idComercio) { comercioProductos in
+                    
+                    // 1. Título del Comercio
+                    let comercio = Comercio(
+                        idInterno: comercioProductos.idComercio,
+                        nombre: comercioProductos.nombreComercio,
+                        logoURL: comercioProductos.logoComercioURL
+                    )
+                    
+                    TituloComercio(comercio: comercio)
+                        .padding(.top, 8)
+                        .padding(.bottom, 6)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            
+                            // Items de Promociones
+                            ForEach(comercioProductos.promociones) { promocion in
+                                PromocionMiniatura(promocion: promocion) {
+                                    idComercioActual = comercioProductos.idComercio
+                                    promocionSeleccionada = promocion
+                                }
+                                .frame(height: 190)
+                            }
+                            
+                            // Items de Productos
+                            ForEach(comercioProductos.productos) { producto in
+                                ProductoMiniatura(producto: producto) {
+                                    idComercioActual = comercioProductos.idComercio
+                                    productoSeleccionado = producto
+                                }
+                                .frame(height: 190)
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                    }
+                    .background(.grisSurface) // MaterialTheme.colorScheme.surface
+                    .cornerRadius(12)
+                    
+                    Spacer().frame(height: 4)
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        // --- Lógica de Bottom Sheets ---
+        .sheet(item: $promocionSeleccionada, onDismiss: {
+            homeViewModel.limpiarPromocionSeleccionada()
+            homeViewModel.limpiarProductoSeleccionado()
+        }) { promocion in
+            /*
+            SeleccionPromocion(
+                homeViewModel: homeViewModel,
+                idComercio: idComercioActual,
+                idPromocion: promocion.idInterno
+            )
+             */
+        }
+        .sheet(item: $productoSeleccionado, onDismiss: {
+            homeViewModel.limpiarProductoSeleccionado()
+            homeViewModel.limpiarPromocionSeleccionada()
+        }) { producto in
+            /*
+            SeleccionProducto(
+                homeViewModel: homeViewModel,
+                idComercio: idComercioActual,
+                idProducto: producto.idInterno
+            )
+             */
+        }
     }
 }
 

@@ -84,6 +84,7 @@ class HomeViewModel: ObservableObject {
             $palabraClaveSeleccionada,
             perfilUsuarioState.$ciudadSeleccionada
         )
+        .receive(on: DispatchQueue.main)
         .sink { [weak self] palabraClave, ciudad in
             guard
                 let self,
@@ -95,7 +96,10 @@ class HomeViewModel: ObservableObject {
             self.paginaActualComerciosProductos = 0
             self.comerciosProductos = []
             self.noHayMasComerciosProductos = false
-            self.cargarMasComerciosProductos()
+            
+            Task {
+                await self.cargarMasComerciosProductos()
+            }
         }
         .store(in: &cancellables)
     }
@@ -151,21 +155,25 @@ class HomeViewModel: ObservableObject {
         }
     }
 
-    func cargarMasComerciosProductos() {
+    func cargarMasComerciosProductos() async {
         guard
             !cargandoComerciosProductos,
             !noHayMasComerciosProductos,
             let palabraClave = palabraClaveSeleccionada,
-            let ciudad = perfilUsuarioState.ciudadSeleccionada,
-            !ciudad.isEmpty
+            let ciudad = perfilUsuarioState.ciudadSeleccionada
         else { return }
 
         cargandoComerciosProductos = true
 
-        /*
-        Task {
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
             let nuevos = try await comerciosService.buscarProductosPorPalabraClave(
-                perfilUsuarioState: perfilUsuarioState,
+                token: accessToken,
+                dispositivoID: dispositivoID,
                 localidad: ciudad,
                 palabraClave: palabraClave,
                 skip: paginaActualComerciosProductos * tamanoPaginaComerciosProductos,
@@ -180,8 +188,10 @@ class HomeViewModel: ObservableObject {
             }
 
             cargandoComerciosProductos = false
+        } catch {
+            print("Error cargando más comercios productos: \(error)")
+            cargandoComerciosProductos = false
         }
-         */
     }
 
     func inicializarProductoSeleccionado(

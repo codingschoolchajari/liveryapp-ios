@@ -9,6 +9,10 @@ import Foundation
 @MainActor
 class ComercioViewModel: ObservableObject {
     @Published var comercio: Comercio? = nil
+    @Published var productoSeleccionado: Producto? = nil
+    @Published var promocionSeleccionada: Promocion? = nil
+    
+    var categoria: Categoria? = nil
     
     private let comerciosService = ComerciosService()
     
@@ -36,6 +40,21 @@ class ComercioViewModel: ObservableObject {
                 print("Error al cargar el comercio: \(error)")
             }
         }
+    }
+    
+    func seleccionarProducto(producto: Producto, categoria: Categoria){
+        self.productoSeleccionado = producto
+        self.categoria = categoria
+    }
+    
+    func seleccionarPromocion(promocion: Promocion){
+        self.promocionSeleccionada = promocion
+    }
+    
+    func limpiarSeleccionado(){
+        self.productoSeleccionado = nil
+        self.categoria = nil
+        self.promocionSeleccionada = nil
     }
 }
 

@@ -123,7 +123,7 @@ struct FranjaPrincipal: View {
             BottomSheetDirecciones(
                 onNuevaDireccion: {
                     mostrarDirecciones = false
-                    navManager.homePath.append("DireccionView")
+                    navManager.irADireccion()
                 },
                 onDireccionSeleccionada: {
                     mostrarDirecciones = false

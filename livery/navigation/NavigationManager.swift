@@ -31,11 +31,24 @@ class NavigationManager: ObservableObject {
     }
     
     func select(_ section: SeccionesView.Section) {
+        // Si cambiamos de sección (ej. de Home a Descuentos)
+        if selectedSection != section {
+            resetAllPaths()
+        }
+        
+        // Si ya estamos en la sección y volvemos a presionar,
+        // también aseguramos que se limpie
         if selectedSection == section {
             resetPath(for: section)
-        } else {
-            selectedSection = section
         }
+        
+        selectedSection = section
+    }
+    
+    private func resetAllPaths() {
+        homePath = NavigationPath()
+        pedidosPath = NavigationPath()
+        perfilPath = NavigationPath()
     }
     
     private func resetPath(for section: SeccionesView.Section) {
@@ -59,6 +72,10 @@ class NavigationManager: ObservableObject {
     
     enum PerfilDestination: Hashable {
         case favoritos
+    }
+    
+    func irADireccion() {
+        homePath.append(HomeDestination.direccion)
     }
     
     func irAComercio(idComercio: String) {

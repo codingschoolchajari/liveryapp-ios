@@ -240,9 +240,3 @@ struct FilaSeleccionable: View {
         }
     }
 }
-
-struct SeleccionProducto: Identifiable {
-    let id = UUID() // Para que el sheet sepa que es único
-    let producto: Producto
-    let categoria: Categoria
-}

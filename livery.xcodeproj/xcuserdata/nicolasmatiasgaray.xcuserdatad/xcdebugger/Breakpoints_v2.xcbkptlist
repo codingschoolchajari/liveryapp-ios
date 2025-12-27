@@ -36,5 +36,65 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "A5C0E65D-48FC-4A74-98E2-E500E065AA3D"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "livery/view/direccion/DireccionView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "12"
+            endingLineNumber = "12"
+            landmarkName = "DireccionView"
+            landmarkType = "14">
+            <Locations>
+               <Location
+                  uuid = "A5C0E65D-48FC-4A74-98E2-E500E065AA3D - 6b946cc948fd74b8"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "livery.DireccionView.perfilUsuarioState.getter : livery.PerfilUsuarioState"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/view/direccion/DireccionView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "0"
+                  endingLineNumber = "0">
+               </Location>
+               <Location
+                  uuid = "A5C0E65D-48FC-4A74-98E2-E500E065AA3D - d1036a17099fcc3d"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "livery.DireccionView.$perfilUsuarioState.getter : SwiftUI.EnvironmentObject&lt;livery.PerfilUsuarioState&gt;.Wrapper"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/view/direccion/DireccionView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "12"
+                  endingLineNumber = "12">
+               </Location>
+               <Location
+                  uuid = "A5C0E65D-48FC-4A74-98E2-E500E065AA3D - 3631c1447a84aedb"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "default argument 0 of livery.DireccionView.init(perfilUsuarioState: SwiftUI.EnvironmentObject&lt;livery.PerfilUsuarioState&gt;, direccionViewModel: @autoclosure () -&gt; livery.DireccionViewModel) -&gt; livery.DireccionView"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/view/direccion/DireccionView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "0"
+                  endingLineNumber = "0">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

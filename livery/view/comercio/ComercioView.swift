@@ -205,9 +205,6 @@ struct InformacionExtra: View {
 struct Productos: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
     
-    @State private var promocionSeleccionada: Promocion?
-    @State private var productoSeleccionado: SeleccionProducto?
-    
     var body: some View {
         if let comercio = comercioViewModel.comercio {
             ScrollView(showsIndicators: false) {
@@ -221,7 +218,7 @@ struct Productos: View {
                                     comercioViewModel: comercioViewModel,
                                     promocion: promocion,
                                     onSelect: {
-                                        promocionSeleccionada = promocion
+                                        comercioViewModel.seleccionarPromocion(promocion: promocion)
                                     }
                                 )
                                 .padding(.horizontal, 16)
@@ -247,8 +244,9 @@ struct Productos: View {
                                         producto: producto,
                                         categoria: categoria,
                                         onSelect: {
-                                            productoSeleccionado = SeleccionProducto(
-                                                producto: producto, categoria: categoria
+                                            comercioViewModel.seleccionarProducto(
+                                                producto: producto,
+                                                categoria: categoria
                                             )
                                         }
                                     )
@@ -260,14 +258,26 @@ struct Productos: View {
                     }
                 }
             }
-            .sheet(item: $promocionSeleccionada) { promocion in
+            .sheet(item: $comercioViewModel.promocionSeleccionada) { promocion in
                 BottomSheetSeleccionPromocion(
                     promocion: promocion,
                     comercio: comercio
                 )
+                .onDisappear {
+                    comercioViewModel.limpiarSeleccionado()
+                }
             }
-            .sheet(item: $productoSeleccionado) { productoSeleccionado in
-                BottomSheetSeleccionProducto(producto: productoSeleccionado.producto, categoria: productoSeleccionado.categoria, comercio: comercio)
+            .sheet(item: $comercioViewModel.productoSeleccionado) { productoSeleccionado in
+                if (comercioViewModel.categoria != nil){
+                    BottomSheetSeleccionProducto(
+                        producto: productoSeleccionado,
+                        categoria: comercioViewModel.categoria!,
+                        comercio: comercio
+                    )
+                    .onDisappear {
+                        comercioViewModel.limpiarSeleccionado()
+                    }
+                }
             }
         }
     }

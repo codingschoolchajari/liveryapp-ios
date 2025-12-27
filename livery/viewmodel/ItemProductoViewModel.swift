@@ -16,6 +16,8 @@ class ItemProductoViewModel: ObservableObject {
     @Published var seleccionadosUnitarios: [String: Bool] = [:]
     @Published var seleccionadosMultiples: [String: Int] = [:]
     
+    private let productosService = ProductosService()
+    
     private var producto: Producto?
     private var categoria: Categoria?
     private var comercio: Comercio?
@@ -67,40 +69,42 @@ class ItemProductoViewModel: ObservableObject {
         self.productoSeleccionableState = resultado
     }
     
-    func cambiarSeleccionadoUnitario(id: String, seleccionadoUnitario: Bool) {
+    func cambiarSeleccionadoUnitario(
+        perfilUsuarioState: PerfilUsuarioState,
+        id: String,
+        seleccionadoUnitario: Bool
+    ) {
         productoSeleccionableState?.cambiarSeleccionadoUnitario(id: id, seleccionado: seleccionadoUnitario)
         
-        guard var itemActual = itemProducto, let cat = categoria else { return }
+        if(itemProducto == nil || categoria == nil) { return }
         
-        let nuevaLista = seleccionadosUnitarios
+        let nuevaLista = productoSeleccionableState?.seleccionadosUnitarios
             .filter { $0.value }
             .compactMap { (idSeleccionable, _) -> SeleccionableProducto? in
-                guard let nombre = cat.seleccionables?.first(where: { $0.idInterno == idSeleccionable })?.nombre else { return nil }
+                guard let nombre = categoria!.seleccionables?.first(where: { $0.idInterno == idSeleccionable })?.nombre else { return nil }
                 return SeleccionableProducto(idSeleccionable: idSeleccionable, nombreSeleccionable: nombre)
             }
         
-        itemActual.seleccionables = nuevaLista
-        self.itemProducto = itemActual
+        itemProducto!.seleccionables = nuevaLista ?? []
         
         if let producto = self.producto, !producto.procesosExtras.isEmpty {
-            procesosExtras()
+            procesosExtras(perfilUsuarioState: perfilUsuarioState)
         }
     }
     
     func cambiarSeleccionadoMultiple(id: String, cantidad: Int) {
         productoSeleccionableState?.cambiarSeleccionadoMultiple(id: id, cantidad: cantidad)
         
-        guard var itemActual = itemProducto, let cat = categoria else { return }
+        if(itemProducto == nil || categoria == nil) { return }
         
-        let nuevaLista = seleccionadosMultiples
+        let nuevaLista = productoSeleccionableState?.seleccionadosMultiples
             .filter { $0.value > 0 }
             .compactMap { (idSeleccionable, cant) -> SeleccionableProducto? in
-                guard let nombre = cat.seleccionables?.first(where: { $0.idInterno == idSeleccionable })?.nombre else { return nil }
+                guard let nombre = categoria!.seleccionables?.first(where: { $0.idInterno == idSeleccionable })?.nombre else { return nil }
                 return SeleccionableProducto(idSeleccionable: idSeleccionable, nombreSeleccionable: nombre, cantidad: cant)
             }
         
-        itemActual.seleccionables = nuevaLista
-        self.itemProducto = itemActual
+        itemProducto!.seleccionables = nuevaLista ?? []
     }
     
     func aumentarCantidad() {
@@ -122,28 +126,35 @@ class ItemProductoViewModel: ObservableObject {
         self.itemProducto = item
     }
     
-    private func procesosExtras() {
-        guard let prod = producto, let com = comercio, var item = itemProducto else { return }
+    private func procesosExtras(perfilUsuarioState: PerfilUsuarioState) {
+        if(producto == nil || comercio == nil || itemProducto == nil) { return }
         
-        for proceso in prod.procesosExtras {
+        for proceso in producto!.procesosExtras {
             if proceso == "precio-producto-mas-caro" {
-                let idsSeleccionados = item.seleccionables.map { $0.idSeleccionable }.joined(separator: ",")
+                let idsSeleccionados = itemProducto!.seleccionables.map { $0.idSeleccionable }.joined(separator: ",")
                 
-                // Swift Concurrency (Equivalente a viewModelScope.launch)
-                /*
                 Task {
                     do {
-                        let precio = try await productosRepository.calcularPrecioMasCaro(idComercio: com.idInterno, ids: idsSeleccionados)
+                        await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+                        let accessToken = TokenRepository.repository.accessToken ?? ""
+                        
+                        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+                        
+                        let precioResponse: PrecioResponse = try await productosService.calcularPrecioMasCaro(
+                            token: accessToken,
+                            dispositivoID: dispositivoID,
+                            idComercio: comercio!.idInterno,
+                            productos: idsSeleccionados
+                        )
                         await MainActor.run {
-                            item.precioUnitario = precio
-                            item.precio = precio * Double(self.cantidad)
-                            self.itemProducto = item
+                            itemProducto!.precioUnitario = precioResponse.precio
+                            itemProducto!.precio = precioResponse.precio * Double(self.cantidad)
+                            //self.itemProducto = itemProducto
                         }
                     } catch {
                         print("Error calculando precio extra: \(error)")
                     }
                 }
-                 */
             }
         }
     }

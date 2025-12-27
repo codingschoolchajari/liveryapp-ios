@@ -9,10 +9,10 @@ import SwiftUI
 struct PromocionTitulo: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
     let promocion: Promocion
+    let onSelect: () -> Void
     
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     
-    @State private var mostrarBottomSheet = false
     @State private var esFavorito: Bool = false
     
     var body: some View {
@@ -69,16 +69,11 @@ struct PromocionTitulo: View {
             )
             .contentShape(Rectangle())
             .onTapGesture {
-                mostrarBottomSheet = true
+                onSelect()
             }
         }
         .onAppear {
             esFavorito = (idFavorito != nil)
-        }
-        .sheet(isPresented: $mostrarBottomSheet) {
-            if (comercio != nil) {
-                BottomSheetSeleccionPromocion(promocion: promocion, comercio: comercio!)
-            }
         }
     }
     
@@ -161,6 +156,7 @@ struct BottomSheetSeleccionPromocion: View {
                     fontSizePrecio: 22,
                     fontSizeDescripcion: 18
                 )
+                .frame(maxWidth: .infinity, alignment: .leading)
                 
                 // Tabs/Lista de productos seleccionables
                 ProductosSeleccionablesTabs(

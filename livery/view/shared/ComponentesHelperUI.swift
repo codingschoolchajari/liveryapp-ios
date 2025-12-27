@@ -27,3 +27,17 @@ struct ToastView: View {
         }
     }
 }
+
+struct CheckboxToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button(action: {
+            configuration.isOn.toggle()
+        }) {
+            Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
+                .resizable()
+                .frame(width: 24, height: 24)
+                .foregroundColor(configuration.isOn ? .verdePrincipal : .grisSecundario) // Usa tus colores
+        }
+        .buttonStyle(PlainButtonStyle()) // Evita el efecto de resaltado gris de los botones
+    }
+}

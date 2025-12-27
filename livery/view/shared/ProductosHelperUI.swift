@@ -184,11 +184,15 @@ struct FilaSeleccionable: View {
                 Spacer()
                 
                 if seleccionable.tipo == "unitario" {
-                    Toggle("", isOn: Binding(
-                        get: { seleccionadoUnitario },
-                        set: { onUnitarioChange($0) }
-                    ))
-                    //.toggleStyle(CheckboxStyle()) // Estilo personalizado de Checkbox
+                    Toggle("", isOn:
+                        Binding(
+                            get: { seleccionadoUnitario },
+                            set: { onUnitarioChange($0) }
+                        )
+                    )
+                    .toggleStyle(CheckboxToggleStyle())
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
                 } else {
                     // Selector de cantidad (+ / -)
                     HStack(spacing: 15) {
@@ -235,4 +239,10 @@ struct FilaSeleccionable: View {
             if seleccionable.tipo == "unitario" { onUnitarioChange(!seleccionadoUnitario) }
         }
     }
+}
+
+struct SeleccionProducto: Identifiable {
+    let id = UUID() // Para que el sheet sepa que es único
+    let producto: Producto
+    let categoria: Categoria
 }

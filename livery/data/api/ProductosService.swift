@@ -8,31 +8,21 @@ import Foundation
 
 class ProductosService {
     func calcularPrecioMasCaro(token: String, dispositivoID: String, idComercio: String, productos: String) async throws -> PrecioResponse {
-        guard var urlComponents = URLComponents(string: "\(API.baseURL)\(API.Endpoints.productos)/precioMasCaro") else {
-            fatalError("URL incorrecta")
-        }
         
-        urlComponents.queryItems = [
-            URLQueryItem(name: "dispositivoID", value: dispositivoID),
-            URLQueryItem(name: "idComercio", value: idComercio),
+        guard var components = URLComponents(string: "\(productosURL)/calcularPrecioMasCaro/\(idComercio)") else { throw URLError(.badURL) }
+
+        components.queryItems = [
             URLQueryItem(name: "productos", value: productos)
         ]
-        
-        guard let url = urlComponents.url else {
-            fatalError("No se pudo construir la URL")
-        }
-        
+
+        guard let url = components.url else { throw URLError(.badURL) }
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              200...299 ~= httpResponse.statusCode else {
-            throw URLError(.badServerResponse)
-        }
-        
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (data, _) = try await URLSession.shared.data(for: request)
         return try JSONDecoder().decode(PrecioResponse.self, from: data)
     }
 }

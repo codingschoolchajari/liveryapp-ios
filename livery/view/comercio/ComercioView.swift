@@ -205,6 +205,9 @@ struct InformacionExtra: View {
 struct Productos: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
     
+    @State private var promocionSeleccionada: Promocion?
+    @State private var productoSeleccionado: SeleccionProducto?
+    
     var body: some View {
         if let comercio = comercioViewModel.comercio {
             ScrollView(showsIndicators: false) {
@@ -216,7 +219,10 @@ struct Productos: View {
                             if promocion.disponible {
                                 PromocionTitulo(
                                     comercioViewModel: comercioViewModel,
-                                    promocion: promocion
+                                    promocion: promocion,
+                                    onSelect: {
+                                        promocionSeleccionada = promocion
+                                    }
                                 )
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 4)
@@ -239,7 +245,12 @@ struct Productos: View {
                                     ProductoTitulo(
                                         comercioViewModel: comercioViewModel,
                                         producto: producto,
-                                        categoria: categoria
+                                        categoria: categoria,
+                                        onSelect: {
+                                            productoSeleccionado = SeleccionProducto(
+                                                producto: producto, categoria: categoria
+                                            )
+                                        }
                                     )
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 4)
@@ -248,6 +259,15 @@ struct Productos: View {
                         }
                     }
                 }
+            }
+            .sheet(item: $promocionSeleccionada) { promocion in
+                BottomSheetSeleccionPromocion(
+                    promocion: promocion,
+                    comercio: comercio
+                )
+            }
+            .sheet(item: $productoSeleccionado) { productoSeleccionado in
+                BottomSheetSeleccionProducto(producto: productoSeleccionado.producto, categoria: productoSeleccionado.categoria, comercio: comercio)
             }
         }
     }

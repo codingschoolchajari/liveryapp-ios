@@ -10,10 +10,10 @@ struct ProductoTitulo: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
     let producto: Producto
     let categoria: Categoria
+    let onSelect: () -> Void
     
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     
-    @State private var mostrarBottomSheet = false
     @State private var esFavorito: Bool = false
     
     var body: some View {
@@ -82,16 +82,11 @@ struct ProductoTitulo: View {
             )
             .contentShape(Rectangle())
             .onTapGesture {
-                mostrarBottomSheet = true
+                onSelect()
             }
         }
         .onAppear {
             esFavorito = (idFavorito != nil)
-        }
-        .sheet(isPresented: $mostrarBottomSheet) {
-            if (comercio != nil) {
-                BottomSheetSeleccionProducto(producto: producto, categoria: categoria, comercio: comercio!)
-            }
         }
     }
     
@@ -153,7 +148,7 @@ struct ProductoDescripcion: View {
                        descuento > 0 {
                         
                         Text(DoubleUtils.formatearPrecio(valor: precioSinDescuento))
-                            .font(.custom("Barlow-Regular", size: fontSizePrecio))
+                            .font(.custom("Barlow", size: fontSizePrecio))
                             .foregroundColor(.grisTerciario)
                             .strikethrough(true, color: .grisTerciario)
                     }
@@ -203,13 +198,16 @@ struct BottomSheetSeleccionProducto: View {
             PortadaProducto(producto: producto)
             
             // 2. Bloque Central (Descripción + Seleccionables) - NO Scrolleable externamente
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 0) {
                 ProductoDescripcion(
                     producto: producto,
-                    fontSizeNombre: 18,
+                    fontSizeNombre: 20,
                     fontSizePrecio: 22,
                     fontSizeDescripcion: 16
                 )
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Spacer().frame(height: 12)
                 
                 if let min = producto.cantidadMinimaSeleccionables, min > 0, categoria.seleccionables != nil {
                     Seleccionables(
@@ -218,41 +216,54 @@ struct BottomSheetSeleccionProducto: View {
                         seleccionadosUnitarios: itemProductoViewModel.seleccionadosUnitarios,
                         seleccionadosMultiples: itemProductoViewModel.seleccionadosMultiples,
                         onCambiarSeleccionadoUnitario: { id, valor in
-                            itemProductoViewModel.cambiarSeleccionadoUnitario(id: id, seleccionadoUnitario: valor)
+                            itemProductoViewModel.cambiarSeleccionadoUnitario(
+                                perfilUsuarioState: perfilUsuarioState,
+                                id: id,
+                                seleccionadoUnitario: valor
+                            )
                         },
                         onCambiarSeleccionadoMultiple: { id, cant in
                             itemProductoViewModel.cambiarSeleccionadoMultiple(id: id, cantidad: cant)
                         }
                     )
+                    Spacer()
+                    let item = itemProductoViewModel.itemProducto
+                    
+                    CantidadUnidadesYPrecio(
+                        cambioUnidadesHabilitado: false,
+                        cantidad: itemProductoViewModel.cantidad,
+                        precio: item?.precio,
+                        onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
+                        onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
+                    )
+                    Spacer().frame(height: 4)
+                    AgregarCarrito(
+                        enabled: calcularSiEstaHabilitado(),
+                        mostrarDialogoConflicto: $mostrarDialogoConflicto,
+                        onConfirmar: { ejecutarLogicaAgregar() },
+                        onConfirmarConflicto: { confirmarLimpiezaYAgregar() }
+                    )
+                } else {
+                    let item = itemProductoViewModel.itemProducto
+                    
+                    Spacer()
+                    CantidadUnidadesYPrecio(
+                        cambioUnidadesHabilitado: producto.esPremio != true,
+                        cantidad: itemProductoViewModel.cantidad,
+                        precio: item?.precio,
+                        onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
+                        onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
+                    )
+                    Spacer().frame(height: 4)
+                    AgregarCarrito(
+                        enabled: calcularSiEstaHabilitado(),
+                        mostrarDialogoConflicto: $mostrarDialogoConflicto,
+                        onConfirmar: { ejecutarLogicaAgregar() },
+                        onConfirmarConflicto: { confirmarLimpiezaYAgregar() }
+                    )
                 }
-                
-                // Spacer para empujar el contenido si no hay seleccionables
-                Spacer()
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            
-            // 3. Bloque Inferior (Fijo)
-            VStack(spacing: 4) {
-                let item = itemProductoViewModel.itemProducto
-                
-                CantidadUnidadesYPrecio(
-                    cambioUnidadesHabilitado: producto.esPremio != true,
-                    cantidad: itemProductoViewModel.cantidad,
-                    precio: item?.precio,
-                    onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
-                    onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
-                )
-                
-                AgregarCarrito(
-                    enabled: calcularSiEstaHabilitado(),
-                    mostrarDialogoConflicto: $mostrarDialogoConflicto,
-                    onConfirmar: { ejecutarLogicaAgregar() },
-                    onConfirmarConflicto: { confirmarLimpiezaYAgregar() }
-                )
-            }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 12) // Ajuste según padding de tu diseño
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.blanco)
@@ -320,37 +331,37 @@ struct PortadaProducto: View {
         let altoDeseado = UIScreen.main.bounds.width * (3/4)
         
         ZStack(alignment: .topTrailing) {
+            // 1. Imagen base con bordes redondeados inferiores
             AsyncImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? ""))) { phase in
                 if let image = phase.image {
                     image
                         .resizable()
-                        .aspectRatio(contentMode: .fill) // Rellena el frame
+                        .aspectRatio(contentMode: .fill)
                 } else {
                     Color.blanco
                 }
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: altoDeseado)
+            .frame(width: UIScreen.main.bounds.width, height: altoDeseado)
             .clipped()
             .clipShape(
                 RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight])
             )
-        }
-        .fixedSize(horizontal: false, vertical: true)
-        
-        if let descuento = producto.descuento, descuento > 0 {
-            VStack {
-                Spacer()
-                HStack {
+            
+            if let descuento = producto.descuento, descuento > 0 {
+                VStack {
                     Spacer()
-                    RectanguloDescuento(
-                        producto: producto,
-                        fontSizeDescuento: 18,
-                        redondeado: 18
-                    )
-                    .padding(12)
+                    HStack {
+                        Spacer()
+                        RectanguloDescuento(
+                            producto: producto,
+                            fontSizeDescuento: 18,
+                            redondeado: 18
+                        )
+                        .padding(12)
+                    }
                 }
             }
         }
+        .frame(height: altoDeseado)
     }
 }

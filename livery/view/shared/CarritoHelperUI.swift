@@ -50,16 +50,13 @@ struct CantidadUnidadesYPrecio: View {
                             .bold()
                             .padding(.horizontal, 8)
                             .foregroundColor(.negro)
+                            .frame(width: 30, height: 45)
                     }
-                    
-                    Spacer()
-                    
                     Text("\(cantidad)")
                         .font(.custom("Barlow", size: 18))
                         .bold()
                         .foregroundColor(.negro)
-                    
-                    Spacer()
+                        .frame(width: 30)
                     
                     Button(action: {
                         onAumentarCantidad()
@@ -69,10 +66,10 @@ struct CantidadUnidadesYPrecio: View {
                             .bold()
                             .padding(.horizontal, 8)
                             .foregroundColor(.negro)
+                            .frame(width: 30, height: 45)
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 45)
+                .padding(.horizontal, 8)
                 .background(.grisSurface)
                 .cornerRadius(24)
                 .layoutPriority(1)

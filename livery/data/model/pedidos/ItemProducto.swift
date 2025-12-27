@@ -17,9 +17,9 @@ struct ItemProducto: Codable {
     let idProducto: String
     let nombreProducto: String
     var imagenProductoURL: String = ""
-    let cantidad: Int
+    var cantidad: Int
     let precioUnitario: Double
-    let precio: Double
+    var precio: Double
     var seleccionables: [SeleccionableProducto] = []
     var esPremio: Bool = false
     var idPremio: String? = nil

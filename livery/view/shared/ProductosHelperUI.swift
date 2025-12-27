@@ -68,13 +68,171 @@ struct ProductoMiniatura: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            
             Spacer()
         }
         .frame(width: 120)
         .contentShape(Rectangle())
         .onTapGesture {
             onMostrarBottomSheet()
+        }
+    }
+}
+
+struct Seleccionables: View {
+    let categoria: Categoria
+    let producto: Producto
+    let seleccionadosUnitarios: [String: Bool]
+    let seleccionadosMultiples: [String: Int]
+    
+    var onCambiarSeleccionadoUnitario: (String, Bool) -> Void
+    var onCambiarSeleccionadoMultiple: (String, Int) -> Void
+    
+    @State private var mensajeToast: String? = nil
+    @State private var toastWorkItem: DispatchWorkItem? = nil // Para controlar el tiempo
+
+    var body: some View {
+        let itemsDisponibles = (categoria.seleccionables ?? [])
+            .filter { $0.disponible }
+            .sorted(by: { $0.nombre < $1.nombre })
+        
+        ScrollView (showsIndicators: false){
+            VStack(spacing: 4) {
+                ForEach(itemsDisponibles, id: \.idInterno) { seleccionable in
+                    
+                    // Obtenemos el estado actual desde los diccionarios recibidos
+                    let unitario = seleccionadosUnitarios[seleccionable.idInterno] ?? false
+                    let multiple = seleccionadosMultiples[seleccionable.idInterno] ?? 0
+                    
+                    FilaSeleccionable(
+                        seleccionable: seleccionable,
+                        seleccionadoUnitario: unitario,
+                        seleccionadoMultiple: multiple,
+                        onUnitarioChange: { nuevoValor in
+                            validarYNotificarUnitario(id: seleccionable.idInterno, nuevoValor: nuevoValor)
+                        },
+                        onMultipleChange: { nuevaCant in
+                            validarYNotificarMultiple(id: seleccionable.idInterno, nuevaCant: nuevaCant)
+                        }
+                    )
+                }
+            }
+        }
+        .frame(maxHeight: 250)
+        .overlay(ToastView(mensaje: $mensajeToast), alignment: .bottom)
+    }
+    
+    private func validarYNotificarUnitario(id: String, nuevoValor: Bool) {
+        let total = seleccionadosUnitarios.values.count { $0 }
+        
+        if nuevoValor && total >= (producto.cantidadMaximaSeleccionables ?? 0) {
+            mostrarToast()
+        } else {
+            onCambiarSeleccionadoUnitario(id, nuevoValor)
+        }
+    }
+    
+    private func validarYNotificarMultiple(id: String, nuevaCant: Int) {
+        let total = seleccionadosMultiples.values.reduce(0, +)
+        let actual = seleccionadosMultiples[id] ?? 0
+        
+        // Si intenta incrementar y ya llegó al máximo
+        if nuevaCant > actual && total >= (producto.cantidadMaximaSeleccionables ?? 0) {
+            mostrarToast()
+        } else {
+            onCambiarSeleccionadoMultiple(id, nuevaCant)
+        }
+    }
+    
+    private func mostrarToast() {
+        let texto = "Solo puedes seleccionar hasta \(producto.cantidadMaximaSeleccionables ?? 0) \(producto.nombreSeleccionable ?? "")."
+        
+        // 1. Cancelar cualquier temporizador que esté corriendo
+        toastWorkItem?.cancel()
+        
+        // 2. Asignar el mensaje
+        withAnimation {
+            mensajeToast = texto
+        }
+        
+        // 3. Crear una nueva tarea para ocultar el toast
+        let task = DispatchWorkItem {
+            withAnimation {
+                self.mensajeToast = nil
+            }
+        }
+        
+        // 4. Guardar y programar la tarea
+        toastWorkItem = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: task)
+    }
+}
+
+struct FilaSeleccionable: View {
+    let seleccionable: Seleccionable
+    let seleccionadoUnitario: Bool
+    let seleccionadoMultiple: Int
+    var onUnitarioChange: (Bool) -> Void
+    var onMultipleChange: (Int) -> Void
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(seleccionable.nombre)
+                    .font(.custom("Barlow", size: 16))
+                    .bold(seleccionadoUnitario || seleccionadoMultiple > 0)
+                    .foregroundColor(.negro)
+                Spacer()
+                
+                if seleccionable.tipo == "unitario" {
+                    Toggle("", isOn: Binding(
+                        get: { seleccionadoUnitario },
+                        set: { onUnitarioChange($0) }
+                    ))
+                    //.toggleStyle(CheckboxStyle()) // Estilo personalizado de Checkbox
+                } else {
+                    // Selector de cantidad (+ / -)
+                    HStack(spacing: 15) {
+                        Button(
+                            action: {
+                                if seleccionadoMultiple > 0 { onMultipleChange(seleccionadoMultiple - 1)
+                                }
+                            }
+                        ) {
+                            Text("-")
+                                .font(.custom("Barlow", size: 16))
+                                .bold()
+                                .foregroundColor(.negro)
+                                .frame(width: 20, height: 20)
+                        }
+                        Text("\(seleccionadoMultiple)")
+                            .font(.custom("Barlow", size: 16))
+                            .bold()
+                            .foregroundColor(.negro)
+                            .frame(width: 16)
+                        
+                        Button(
+                            action: {
+                                onMultipleChange(seleccionadoMultiple + 1)
+                            }
+                        ) {
+                            Text("+")
+                                .font(.custom("Barlow", size: 16))
+                                .bold()
+                                .foregroundColor(.negro)
+                                .frame(width: 20, height: 20)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.grisSurface)
+                    .cornerRadius(20)
+                }
+            }
+            Divider().background(.grisSurface)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if seleccionable.tipo == "unitario" { onUnitarioChange(!seleccionadoUnitario) }
         }
     }
 }

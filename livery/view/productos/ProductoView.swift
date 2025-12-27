@@ -89,10 +89,8 @@ struct ProductoTitulo: View {
             esFavorito = (idFavorito != nil)
         }
         .sheet(isPresented: $mostrarBottomSheet) {
-            if let com = comercio {
-                /*
-                BottomSheetSeleccionProducto(producto: producto, categoria: categoria, comercio: com)
-                 */
+            if (comercio != nil) {
+                BottomSheetSeleccionProducto(producto: producto, categoria: categoria, comercio: comercio!)
             }
         }
     }
@@ -182,6 +180,177 @@ struct RectanguloDescuento: View {
                     Color.amarilloDescuento
                         .cornerRadius(redondeado)
                 )
+        }
+    }
+}
+
+struct BottomSheetSeleccionProducto: View {
+    let producto: Producto
+    let categoria: Categoria
+    let comercio: Comercio
+    
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    //@EnvironmentObject var carritoViewModel: CarritoViewModel
+    
+    @StateObject private var itemProductoViewModel = ItemProductoViewModel()
+    
+    @State private var mostrarDialogoConflicto = false
+    @State private var mensajeToast: String? = nil
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // 1. Portada (Ocupa 3/4 del ancho de pantalla)
+            PortadaProducto(producto: producto)
+            
+            // 2. Bloque Central (Descripción + Seleccionables) - NO Scrolleable externamente
+            VStack(alignment: .leading, spacing: 12) {
+                ProductoDescripcion(
+                    producto: producto,
+                    fontSizeNombre: 18,
+                    fontSizePrecio: 22,
+                    fontSizeDescripcion: 16
+                )
+                
+                if let min = producto.cantidadMinimaSeleccionables, min > 0, categoria.seleccionables != nil {
+                    Seleccionables(
+                        categoria: categoria,
+                        producto: producto,
+                        seleccionadosUnitarios: itemProductoViewModel.seleccionadosUnitarios,
+                        seleccionadosMultiples: itemProductoViewModel.seleccionadosMultiples,
+                        onCambiarSeleccionadoUnitario: { id, valor in
+                            itemProductoViewModel.cambiarSeleccionadoUnitario(id: id, seleccionadoUnitario: valor)
+                        },
+                        onCambiarSeleccionadoMultiple: { id, cant in
+                            itemProductoViewModel.cambiarSeleccionadoMultiple(id: id, cantidad: cant)
+                        }
+                    )
+                }
+                
+                // Spacer para empujar el contenido si no hay seleccionables
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            
+            // 3. Bloque Inferior (Fijo)
+            VStack(spacing: 4) {
+                let item = itemProductoViewModel.itemProducto
+                
+                CantidadUnidadesYPrecio(
+                    cambioUnidadesHabilitado: producto.esPremio != true,
+                    cantidad: itemProductoViewModel.cantidad,
+                    precio: item?.precio,
+                    onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
+                    onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
+                )
+                
+                AgregarCarrito(
+                    enabled: calcularSiEstaHabilitado(),
+                    mostrarDialogoConflicto: $mostrarDialogoConflicto,
+                    onConfirmar: { ejecutarLogicaAgregar() },
+                    onConfirmarConflicto: { confirmarLimpiezaYAgregar() }
+                )
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12) // Ajuste según padding de tu diseño
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.blanco)
+        .onAppear {
+            itemProductoViewModel.inicializar(producto: producto, categoria: categoria, comercio: comercio)
+        }
+        .overlay(ToastView(mensaje: $mensajeToast))
+    }
+    
+    // --- Lógica de Validación (Cálculo de 'enabled') ---
+    
+    private func calcularSiEstaHabilitado() -> Bool {
+        guard let item = itemProductoViewModel.itemProducto else { return false }
+        
+        let precioValido = item.precio > 0 || item.esPremio
+        
+        // Si no hay seleccionables obligatorios, solo valida precio
+        guard let min = producto.cantidadMinimaSeleccionables, min > 0 else {
+            return precioValido
+        }
+        
+        let totalUnitarios = itemProductoViewModel.seleccionadosUnitarios.values.count { $0 == true }
+        let totalMultiples = itemProductoViewModel.seleccionadosMultiples.values.reduce(0, +)
+        
+        let seleccionValida = totalUnitarios >= min ||
+                              totalMultiples == (producto.cantidadMaximaSeleccionables ?? 0)
+        
+        return precioValido && seleccionValida
+    }
+    
+    // --- Métodos de Acción ---
+    
+    private func ejecutarLogicaAgregar() {
+        guard let item = itemProductoViewModel.itemProducto else { return }
+        let direccion = perfilUsuarioState.obtenerUsuarioDireccion()
+        let ciudad = perfilUsuarioState.ciudadSeleccionada
+        
+        if(direccion == nil || ciudad == nil || ciudad!.isEmpty) {
+            mensajeToast = "Es necesario una dirección válida"
+        } else {
+            /*
+            if carritoViewModel.validacionComercio(comercio: comercio) {
+                carritoViewModel.agregarItemProducto(item: item, direccion: dir)
+                onDismiss(false)
+            } else {
+                mostrarDialogoConflicto = true
+            }
+             */
+        }
+    }
+    
+    private func confirmarLimpiezaYAgregar() {
+        guard let item = itemProductoViewModel.itemProducto,
+              let dir = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
+        
+        //carritoViewModel.limpiarYAgregarItemProducto(item: item, comercio: comercio, direccion: dir)
+        mostrarDialogoConflicto = false
+    }
+}
+
+struct PortadaProducto: View {
+    let producto: Producto
+    
+    var body: some View {
+        let altoDeseado = UIScreen.main.bounds.width * (3/4)
+        
+        ZStack(alignment: .topTrailing) {
+            AsyncImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? ""))) { phase in
+                if let image = phase.image {
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill) // Rellena el frame
+                } else {
+                    Color.blanco
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: altoDeseado)
+            .clipped()
+            .clipShape(
+                RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight])
+            )
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        
+        if let descuento = producto.descuento, descuento > 0 {
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    RectanguloDescuento(
+                        producto: producto,
+                        fontSizeDescuento: 18,
+                        redondeado: 18
+                    )
+                    .padding(12)
+                }
+            }
         }
     }
 }

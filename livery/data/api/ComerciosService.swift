@@ -32,30 +32,30 @@ class ComerciosService {
         return try JSONDecoder().decode(Comercio.self, from: data)
     }
 
-    /*
     func buscarComercioPorProducto(
-        perfilUsuarioState: PerfilUsuarioState,
+        token: String,
+        dispositivoID: String,
         idInterno: String,
         idProducto: String
     ) async throws -> Comercio {
         
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
-        
-        await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
-        let accessToken = TokenRepository.repository.accessToken ?? ""
-        
-        var components = URLComponents(string: comerciosURL + "/buscarPorProducto")!
-        components.queryItems = [
-            URLQueryItem(name: "idInterno", value: idInterno),
-            URLQueryItem(name: "idProducto", value: idProducto)
-        ]
+        guard let url = URL(string: "\(comerciosURL)/buscarComercioPorProducto/\(idInterno)/\(idProducto)") else {
+            throw URLError(.badURL)
+        }
 
-        let request = buildRequest(url: components.url!, token: accessToken, dispositivoID: dispositivoID)
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
         return try JSONDecoder().decode(Comercio.self, from: data)
     }
-     */
 
     func buscarPorCategoria(
         token: String,
@@ -85,32 +85,33 @@ class ComerciosService {
         return try JSONDecoder().decode([Comercio].self, from: data)
     }
 
-    /*
     func buscarDescuentos(
-        perfilUsuarioState: PerfilUsuarioState,
+        token: String,
+        dispositivoID: String,
         localidad: String,
         skip: Int,
         limit: Int
     ) async throws -> [ComercioDescuentos] {
         
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
-        
-        await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
-        let accessToken = TokenRepository.repository.accessToken ?? ""
-        
-        var components = URLComponents(string: comerciosURL + "/descuentos")!
+        guard var components = URLComponents(string: "\(comerciosURL)/buscarDescuentos") else { throw URLError(.badURL) }
+
         components.queryItems = [
-            URLQueryItem(name: "localidad", value: localidad),
             URLQueryItem(name: "skip", value: String(skip)),
             URLQueryItem(name: "limit", value: String(limit))
         ]
 
-        let request = buildRequest(url: components.url!, token: accessToken, dispositivoID: dispositivoID)
+        guard let url = components.url else { throw URLError(.badURL) }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+        request.setValue(localidad, forHTTPHeaderField: "localidad")
 
         let (data, _) = try await URLSession.shared.data(for: request)
+        
         return try JSONDecoder().decode([ComercioDescuentos].self, from: data)
     }
-     */
 
     func buscarProductosPorPalabraClave(
         token: String,

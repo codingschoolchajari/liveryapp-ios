@@ -45,7 +45,7 @@ struct SeccionesView: View {
                             .frame(height: 0)
                     }
                 case .descuentos:
-                    DescuentosView()
+                    DescuentosView(perfilUsuarioState: perfilUsuarioState)
                 case .carrito:
                     CarritoView()
                 case .pedidos:

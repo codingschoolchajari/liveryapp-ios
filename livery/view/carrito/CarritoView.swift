@@ -27,6 +27,9 @@ struct CarritoView: View {
                     VStack(spacing: 8) {
                         
                         TituloComercio(comercio: carritoViewModel.comercio!)
+                            .onTapGesture {
+                                navManager.carritoPath.append(NavigationManager.CarritoDestination.comercio(idComercio: carritoViewModel.comercio!.idInterno))
+                            }
                         
                         ItemsPedidoView()
                             .frame(height: UIScreen.main.bounds.height * 0.4)

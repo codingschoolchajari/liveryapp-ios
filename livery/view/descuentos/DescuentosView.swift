@@ -85,6 +85,8 @@ struct FilaComercioDescuento: View {
     let comercioDescuentos: ComercioDescuentos
     @ObservedObject var descuentosViewModel: DescuentosViewModel
     
+    @EnvironmentObject var navManager: NavigationManager
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Construimos el objeto comercio aquí
@@ -95,6 +97,9 @@ struct FilaComercioDescuento: View {
             )
             
             TituloComercio(comercio: comercio)
+                .onTapGesture {
+                    navManager.descuentosPath.append(NavigationManager.DescuentosDestination.comercio(idComercio: comercio.idInterno))
+                }
             
             Spacer().frame(height: 8)
             

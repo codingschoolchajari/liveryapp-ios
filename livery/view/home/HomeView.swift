@@ -368,7 +368,7 @@ struct ListaComercios: View {
                             }
                         }
                         .onTapGesture {
-                            navManager.irAComercio(idComercio: comercio.idInterno)
+                            navManager.homePath.append(NavigationManager.HomeDestination.comercio(idComercio: comercio.idInterno))
                         }
                 }
             }

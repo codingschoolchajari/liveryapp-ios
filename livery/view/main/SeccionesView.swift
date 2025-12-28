@@ -45,9 +45,37 @@ struct SeccionesView: View {
                             .frame(height: 0)
                     }
                 case .descuentos:
-                    DescuentosView(perfilUsuarioState: perfilUsuarioState)
+                    NavigationStack(path: $navManager.descuentosPath) {
+                        DescuentosView(perfilUsuarioState: perfilUsuarioState)
+                            .navigationDestination(for: NavigationManager.DescuentosDestination.self) { destination in
+                                switch destination {
+                                case .comercio(let idComercio):
+                                    ComercioView(
+                                        comercioViewModel: ComercioViewModel(
+                                            perfilUsuarioState: perfilUsuarioState,
+                                            idComercio: idComercio
+                                        )
+                                    )
+                                    .navigationBarBackButtonHidden(true)
+                                }
+                            }
+                    }
                 case .carrito:
-                    CarritoView()
+                    NavigationStack(path: $navManager.carritoPath) {
+                        CarritoView()
+                            .navigationDestination(for: NavigationManager.CarritoDestination.self) { destination in
+                                switch destination {
+                                case .comercio(let idComercio):
+                                    ComercioView(
+                                        comercioViewModel: ComercioViewModel(
+                                            perfilUsuarioState: perfilUsuarioState,
+                                            idComercio: idComercio
+                                        )
+                                    )
+                                    .navigationBarBackButtonHidden(true)
+                                }
+                            }
+                    }
                 case .pedidos:
                     NavigationStack(path: $navManager.pedidosPath) {
                         PedidosView()

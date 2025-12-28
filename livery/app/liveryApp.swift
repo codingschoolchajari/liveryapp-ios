@@ -12,6 +12,7 @@ struct liveryApp: App {
     
     @StateObject var navManager = NavigationManager()
     @StateObject var perfilUsuarioState = PerfilUsuarioState()
+    @StateObject var carritoViewModel = CarritoViewModel()
 
     var body: some Scene {
         WindowGroup {
@@ -19,6 +20,7 @@ struct liveryApp: App {
             RootContainerView()
                 .environmentObject(navManager)
                 .environmentObject(perfilUsuarioState)
+                .environmentObject(carritoViewModel)
         }
     }
 }

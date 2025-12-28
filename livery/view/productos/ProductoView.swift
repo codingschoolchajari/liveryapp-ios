@@ -185,7 +185,7 @@ struct BottomSheetSeleccionProducto: View {
     let comercio: Comercio
     
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    //@EnvironmentObject var carritoViewModel: CarritoViewModel
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
     
     @StateObject private var itemProductoViewModel = ItemProductoViewModel()
     
@@ -297,29 +297,35 @@ struct BottomSheetSeleccionProducto: View {
     // --- Métodos de Acción ---
     
     private func ejecutarLogicaAgregar() {
-        guard let item = itemProductoViewModel.itemProducto else { return }
+        guard let itemProducto = itemProductoViewModel.itemProducto else { return }
         let direccion = perfilUsuarioState.obtenerUsuarioDireccion()
         let ciudad = perfilUsuarioState.ciudadSeleccionada
         
         if(direccion == nil || ciudad == nil || ciudad!.isEmpty) {
             mensajeToast = "Es necesario una dirección válida"
         } else {
-            /*
             if carritoViewModel.validacionComercio(comercio: comercio) {
-                carritoViewModel.agregarItemProducto(item: item, direccion: dir)
-                onDismiss(false)
+                carritoViewModel.agregarItemProducto(
+                    perfilUsuarioState: perfilUsuarioState,
+                    itemProducto: itemProducto,
+                    direccion: direccion!
+                )
             } else {
                 mostrarDialogoConflicto = true
             }
-             */
         }
     }
     
     private func confirmarLimpiezaYAgregar() {
-        guard let item = itemProductoViewModel.itemProducto,
-              let dir = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
+        guard let itemProducto = itemProductoViewModel.itemProducto,
+              let direccion = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
         
-        //carritoViewModel.limpiarYAgregarItemProducto(item: item, comercio: comercio, direccion: dir)
+        carritoViewModel.limpiarYAgregarItemProducto(
+            perfilUsuarioState: perfilUsuarioState,
+            itemProducto: itemProducto,
+            comercio: comercio,
+            direccion: direccion
+        )
         mostrarDialogoConflicto = false
     }
 }

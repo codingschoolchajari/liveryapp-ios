@@ -137,7 +137,7 @@ struct BottomSheetSeleccionPromocion: View {
     let comercio: Comercio
     
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    //@EnvironmentObject var carritoViewModel: CarritoViewModel
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
     
     @StateObject private var itemPromocionViewModel = ItemPromocionViewModel()
     
@@ -201,29 +201,35 @@ struct BottomSheetSeleccionPromocion: View {
     // --- Lógica de negocio extraída ---
     
     private func ejecutarLogicaAgregar() {
-        guard let item = itemPromocionViewModel.itemPromocion else { return }
+        guard let itemPromocion = itemPromocionViewModel.itemPromocion else { return }
         let direccion = perfilUsuarioState.obtenerUsuarioDireccion()
         let ciudad = perfilUsuarioState.ciudadSeleccionada
         
         if direccion != nil && ciudad != nil && !ciudad!.isEmpty {
-            /*
             if carritoViewModel.validacionComercio(comercio: comercio) {
-                carritoViewModel.agregarItemPromocion(item: item, direccion: direccion!)
-                onDismiss(false)
+                carritoViewModel.agregarItemPromocion(
+                    perfilUsuarioState: perfilUsuarioState,
+                    itemPromocion: itemPromocion,
+                    direccion: direccion!
+                )
             } else {
                 mostrarDialogoConflicto = true
             }
-             */
         } else {
             mensajeToast = "Es necesario una dirección válida"
         }
     }
     
     private func confirmarLimpiezaYAgregar() {
-        guard let item = itemPromocionViewModel.itemPromocion,
+        guard let itemPromocion = itemPromocionViewModel.itemPromocion,
               let direccion = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
         
-        //carritoViewModel.limpiarYAgregarItemPromocion(item: item, comercio: comercio, direccion: direccion)
+        carritoViewModel.limpiarYAgregarItemPromocion(
+            perfilUsuarioState: perfilUsuarioState,
+            itemPromocion: itemPromocion,
+            comercio: comercio,
+            direccion: direccion
+        )
         mostrarDialogoConflicto = false
     }
 }

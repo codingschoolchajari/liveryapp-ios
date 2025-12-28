@@ -142,26 +142,27 @@ class ComerciosService {
         return try JSONDecoder().decode([ComercioProductos].self, from: data)
     }
 
-    /*
     func comercioAbierto(
-        perfilUsuarioState: PerfilUsuarioState,
+        token: String,
+        dispositivoID: String,
         idInterno: String
     ) async throws -> BooleanResponse {
-
-        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
         
-        await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
-        let accessToken = TokenRepository.repository.accessToken ?? ""
-        
-        var components = URLComponents(string: comerciosURL + "/abierto")!
-        components.queryItems = [
-            URLQueryItem(name: "idInterno", value: idInterno)
-        ]
+        guard let url = URL(string: "\(comerciosURL)/abierto/\(idInterno)") else {
+            throw URLError(.badURL)
+        }
 
-        let request = buildRequest(url: components.url!, token: accessToken, dispositivoID: dispositivoID)
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
         return try JSONDecoder().decode(BooleanResponse.self, from: data)
     }
-     */
 }

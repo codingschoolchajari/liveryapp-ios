@@ -17,7 +17,7 @@ class EnviosService {
         longitudDestino: Double
     ) async throws -> EnvioResponse {
 
-        var components = URLComponents(string: enviosURL + "/calcular")!
+        var components = URLComponents(string: enviosURL + "/calcularCosto")!
 
         components.queryItems = [
             URLQueryItem(name: "latitudOrigen", value: String(latitudOrigen)),

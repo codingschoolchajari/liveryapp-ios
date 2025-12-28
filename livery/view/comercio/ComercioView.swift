@@ -261,7 +261,10 @@ struct Productos: View {
             .sheet(item: $comercioViewModel.promocionSeleccionada) { promocion in
                 BottomSheetSeleccionPromocion(
                     promocion: promocion,
-                    comercio: comercio
+                    comercio: comercio,
+                    onClose: {
+                        comercioViewModel.limpiarSeleccionado()
+                    }
                 )
                 .onDisappear {
                     comercioViewModel.limpiarSeleccionado()
@@ -272,7 +275,10 @@ struct Productos: View {
                     BottomSheetSeleccionProducto(
                         producto: productoSeleccionado,
                         categoria: comercioViewModel.categoria!,
-                        comercio: comercio
+                        comercio: comercio,
+                        onClose: {
+                            comercioViewModel.limpiarSeleccionado()
+                        }
                     )
                     .onDisappear {
                         comercioViewModel.limpiarSeleccionado()

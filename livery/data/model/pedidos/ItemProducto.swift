@@ -6,13 +6,15 @@
 //
 import Foundation
 
-struct SeleccionableProducto: Codable {
+struct SeleccionableProducto: Codable, Identifiable {
     let idSeleccionable: String
     let nombreSeleccionable: String
     var cantidad: Int? = nil
+    
+    var id: String { idSeleccionable }
 }
 
-struct ItemProducto: Codable {
+struct ItemProducto: Codable, Identifiable {
     var idInterno: String = UUID().uuidString
     let idProducto: String
     let nombreProducto: String
@@ -23,4 +25,6 @@ struct ItemProducto: Codable {
     var seleccionables: [SeleccionableProducto] = []
     var esPremio: Bool = false
     var idPremio: String? = nil
+    
+    var id: String { idInterno }
 }

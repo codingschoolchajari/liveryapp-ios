@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct ItemPromocion: Codable {
+struct ItemPromocion: Codable, Identifiable {
     var idInterno: String = UUID().uuidString
     let idPromocion: String
     let nombrePromocion: String
@@ -15,4 +15,6 @@ struct ItemPromocion: Codable {
     let precioUnitario: Double
     var precio: Double
     var seleccionablesPorProducto: [String: [SeleccionableProducto]] = [:]
+    
+    var id: String { idInterno }
 }

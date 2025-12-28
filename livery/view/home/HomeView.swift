@@ -474,7 +474,10 @@ struct ListaComerciosProductos: View {
             if (homeViewModel.comercio != nil){
                 BottomSheetSeleccionPromocion(
                     promocion: promocionSeleccionada,
-                    comercio: homeViewModel.comercio!
+                    comercio: homeViewModel.comercio!,
+                    onClose: {
+                        homeViewModel.limpiarSeleccionado()
+                    }
                 )
                 .onDisappear {
                     homeViewModel.limpiarSeleccionado()
@@ -486,7 +489,10 @@ struct ListaComerciosProductos: View {
                 BottomSheetSeleccionProducto(
                     producto: productoSeleccionado,
                     categoria: homeViewModel.categoria!,
-                    comercio: homeViewModel.comercio!
+                    comercio: homeViewModel.comercio!,
+                    onClose: {
+                        homeViewModel.limpiarSeleccionado()
+                    }
                 )
                 .onDisappear {
                     homeViewModel.limpiarSeleccionado()

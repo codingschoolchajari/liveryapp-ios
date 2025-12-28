@@ -10,6 +10,8 @@ struct StringUtils {
     
     static let sinCobertura = "SIN_COBERTURA"
     
+    static let tarifaServicioDefault = 500.0
+    
     static func inferMimeType(for fileExtension: String) -> String {
         switch fileExtension.lowercased() {
         case "png":

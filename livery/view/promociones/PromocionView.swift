@@ -135,6 +135,7 @@ struct PromocionDescripcion: View {
 struct BottomSheetSeleccionPromocion: View {
     let promocion: Promocion
     let comercio: Comercio
+    let onClose: () -> Void
     
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @EnvironmentObject var carritoViewModel: CarritoViewModel
@@ -181,10 +182,10 @@ struct BottomSheetSeleccionPromocion: View {
                     enabled: itemPromocionViewModel.cantidadSeleccionablesValida,
                     mostrarDialogoConflicto: $mostrarDialogoConflicto,
                     onConfirmar: {
-                        ejecutarLogicaAgregar()
+                        agregarItemPromocion(onClose: onClose)
                     },
                     onConfirmarConflicto: {
-                        confirmarLimpiezaYAgregar()
+                        limpiarYAgregarItemPromocion(onClose: onClose)
                     }
                 )
             }
@@ -200,8 +201,11 @@ struct BottomSheetSeleccionPromocion: View {
     
     // --- Lógica de negocio extraída ---
     
-    private func ejecutarLogicaAgregar() {
-        guard let itemPromocion = itemPromocionViewModel.itemPromocion else { return }
+    private func agregarItemPromocion(
+        onClose: () -> Void
+    ) {
+        if(itemPromocionViewModel.itemPromocion == nil) { return }
+        
         let direccion = perfilUsuarioState.obtenerUsuarioDireccion()
         let ciudad = perfilUsuarioState.ciudadSeleccionada
         
@@ -209,9 +213,10 @@ struct BottomSheetSeleccionPromocion: View {
             if carritoViewModel.validacionComercio(comercio: comercio) {
                 carritoViewModel.agregarItemPromocion(
                     perfilUsuarioState: perfilUsuarioState,
-                    itemPromocion: itemPromocion,
+                    itemPromocion: itemPromocionViewModel.itemPromocion!,
                     direccion: direccion!
                 )
+                onClose()
             } else {
                 mostrarDialogoConflicto = true
             }
@@ -220,17 +225,21 @@ struct BottomSheetSeleccionPromocion: View {
         }
     }
     
-    private func confirmarLimpiezaYAgregar() {
-        guard let itemPromocion = itemPromocionViewModel.itemPromocion,
-              let direccion = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
+    private func limpiarYAgregarItemPromocion(
+        onClose: () -> Void
+    ) {
+        if(itemPromocionViewModel.itemPromocion == nil
+           || perfilUsuarioState.obtenerUsuarioDireccion() == nil) { return }
         
         carritoViewModel.limpiarYAgregarItemPromocion(
             perfilUsuarioState: perfilUsuarioState,
-            itemPromocion: itemPromocion,
+            itemPromocion: itemPromocionViewModel.itemPromocion!,
             comercio: comercio,
-            direccion: direccion
+            direccion: perfilUsuarioState.obtenerUsuarioDireccion()!
         )
         mostrarDialogoConflicto = false
+        
+        onClose()
     }
 }
 

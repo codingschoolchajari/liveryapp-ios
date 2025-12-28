@@ -183,6 +183,7 @@ struct BottomSheetSeleccionProducto: View {
     let producto: Producto
     let categoria: Categoria
     let comercio: Comercio
+    let onClose: () -> Void
     
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @EnvironmentObject var carritoViewModel: CarritoViewModel
@@ -240,8 +241,12 @@ struct BottomSheetSeleccionProducto: View {
                     AgregarCarrito(
                         enabled: calcularSiEstaHabilitado(),
                         mostrarDialogoConflicto: $mostrarDialogoConflicto,
-                        onConfirmar: { ejecutarLogicaAgregar() },
-                        onConfirmarConflicto: { confirmarLimpiezaYAgregar() }
+                        onConfirmar: {
+                            agregarItemProducto(onClose: onClose)
+                        },
+                        onConfirmarConflicto: {
+                            limpiarYAgregarItemProducto(onClose: onClose)
+                        }
                     )
                 } else {
                     let item = itemProductoViewModel.itemProducto
@@ -258,8 +263,8 @@ struct BottomSheetSeleccionProducto: View {
                     AgregarCarrito(
                         enabled: calcularSiEstaHabilitado(),
                         mostrarDialogoConflicto: $mostrarDialogoConflicto,
-                        onConfirmar: { ejecutarLogicaAgregar() },
-                        onConfirmarConflicto: { confirmarLimpiezaYAgregar() }
+                        onConfirmar: { agregarItemProducto(onClose: onClose) },
+                        onConfirmarConflicto: { limpiarYAgregarItemProducto(onClose: onClose) }
                     )
                 }
             }
@@ -296,37 +301,45 @@ struct BottomSheetSeleccionProducto: View {
     
     // --- Métodos de Acción ---
     
-    private func ejecutarLogicaAgregar() {
-        guard let itemProducto = itemProductoViewModel.itemProducto else { return }
+    private func agregarItemProducto(
+        onClose: () -> Void
+    ) {
+        if(itemProductoViewModel.itemProducto == nil) { return }
+        
         let direccion = perfilUsuarioState.obtenerUsuarioDireccion()
         let ciudad = perfilUsuarioState.ciudadSeleccionada
         
-        if(direccion == nil || ciudad == nil || ciudad!.isEmpty) {
-            mensajeToast = "Es necesario una dirección válida"
-        } else {
+        if direccion != nil && ciudad != nil && !ciudad!.isEmpty {
             if carritoViewModel.validacionComercio(comercio: comercio) {
                 carritoViewModel.agregarItemProducto(
                     perfilUsuarioState: perfilUsuarioState,
-                    itemProducto: itemProducto,
+                    itemProducto: itemProductoViewModel.itemProducto!,
                     direccion: direccion!
                 )
+                onClose()
             } else {
                 mostrarDialogoConflicto = true
             }
+        } else {
+            mensajeToast = "Es necesario una dirección válida"
         }
     }
     
-    private func confirmarLimpiezaYAgregar() {
-        guard let itemProducto = itemProductoViewModel.itemProducto,
-              let direccion = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
-        
+    private func limpiarYAgregarItemProducto(
+        onClose: () -> Void
+    ) {
+        if(itemProductoViewModel.itemProducto == nil
+           || perfilUsuarioState.obtenerUsuarioDireccion() == nil) { return }
+
         carritoViewModel.limpiarYAgregarItemProducto(
             perfilUsuarioState: perfilUsuarioState,
-            itemProducto: itemProducto,
+            itemProducto: itemProductoViewModel.itemProducto!,
             comercio: comercio,
-            direccion: direccion
+            direccion: perfilUsuarioState.obtenerUsuarioDireccion()!
         )
         mostrarDialogoConflicto = false
+        
+        onClose()
     }
 }
 

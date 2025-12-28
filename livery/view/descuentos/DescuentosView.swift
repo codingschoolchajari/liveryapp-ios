@@ -47,7 +47,10 @@ struct DescuentosView: View {
                 BottomSheetSeleccionProducto(
                     producto: productoSeleccionado,
                     categoria: descuentosViewModel.categoria!,
-                    comercio: descuentosViewModel.comercio!
+                    comercio: descuentosViewModel.comercio!,
+                    onClose: {
+                        descuentosViewModel.limpiarProductoSeleccionado()
+                    }
                 )
                 .onDisappear {
                     descuentosViewModel.limpiarProductoSeleccionado()

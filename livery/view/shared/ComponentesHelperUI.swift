@@ -41,3 +41,27 @@ struct CheckboxToggleStyle: ToggleStyle {
         .buttonStyle(PlainButtonStyle()) // Evita el efecto de resaltado gris de los botones
     }
 }
+
+@ViewBuilder
+func opcionBoton(
+    titulo: String,
+    esSeleccionado: Bool,
+    radius: RectangleCornerRadii,
+    action: @escaping () -> Void
+) -> some View {
+    Button(action: action) {
+        Text(titulo)
+            .font(.custom("Barlow", size: 14))
+            .bold()
+            .frame(maxWidth: .infinity)
+            .frame(height: 36)
+            .foregroundColor(esSeleccionado ? .verdePrincipal : .negro)
+            .background(esSeleccionado ? .grisSurface : .blanco)
+            .clipShape(UnevenRoundedRectangle(cornerRadii: radius))
+            .overlay(
+                UnevenRoundedRectangle(cornerRadii: radius)
+                    .stroke(Color.grisSecundario, lineWidth: 2)
+            )
+    }
+    .buttonStyle(.plain)
+}

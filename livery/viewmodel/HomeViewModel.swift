@@ -13,11 +13,11 @@ class HomeViewModel: ObservableObject {
     private let perfilUsuarioState: PerfilUsuarioState
     private let comerciosService = ComerciosService()
     
-    @Published private(set) var modoComercioSeleccionado: Bool = true
+    @Published var modoComercioSeleccionado: Bool = true
 
     // Modo Comercio
-    @Published private(set) var categoriaSeleccionada: String?
-    @Published private(set) var comercios: [Comercio] = []
+    @Published var categoriaSeleccionada: String?
+    @Published var comercios: [Comercio] = []
 
     private var paginaActualComercios = 0
     private let tamanoPaginaComercios = 10
@@ -25,11 +25,11 @@ class HomeViewModel: ObservableObject {
     private var noHayMasComercios = false
     
     // Modo Producto
-    @Published private(set) var palabraClaveSeleccionada: String?
-    @Published private(set) var comerciosProductos: [ComercioProductos] = []
+    @Published var palabraClaveSeleccionada: String?
+    @Published var comerciosProductos: [ComercioProductos] = []
 
-    @Published private(set) var productoSeleccionado: Producto?
-    @Published private(set) var promocionSeleccionada: Promocion?
+    @Published var productoSeleccionado: Producto?
+    @Published var promocionSeleccionada: Promocion?
 
     private var paginaActualComerciosProductos = 0
     private let tamanoPaginaComerciosProductos = 10
@@ -198,53 +198,56 @@ class HomeViewModel: ObservableObject {
         idComercio: String,
         idProducto: String
     ) async {
-        /*
         do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
             comercio = try await comerciosService.buscarComercio(
-                perfilUsuarioState: perfilUsuarioState,
+                token: accessToken,
+                dispositivoID: dispositivoID,
                 idInterno: idComercio
             )
 
-            guard let comercio else { return }
+            if (comercio == nil) { return }
 
-            categoria = ComerciosHelper.obtenerCategoria(comercio: comercio, idProducto: idProducto)
-            productoSeleccionado = ComerciosHelper.obtenerProducto(comercio: comercio, idProducto: idProducto)
+            categoria = ComerciosHelper.obtenerCategoria(comercio: comercio!, idProducto: idProducto)
+            productoSeleccionado = ComerciosHelper.obtenerProducto(comercio: comercio!, idProducto: idProducto)
 
         } catch {
             print("Error iniciando producto seleccionado: \(error)")
         }
-         */
     }
 
-    func limpiarProductoSeleccionado() {
+    func limpiarSeleccionado() {
         productoSeleccionado = nil
         comercio = nil
         categoria = nil
+        promocionSeleccionada = nil
     }
 
     func inicializarPromocionSeleccionada(
         idComercio: String,
         idPromocion: String
     ) async {
-        /*
         do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             
             comercio = try await comerciosService.buscarComercio(
-                perfilUsuarioState: perfilUsuarioState,
+                token: accessToken,
+                dispositivoID: dispositivoID,
                 idInterno: idComercio)
             
-            guard let comercio else { return }
+            if (comercio == nil) { return }
             
-            promocionSeleccionada = ComerciosHelper.obtenerPromocion(comercio: comercio, idPromocion: idPromocion)
+            promocionSeleccionada = ComerciosHelper.obtenerPromocion(comercio: comercio!, idPromocion: idPromocion)
             
         } catch {
             print("Error iniciando promoción seleccionada: \(error)")
         }
-         */
-    }
-
-    func limpiarPromocionSeleccionada() {
-        promocionSeleccionada = nil
-        comercio = nil
     }
 }

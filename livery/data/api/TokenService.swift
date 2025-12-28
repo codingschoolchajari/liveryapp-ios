@@ -26,8 +26,22 @@ class TokenService {
 
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
 
-        guard let httpResponse = response as? HTTPURLResponse,
-              200...299 ~= httpResponse.statusCode else {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        if !(200...299 ~= httpResponse.statusCode) {
+            // 1. Imprime el código de estado (401, 404, 500, etc.)
+            print("❌ ERROR HTTP: \(httpResponse.statusCode)")
+            
+            // 2. Intenta leer el mensaje de error que envía el Backend (FastAPI suele enviar un JSON)
+            if let errorString = String(data: data, encoding: .utf8) {
+                print("📝 DETALLE DEL SERVIDOR: \(errorString)")
+            }
+            
+            // 3. Opcional: Ver los Headers (útil para problemas de Token/Auth)
+            // print("Headers: \(httpResponse.allHeaderFields)")
+            
             throw URLError(.badServerResponse)
         }
 

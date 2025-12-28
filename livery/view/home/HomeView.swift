@@ -410,11 +410,6 @@ struct TarjetaComercio: View {
 
 struct ListaComerciosProductos: View {
     @ObservedObject var homeViewModel: HomeViewModel
-    
-    // Estados para manejar los BottomSheets
-    @State private var promocionSeleccionada: Promocion?
-    @State private var productoSeleccionado: Producto?
-    @State private var idComercioActual: String = ""
 
     var body: some View {
         let comerciosProductos = homeViewModel.comerciosProductos
@@ -440,8 +435,12 @@ struct ListaComerciosProductos: View {
                             // Items de Promociones
                             ForEach(comercioProductos.promociones) { promocion in
                                 PromocionMiniatura(promocion: promocion) {
-                                    idComercioActual = comercioProductos.idComercio
-                                    promocionSeleccionada = promocion
+                                    Task {
+                                        await homeViewModel.inicializarPromocionSeleccionada(
+                                            idComercio: comercioProductos.idComercio,
+                                            idPromocion: promocion.idInterno
+                                        )
+                                    }
                                 }
                                 .frame(height: 190)
                             }
@@ -449,8 +448,12 @@ struct ListaComerciosProductos: View {
                             // Items de Productos
                             ForEach(comercioProductos.productos) { producto in
                                 ProductoMiniatura(producto: producto) {
-                                    idComercioActual = comercioProductos.idComercio
-                                    productoSeleccionado = producto
+                                    Task {
+                                        await homeViewModel.inicializarProductoSeleccionado(
+                                            idComercio: comercioProductos.idComercio,
+                                            idProducto: producto.idInterno
+                                        )
+                                    }
                                 }
                                 .frame(height: 190)
                             }
@@ -458,7 +461,7 @@ struct ListaComerciosProductos: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                     }
-                    .background(.grisSurface) // MaterialTheme.colorScheme.surface
+                    .background(.grisSurface)
                     .cornerRadius(12)
                     
                     Spacer().frame(height: 4)
@@ -467,29 +470,28 @@ struct ListaComerciosProductos: View {
             .padding(.horizontal, 16)
         }
         // --- Lógica de Bottom Sheets ---
-        .sheet(item: $promocionSeleccionada, onDismiss: {
-            homeViewModel.limpiarPromocionSeleccionada()
-            homeViewModel.limpiarProductoSeleccionado()
-        }) { promocion in
-            /*
-            SeleccionPromocion(
-                homeViewModel: homeViewModel,
-                idComercio: idComercioActual,
-                idPromocion: promocion.idInterno
-            )
-             */
+        .sheet(item: $homeViewModel.promocionSeleccionada) { promocionSeleccionada in
+            if (homeViewModel.comercio != nil){
+                BottomSheetSeleccionPromocion(
+                    promocion: promocionSeleccionada,
+                    comercio: homeViewModel.comercio!
+                )
+                .onDisappear {
+                    homeViewModel.limpiarSeleccionado()
+                }
+            }
         }
-        .sheet(item: $productoSeleccionado, onDismiss: {
-            homeViewModel.limpiarProductoSeleccionado()
-            homeViewModel.limpiarPromocionSeleccionada()
-        }) { producto in
-            /*
-            SeleccionProducto(
-                homeViewModel: homeViewModel,
-                idComercio: idComercioActual,
-                idProducto: producto.idInterno
-            )
-             */
+        .sheet(item: $homeViewModel.productoSeleccionado) { productoSeleccionado in
+            if (homeViewModel.categoria != nil && homeViewModel.comercio != nil){
+                BottomSheetSeleccionProducto(
+                    producto: productoSeleccionado,
+                    categoria: homeViewModel.categoria!,
+                    comercio: homeViewModel.comercio!
+                )
+                .onDisappear {
+                    homeViewModel.limpiarSeleccionado()
+                }
+            }
         }
     }
 }

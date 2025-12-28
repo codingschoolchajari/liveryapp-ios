@@ -31,7 +31,7 @@ class PerfilUsuarioState: ObservableObject {
 
     func inicializacion() async {
         iniciarAlmacenamientoLocal()
-        iniciarCurrentUser()
+        await validarYSincronizarSesion()
         await buscarConfiguracion()
         await cargarDireccionSeleccionada()
         
@@ -62,8 +62,31 @@ class PerfilUsuarioState: ObservableObject {
         }
     }
     
-    func iniciarCurrentUser() {
-        self.currentUser = Auth.auth().currentUser
+    func validarYSincronizarSesion() async {
+        // Capturamos el usuario de Firebase
+        let firebaseUser = Auth.auth().currentUser
+        self.currentUser = firebaseUser
+        
+        if let user = firebaseUser {
+            do {
+                // Intentamos obtener el token.
+                // Si expiró, Firebase lo refresca automáticamente aquí.
+                let token = try await user.getIDToken(forcingRefresh: false)
+                print("Token validado/refrescado correctamente")
+                
+                // 2. Una vez que el token es seguro, buscamos al usuario en TU backend
+                await buscarUsuario()
+                
+            } catch {
+                print("Sesión de Firebase expirada o inválida: \(error.localizedDescription)")
+                self.usuario = nil
+                self.currentUser = nil
+                // Aquí podrías marcar logueado = false si el error es de autenticación
+            }
+        } else {
+            // No hay usuario en Firebase
+            self.usuario = nil
+        }
     }
     
     func buscarUsuario() async {

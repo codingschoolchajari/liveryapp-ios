@@ -80,7 +80,6 @@ class DireccionViewModel: ObservableObject {
             )
 
         } catch {
-            // En Swift 'error' es una variable implícita en el bloque catch
             print("Error al guardar direccion: \(error.localizedDescription)")
         }
     }

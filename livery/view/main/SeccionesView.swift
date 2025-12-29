@@ -8,7 +8,7 @@ import SwiftUI
 
 struct SeccionesView: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
     @EnvironmentObject var navManager: NavigationManager
     
     enum Section {
@@ -125,7 +125,8 @@ struct SeccionesView: View {
                             altoIcono: 28,
                             anchoIcono: 28,
                             seccion: .home,
-                            selectedSection: navManager.selectedSection
+                            selectedSection: navManager.selectedSection,
+                            badgeCount: 0
                         ) {
                             navManager.select(.home)
                         }
@@ -138,10 +139,13 @@ struct SeccionesView: View {
                             altoIcono: 28,
                             anchoIcono: 28,
                             seccion: .descuentos,
-                            selectedSection: navManager.selectedSection
+                            selectedSection: navManager.selectedSection,
+                            badgeCount: 0
                         ) {
                             navManager.select(.descuentos)
                         }
+                        
+                        let totalItems = carritoViewModel.itemsProductos.count + carritoViewModel.itemsPromociones.count
                         
                         // Botón Carrito
                         BotonNavPersonalizado(
@@ -151,7 +155,8 @@ struct SeccionesView: View {
                             altoIcono: 28,
                             anchoIcono: 28,
                             seccion: .carrito,
-                            selectedSection: navManager.selectedSection
+                            selectedSection: navManager.selectedSection,
+                            badgeCount: totalItems
                         ) {
                             navManager.select(.carrito)
                         }
@@ -164,7 +169,8 @@ struct SeccionesView: View {
                             altoIcono: 28,
                             anchoIcono: 28,
                             seccion: .pedidos,
-                            selectedSection: navManager.selectedSection
+                            selectedSection: navManager.selectedSection,
+                            badgeCount: 0
                         ) {
                             navManager.select(.pedidos)
                         }
@@ -177,7 +183,8 @@ struct SeccionesView: View {
                             altoIcono: 28,
                             anchoIcono: 32,
                             seccion: .perfil,
-                            selectedSection: navManager.selectedSection
+                            selectedSection: navManager.selectedSection,
+                            badgeCount: 0
                         ) {
                             navManager.select(.perfil)
                         }
@@ -199,6 +206,7 @@ struct SeccionesView: View {
         let anchoIcono: CGFloat
         let seccion: Section
         let selectedSection: Section
+        let badgeCount: Int
         let action: () -> Void
         
         var body: some View {
@@ -208,6 +216,18 @@ struct SeccionesView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: anchoIcono, height: altoIcono)
+                        .overlay(alignment: .topTrailing) {
+                            if seccion == .carrito && badgeCount > 0 {
+                                Text("\(badgeCount)")
+                                    .font(.custom("Barlow", size: 12))
+                                    .bold()
+                                    .foregroundColor(.blanco)
+                                    .frame(width: 22, height: 22)
+                                    .background(Color.red)
+                                    .clipShape(Circle())
+                                    .offset(x: 10, y: -8)
+                            }
+                        }
                     
                     Text(titulo)
                         .font(.custom("Barlow", size: 12))
@@ -219,6 +239,5 @@ struct SeccionesView: View {
             .foregroundColor(selectedSection == seccion ? Color.verdePrincipal : Color.grisSecundario)
         }
     }
-
 }
 

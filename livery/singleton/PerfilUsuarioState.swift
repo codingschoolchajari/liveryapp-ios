@@ -161,7 +161,15 @@ class PerfilUsuarioState: ObservableObject {
     }
     
     func obtenerFirebaseIdToken() async -> String? {
-        try? await Auth.auth().currentUser?.getIDToken()
+        do {
+            // Esperamos a que Firebase nos dé el token
+            if let token = try await Auth.auth().currentUser?.getIDToken() {
+                return token
+            }
+        } catch {
+            print("❌ Error obteniendo el token: \(error.localizedDescription)")
+        }
+        return nil
     }
     
     // Configuracion

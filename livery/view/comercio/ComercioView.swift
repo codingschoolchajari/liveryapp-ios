@@ -193,11 +193,11 @@ struct InformacionExtra: View {
             .padding(.horizontal, 40)
             .frame(maxWidth: .infinity)
         }
-        // 3. Bottom Sheet (Equivalente al ModalBottomSheet de Compose)
+        
         .sheet(isPresented: $mostrarComentariosSheet) {
             // Aquí va tu vista de comentarios
-            //BottomSheetComentarios(comercio: comercio)
-                //.presentationDetents([.large])
+            BottomSheetComentarios(comercio: comercio)
+                .presentationDetents([.large])
         }
     }
 }

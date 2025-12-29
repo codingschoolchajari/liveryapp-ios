@@ -12,6 +12,13 @@ struct StringUtils {
     
     static let tarifaServicioDefault = 500.0
     
+    static let tituloPedidoPendiente = "Pedido Pendiente"
+    static let textoPedidoPendiente = "Actualmente tiene un Pedido Pendiente en este comercio.\n\n" +
+            "Solo es posible realizar un nuevo pedido una vez que se haya abonado o cancelado el anterior."
+
+    static let tituloComercioCerrado = "Comercio Cerrado"
+    static let textoComercioCerrado = "El comercio no se encuentra abierto en este momento.\n\n"
+    
     static func inferMimeType(for fileExtension: String) -> String {
         switch fileExtension.lowercased() {
         case "png":

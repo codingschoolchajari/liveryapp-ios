@@ -337,26 +337,29 @@ struct ConfirmacionView: View {
         if await !carritoViewModel.validacionComercioAbierto(
             perfilUsuarioState: perfilUsuarioState
         ) {
-            tituloError = "Comercio Cerrado"
-            textoError = "El comercio no acepta pedidos ahora."
+            tituloError = StringUtils.tituloComercioCerrado
+            textoError = StringUtils.textoComercioCerrado
             mostrarAlerta = true
         } else if await carritoViewModel.validacionPendientes(
             perfilUsuarioState: perfilUsuarioState,
             email: usuario.email
         ) {
-            tituloError = "Pedido Pendiente"
-            textoError = "Ya tienes un pedido en curso."
+            tituloError = StringUtils.tituloPedidoPendiente
+            textoError = StringUtils.textoPedidoPendiente
             mostrarAlerta = true
         } else {
+            let tarifaServicio = carritoViewModel.aplicaTarifaServicio ?
+            (perfilUsuarioState.configuracion?.tarifaServicio ?? StringUtils.tarifaServicioDefault) : 0.0
+            
             // Lógica de creación exitosa
             await carritoViewModel.crearPedido(
                 perfilUsuarioState: perfilUsuarioState,
                 email: usuario.email,
                 nombreUsuario: usuario.obtenerNombreCompleto(),
                 direccion: direccion,
-                tarifaServicio: 10.0 // TODO
+                tarifaServicio: tarifaServicio
             )
-            //carritoViewModel.onPedidoConfirmadoChange(valor: true)
+            carritoViewModel.onPedidoConfirmado()
             navManager.select(.pedidos) // Navegación en tu NavigationManager
         }
     }

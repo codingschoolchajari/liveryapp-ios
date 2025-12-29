@@ -14,15 +14,24 @@ class PedidosService {
         pedido: Pedido
     ) async throws {
 
-        let url = URL(string: pedidosURL)!
+        guard let url = URL(string: "\(pedidosURL)/crear") else {
+            throw URLError(.badURL)
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
         request.httpBody = try JSONEncoder().encode(pedido)
 
-        _ = try await URLSession.shared.data(for: request)
+        let (_, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
     }
 
     func buscarPedidos(
@@ -74,20 +83,22 @@ class PedidosService {
         email: String,
         idComercio: String
     ) async throws -> BooleanResponse {
+        
+        guard let url = URL(string: "\(pedidosURL)/existenPendientes/\(email)/\(idComercio)") else {
+            throw URLError(.badURL)
+        }
 
-        var components = URLComponents(string: pedidosURL + "/pendientes")!
-        components.queryItems = [
-            URLQueryItem(name: "email", value: email),
-            URLQueryItem(name: "idComercio", value: idComercio)
-        ]
-
-        let url = components.url!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
         return try JSONDecoder().decode(BooleanResponse.self, from: data)
     }
 

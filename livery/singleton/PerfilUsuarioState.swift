@@ -276,5 +276,91 @@ class PerfilUsuarioState: ObservableObject {
             print("Error al eliminar dirección: \(error)")
         }
     }
+    
+    // Favoritos
+    
+    func agregarFavorito(
+            idFavorito: String,
+            idComercio: String,
+            nombreComercio: String,
+            logoComercioURL: String,
+            idProducto: String?,
+            idPromocion: String?,
+            nombre: String,
+            imagenURL: String?
+    ) async {
+        guard let email = currentUser?.email, !email.isEmpty else { return }
+        
+        // 1. CREAR EL OBJETO
+        let nuevoFavorito = UsuarioFavorito(
+            id: idFavorito,
+            idComercio: idComercio,
+            nombreComercio: nombreComercio,
+            logoComercioURL: logoComercioURL,
+            idProducto: idProducto,
+            idPromocion: idPromocion,
+            nombre: nombre,
+            imagenURL: imagenURL
+        )
+
+        // 2. ACTUALIZACIÓN OPTIMISTA: Modificar localmente antes de la red
+        let copiaUsuarioPrevio = self.usuario // Guardamos copia por si hay que revertir
+        if var favoritos = self.usuario?.favoritos {
+            favoritos.append(nuevoFavorito)
+            self.usuario?.favoritos = favoritos // Reasignamos el array modificado
+        }
+
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: self)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            try await usuariosService.agregarFavorito(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email,
+                usuarioFavorito: nuevoFavorito
+            )
+            
+            // 3. Sincronizar con el servidor para asegurar consistencia
+            await buscarUsuario()
+            
+        } catch {
+            // 4. REVERTIR si falla
+            self.usuario = copiaUsuarioPrevio
+            print("Error al agregar favorito: \(error.localizedDescription)")
+        }
+    }
+
+    func eliminarFavorito(idFavorito: String?) async {
+        guard let email = currentUser?.email, !email.isEmpty, let id = idFavorito else { return }
+        
+        // 1. ACTUALIZACIÓN OPTIMISTA
+        let copiaUsuarioPrevio = self.usuario
+        if var favoritos = self.usuario?.favoritos {
+            favoritos.removeAll(where: { $0.id == id })
+            self.usuario?.favoritos = favoritos // Reasignamos el array modificado
+        }
+
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: self)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            try await usuariosService.eliminarFavorito(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email,
+                idFavorito: id
+            )
+            
+            await buscarUsuario()
+            
+        } catch {
+            // REVERTIR si falla el borrado en el servidor
+            self.usuario = copiaUsuarioPrevio
+            print("Error al eliminar favorito: \(error.localizedDescription)")
+        }
+    }
 }
 

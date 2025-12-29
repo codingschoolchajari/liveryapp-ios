@@ -85,6 +85,7 @@ class NavigationManager: ObservableObject {
     
     enum PerfilDestination: Hashable {
         case favoritos
+        case comercio(idComercio: String)
     }
     
     func irADireccion() {

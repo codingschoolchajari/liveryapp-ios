@@ -43,7 +43,9 @@ struct ProductoTitulo: View {
                         HStack {
                             Spacer()
                             Button(action: {
-                                toggleFavorito(comercio: comercio, idFavorito: idFavorito)
+                                if(comercio != nil){
+                                    toggleFavorito(comercio: comercio!, idFavorito: idFavorito)
+                                }
                             }) {
                                 ZStack {
                                     Circle()
@@ -90,24 +92,22 @@ struct ProductoTitulo: View {
         }
     }
     
-    private func toggleFavorito(comercio: Comercio?, idFavorito: String?) {
+    private func toggleFavorito(comercio: Comercio, idFavorito: String?) {
         esFavorito.toggle()
         Task {
-            if esFavorito, let com = comercio {
-                /*
-                perfilUsuarioState.agregarFavorito(
-                    id: UUID().uuidString,
-                    idComercio: com.idInterno,
-                    nombreComercio: com.nombre,
-                    logoComercio: com.logoURL,
-                    idProducto: producto.idInterno, // Aquí pasamos el producto
+            if esFavorito {
+                await perfilUsuarioState.agregarFavorito(
+                    idFavorito: UUID().uuidString,
+                    idComercio: comercio.idInterno,
+                    nombreComercio: comercio.nombre,
+                    logoComercioURL: comercio.logoURL,
+                    idProducto: producto.idInterno,
                     idPromocion: nil,
-                    nombreProducto: producto.nombre,
-                    imagenProducto: producto.imagenURL
+                    nombre: producto.nombre,
+                    imagenURL: producto.imagenURL
                 )
-                 */
             } else if let idFav = idFavorito {
-                //perfilUsuarioState.eliminarFavorito(id: idFav)
+                await perfilUsuarioState.eliminarFavorito(idFavorito: idFav)
             }
         }
     }

@@ -42,7 +42,9 @@ struct PromocionTitulo: View {
                     
                     // Botón de Favorito
                     Button(action: {
-                        toggleFavorito(comercio: comercio, idFavorito: idFavorito)
+                        if(comercio != nil){
+                            toggleFavorito(comercio: comercio!, idFavorito: idFavorito)
+                        }
                     }) {
                         ZStack {
                             Circle()
@@ -77,26 +79,23 @@ struct PromocionTitulo: View {
         }
     }
     
-    // Lógica para agregar/eliminar favorito
-    private func toggleFavorito(comercio: Comercio?, idFavorito: String?) {
+    private func toggleFavorito(comercio: Comercio, idFavorito: String?) {
         esFavorito.toggle()
         
         Task {
-            if esFavorito, let com = comercio {
-                /*
-                perfilUsuarioState.agregarFavorito(
-                    id: UUID().uuidString,
-                    idComercio: com.idInterno,
-                    nombreComercio: com.nombre,
-                    logoComercio: com.logoURL,
+            if esFavorito {
+                await perfilUsuarioState.agregarFavorito(
+                    idFavorito: UUID().uuidString,
+                    idComercio: comercio.idInterno,
+                    nombreComercio: comercio.nombre,
+                    logoComercioURL: comercio.logoURL,
                     idProducto: nil,
                     idPromocion: promocion.idInterno,
-                    nombrePromocion: promocion.nombre,
-                    imagenPromocion: promocion.imagenURL
+                    nombre: promocion.nombre,
+                    imagenURL: promocion.imagenURL
                 )
-                 */
             } else if let idFav = idFavorito {
-                //perfilUsuarioState.eliminarFavorito(id: idFav)
+                await perfilUsuarioState.eliminarFavorito(idFavorito: idFav)
             }
         }
     }

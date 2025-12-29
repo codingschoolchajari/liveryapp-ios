@@ -62,6 +62,8 @@ struct Bienvenida: View {
 
 struct SeccionPerfil: View {
     @Binding var mostrarBottomSheetDirecciones: Bool
+    
+    @EnvironmentObject var navManager: NavigationManager
 
     var body: some View {
         VStack(spacing: 16) {
@@ -73,7 +75,7 @@ struct SeccionPerfil: View {
             }
 
             FilaPerfil(icon: "icono_favoritos", text: "Favoritos") {
-                print("Navegar a favoritos")
+                navManager.perfilPath.append(NavigationManager.PerfilDestination.favoritos)
             }
         }
     }

@@ -87,7 +87,24 @@ struct SeccionesView: View {
                     NavigationStack(path: $navManager.perfilPath) {
                         PerfilView()
                             .navigationDestination(for: String.self) { view in
-                                // Destinos específicos de pedidos
+                                FavoritosView()
+                                    .navigationBarBackButtonHidden(true)
+                            }
+                        
+                            .navigationDestination(for: NavigationManager.PerfilDestination.self) { destination in
+                                switch destination {
+                                case .favoritos:
+                                    FavoritosView()
+                                        .navigationBarBackButtonHidden(true)
+                                case .comercio(let idComercio):
+                                    ComercioView(
+                                        comercioViewModel: ComercioViewModel(
+                                            perfilUsuarioState: perfilUsuarioState,
+                                            idComercio: idComercio
+                                        )
+                                    )
+                                    .navigationBarBackButtonHidden(true)
+                                }
                             }
                     }
                 }
@@ -95,88 +112,113 @@ struct SeccionesView: View {
             
             // Barra de navegación personalizada
             VStack(spacing: 0) {
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        navManager.select(.home)
-                    }) {
-                        VStack {
-                            Image(systemName: "house.fill")
-                                .resizable()
-                                .frame(width: 28, height: 22)
-                            Text("Inicio")
-                                .font(.custom("Barlow", size: 12))
-                                .bold()
+                // Usamos GeometryReader para obtener el ancho total disponible
+                GeometryReader { geometry in
+                    let anchoItem = geometry.size.width / 5
+                    
+                    HStack(spacing: 0) {
+                        // Botón Inicio
+                        BotonNavPersonalizado(
+                            titulo: "Inicio",
+                            icono: "icono_home",
+                            ancho: anchoItem,
+                            altoIcono: 28,
+                            anchoIcono: 28,
+                            seccion: .home,
+                            selectedSection: navManager.selectedSection
+                        ) {
+                            navManager.select(.home)
+                        }
+                        
+                        // Botón Descuentos
+                        BotonNavPersonalizado(
+                            titulo: "Descuentos",
+                            icono: "icono_descuentos",
+                            ancho: anchoItem,
+                            altoIcono: 28,
+                            anchoIcono: 28,
+                            seccion: .descuentos,
+                            selectedSection: navManager.selectedSection
+                        ) {
+                            navManager.select(.descuentos)
+                        }
+                        
+                        // Botón Carrito
+                        BotonNavPersonalizado(
+                            titulo: "Carrito",
+                            icono: "icono_carrito",
+                            ancho: anchoItem,
+                            altoIcono: 28,
+                            anchoIcono: 28,
+                            seccion: .carrito,
+                            selectedSection: navManager.selectedSection
+                        ) {
+                            navManager.select(.carrito)
+                        }
+                        
+                        // Botón Pedidos
+                        BotonNavPersonalizado(
+                            titulo: "Pedidos",
+                            icono: "icono_pedidos",
+                            ancho: anchoItem,
+                            altoIcono: 28,
+                            anchoIcono: 28,
+                            seccion: .pedidos,
+                            selectedSection: navManager.selectedSection
+                        ) {
+                            navManager.select(.pedidos)
+                        }
+                        
+                        // Botón Perfil
+                        BotonNavPersonalizado(
+                            titulo: "Perfil",
+                            icono: "icono_perfil",
+                            ancho: anchoItem,
+                            altoIcono: 28,
+                            anchoIcono: 32,
+                            seccion: .perfil,
+                            selectedSection: navManager.selectedSection
+                        ) {
+                            navManager.select(.perfil)
                         }
                     }
-                    .foregroundColor(navManager.selectedSection == .home ? Color.verdePrincipal : Color.grisSecundario)
-                    
-                    Spacer()
-                    Button(action: {
-                        navManager.select(.descuentos)
-                    }) {
-                        VStack {
-                            Image(systemName: "tag.fill")
-                                .resizable()
-                                .frame(width: 26, height: 22)
-                            Text("Ofertas")
-                                .font(.custom("Barlow", size: 12))
-                                .bold()
-                        }
-                    }
-                    .foregroundColor(navManager.selectedSection == .descuentos ? Color.verdePrincipal : Color.grisSecundario)
-                    
-                    Spacer()
-                    Button(action: {
-                        navManager.select(.carrito)
-                    }) {
-                        VStack {
-                            Image(systemName: "cart.fill")
-                                .resizable()
-                                .frame(width: 30, height: 22)
-                            Text("Carrito")
-                                .font(.custom("Barlow", size: 12))
-                                .bold()
-                        }
-                    }
-                    .foregroundColor(navManager.selectedSection == .carrito ? Color.verdePrincipal : Color.grisSecundario)
-                    
-                    Spacer()
-                    Button(action: {
-                        navManager.select(.pedidos)
-                    }) {
-                        VStack {
-                            Image(systemName: "text.badge.checkmark")
-                                .resizable()
-                                .frame(width: 26, height: 22)
-                            Text("Pedidos")
-                                .font(.custom("Barlow", size: 12))
-                                .bold()
-                        }
-                    }
-                    .foregroundColor(navManager.selectedSection == .pedidos ? Color.verdePrincipal : Color.grisSecundario)
-                    
-                    Spacer()
-                    Button(action: {
-                        navManager.select(.perfil)
-                    }) {
-                        VStack {
-                            Image(systemName: "person.fill")
-                                .resizable()
-                                .frame(width: 24, height: 22)
-                            Text("Perfil")
-                                .font(.custom("Barlow", size: 12))
-                                .bold()
-                        }
-                    }
-                    .foregroundColor(navManager.selectedSection == .perfil ? Color.verdePrincipal : Color.grisSecundario)
-                    
-                    Spacer()
                 }
+                .frame(height: 40)
                 .padding(.vertical, 10)
                 .background(Color.blanco)
                 .shadow(color: Color.negro.opacity(0.1), radius: 5, x: 0, y: -2)
             }
         }
     }
+    
+    struct BotonNavPersonalizado: View {
+        let titulo: String
+        let icono: String
+        let ancho: CGFloat
+        let altoIcono: CGFloat
+        let anchoIcono: CGFloat
+        let seccion: Section
+        let selectedSection: Section
+        let action: () -> Void
+        
+        var body: some View {
+            Button(action: action) {
+                VStack(spacing: 4) {
+                    Image(icono)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: anchoIcono, height: altoIcono)
+                    
+                    Text(titulo)
+                        .font(.custom("Barlow", size: 12))
+                        .bold()
+                        .lineLimit(1)
+                }
+                .frame(width: ancho) // Aquí aplicamos el 1/5 del ancho
+            }
+            .foregroundColor(selectedSection == seccion ? Color.verdePrincipal : Color.grisSecundario)
+        }
+    }
+
 }
+

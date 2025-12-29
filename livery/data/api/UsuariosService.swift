@@ -116,4 +116,53 @@ class UsuariosService {
             throw URLError(.badServerResponse)
         }
     }
+    
+    func agregarFavorito(
+        token: String,
+        dispositivoID: String,
+        email: String,
+        usuarioFavorito: UsuarioFavorito
+    ) async throws {
+        guard let url = URL(string: "\(usuariosURL)/agregarFavorito/\(email)") else {
+            throw URLError(.badURL)
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        request.httpBody = try JSONEncoder().encode(usuarioFavorito)
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+    }
+    
+    func eliminarFavorito(
+        token: String,
+        dispositivoID: String,
+        email: String,
+        idFavorito: String
+    ) async throws {
+        guard let url = URL(string: "\(usuariosURL)/eliminarFavorito/\(email)/\(idFavorito)") else {
+            throw URLError(.badURL)
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+    }
 }

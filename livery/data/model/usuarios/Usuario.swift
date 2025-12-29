@@ -17,7 +17,7 @@ struct UsuarioDatosPersonales: Codable, Equatable {
     var dni: Int = 0
 }
 
-struct UsuarioFavorito: Codable, Equatable {
+struct UsuarioFavorito: Codable, Equatable, Identifiable {
     var id: String = ""
     var idComercio: String = ""
     let nombreComercio: String

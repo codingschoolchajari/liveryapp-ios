@@ -51,11 +51,14 @@ struct RootContainerView: View {
             }
             
             // Decidimos la fase final (Navegación real)
-            if user.tienePerfilCompleto {
-                navManager.replaceRoot(with: .main)
-                navManager.select(.home)
-            } else {
-                navManager.replaceRoot(with: .registration)
+            if navManager.currentPhase != .main {
+                if user.tienePerfilCompleto {
+                    navManager.replaceRoot(with: .main)
+                    navManager.select(.home)
+                } else if navManager.currentPhase != .registration {
+                    // Evitamos loops si ya estamos en registro
+                    navManager.replaceRoot(with: .registration)
+                }
             }
         }
         .onChange(of: logueado) { oldVal, newVal in

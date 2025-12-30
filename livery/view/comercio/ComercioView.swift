@@ -154,6 +154,8 @@ struct ComercioTitulo: View {
 struct InformacionExtra: View {
     let comercio: Comercio
     
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    
     @State private var mostrarComentariosSheet = false
 
     var body: some View {
@@ -164,7 +166,6 @@ struct InformacionExtra: View {
                     .bold()
                     .foregroundColor(.grisTerciario)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    //.padding(.horizontal, 40)
             }
             
             HStack(alignment: .center, spacing: 8) {
@@ -196,7 +197,10 @@ struct InformacionExtra: View {
         
         .sheet(isPresented: $mostrarComentariosSheet) {
             // Aquí va tu vista de comentarios
-            BottomSheetComentarios(comercio: comercio)
+            BottomSheetComentarios(
+                comercio: comercio,
+                perfilUsuarioState: perfilUsuarioState
+            )
                 .presentationDetents([.large])
         }
     }

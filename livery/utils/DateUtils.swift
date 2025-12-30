@@ -28,4 +28,34 @@ struct DateUtils {
             .map { "\($0.inicio) a \($0.fin)" }
             .joined(separator: "  -  ")
     }
+    
+    static func tiempoRelativo(fechaString: String) -> String {
+        // 1. Extraemos solo la fecha del String del servidor (ej: "2025-12-30")
+        let soloFechaServidor = String(fechaString.prefix(10))
+        
+        // 2. Configuramos el formateador para que use la hora LOCAL del iPhone
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = .current // Usa la hora del usuario
+        
+        // 3. Convertimos el String del servidor a una fecha (a las 00:00 locales)
+        guard let fechaDestino = formatter.date(from: soloFechaServidor) else {
+            return "Fecha inválida"
+        }
+        
+        // 4. Obtenemos "Hoy" a las 00:00 locales usando Calendar
+        let calendar = Calendar.current
+        let inicioHoy = calendar.startOfDay(for: Date())
+        
+        // 5. Calculamos la diferencia de días
+        let componentes = calendar.dateComponents([.day], from: fechaDestino, to: inicioHoy)
+        let dias = componentes.day ?? 0
+        
+        switch dias {
+        case 0: return "Hoy"
+        case 1: return "Ayer"
+        case let d where d < 0: return "Hoy"
+        default: return "Hace \(dias) días"
+        }
+    }
 }

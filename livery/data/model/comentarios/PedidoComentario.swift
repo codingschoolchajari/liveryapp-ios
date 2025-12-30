@@ -6,9 +6,11 @@
 //
 import Foundation
 
-struct PedidoComentario: Codable {
+struct PedidoComentario: Codable, Identifiable {
     let idInterno: String
     let itemsProductos: [ItemProducto]
     let itemsPromociones: [ItemPromocion]
     let comentario: Comentario
+    
+    var id: String { idInterno }
 }

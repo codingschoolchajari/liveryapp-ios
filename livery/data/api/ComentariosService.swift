@@ -37,10 +37,9 @@ class ComentariosService {
         limit: Int
     ) async throws -> [PedidoComentario] {
 
-        var components = URLComponents(string: comentariosURL + "/buscar")!
+        var components = URLComponents(string: comentariosURL + "/buscar/\(idComercio)")!
 
         components.queryItems = [
-            URLQueryItem(name: "idComercio", value: idComercio),
             URLQueryItem(name: "skip", value: String(skip)),
             URLQueryItem(name: "limit", value: String(limit))
         ]

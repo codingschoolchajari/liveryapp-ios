@@ -106,8 +106,8 @@
             filePath = "livery/singleton/PerfilUsuarioState.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "81"
-            endingLineNumber = "81"
+            startingLineNumber = "83"
+            endingLineNumber = "83"
             landmarkName = "validarYSincronizarSesion()"
             landmarkType = "7">
          </BreakpointContent>

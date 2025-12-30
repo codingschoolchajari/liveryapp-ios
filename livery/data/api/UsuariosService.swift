@@ -165,4 +165,30 @@ class UsuariosService {
             throw URLError(.badServerResponse)
         }
     }
+    
+    func actualizarTokenFCM(
+        token: String,
+        dispositivoID: String,
+        email: String,
+        tokenFCM: String
+    ) async throws {
+        guard let url = URL(string: "\(usuariosURL)/actualizarTokenFCM/\(email)") else {
+            throw URLError(.badURL)
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        request.httpBody = try JSONEncoder().encode(tokenFCM)
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+    }
 }

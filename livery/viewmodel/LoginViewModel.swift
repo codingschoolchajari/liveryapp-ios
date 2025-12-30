@@ -51,6 +51,7 @@ class LoginViewModel: ObservableObject {
                     // 1. Preparamos el estado (Token, CurrentUser, etc)
                     await perfilUsuarioState.inicializacion()
                     await perfilUsuarioState.actualizarUsuario()
+                    await perfilUsuarioState.generarTokenFCM()
                     
                     // 2. Activamos el flag de logueado ANTES de buscar el usuario
                     // Esto permite que el RootContainer esté listo para escuchar el cambio del objeto usuario

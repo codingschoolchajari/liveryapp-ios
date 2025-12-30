@@ -20,6 +20,7 @@ struct SplashScreenView: View {
                 // 2. Si está logueado, buscamos al usuario
                 if logueado {
                     await perfilUsuarioState.buscarUsuario()
+                    await perfilUsuarioState.generarTokenFCM()
                     
                     // Si el usuario se encontró, el .onChange del Root lo mandará a Main
                     // Si NO se encontró (perfilUsuarioState.usuario == nil), forzamos salida:

@@ -7,6 +7,7 @@
 import SwiftUI
 import FirebaseCore
 import GoogleMaps
+import FirebaseMessaging
 
 class AppDelegate: NSObject, UIApplicationDelegate {
 
@@ -24,8 +25,21 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         ) as? String {
             GMSServices.provideAPIKey(apiKey)
         }
+        
+        // Registro para el token de Apple (necesario para FCM)
+        application.registerForRemoteNotifications()
 
         return true
     }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+            // Este es el puente: Apple le da el token a la App, y la App se lo da a Firebase
+            Messaging.messaging().apnsToken = deviceToken
+        }
+        
+        // Opcional: Para debugear si Apple falla en darte el token
+        func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+            print("❌ Error al registrarse en APNs (Apple): \(error.localizedDescription)")
+        }
 }
 

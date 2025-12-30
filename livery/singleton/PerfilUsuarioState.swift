@@ -7,7 +7,9 @@
 import Foundation
 import Combine
 import FirebaseAuth
+import FirebaseMessaging
 import SwiftUI
+import UIKit
 
 @MainActor
 class PerfilUsuarioState: ObservableObject {
@@ -368,6 +370,36 @@ class PerfilUsuarioState: ObservableObject {
             // REVERTIR si falla el borrado en el servidor
             self.usuario = copiaUsuarioPrevio
             print("Error al eliminar favorito: \(error.localizedDescription)")
+        }
+    }
+    
+    // Notificaciones
+    func generarTokenFCM() async {
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: self)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            // 1. Obtener el token de FCM (Equivalente a .token.await())
+            let tokenFCM = try await Messaging.messaging().token()
+            
+            // 3. Obtener el email del usuario (Asumiendo que usas Firebase Auth)
+            let email = currentUser?.email ?? ""
+            
+            // 4. Llamar a tu repositorio para actualizar en el backend
+            // Nota: Asegúrate de que tu función en el repo sea 'async'
+            try await usuariosService.actualizarTokenFCM(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email,
+                tokenFCM: tokenFCM
+            )
+            
+            print("✅ Token FCM actualizado con éxito: \(tokenFCM)")
+            
+        } catch {
+            print("❌ El tokenFCM no ha podido ser generado o enviado: \(error.localizedDescription)")
         }
     }
 }

@@ -31,24 +31,23 @@ class NotificationManager: NSObject, MessagingDelegate, UNUserNotificationCenter
         let idPedido = userInfo["idPedido"] as? String ?? ""
         let idChat = userInfo["idChat"] as? String
         
-        // Lógica de "Chat Visible" similar a tu código Kotlin
-        let esChatVisible = idChat != nil && notificacionesState.idChatVisible == idChat
-        
-        if !esChatVisible {
-            let nuevaNotificacion = Notificacion(
-                titulo: titulo,
-                mensaje: mensaje,
-                idPedido: idPedido,
-                idChat: idChat
-            )
+        Task {
+            // Extraemos el valor de forma segura
+            let idChatActual = await notificacionesState.idChatVisible
             
-            // Actualizamos el estado (Aseguramos que sea en el hilo principal)
-            DispatchQueue.main.async {
-                self.notificacionesState.agregarNotificacion(nuevaNotificacion)
+            // Ahora hacemos la comparación con la variable local
+            let esChatVisible = idChat != nil && idChatActual == idChat
+            
+            if !esChatVisible {
+                let nuevaNotificacion = Notificacion(
+                    titulo: titulo,
+                    mensaje: mensaje,
+                    idPedido: idPedido,
+                    idChat: idChat
+                )
+                
+                await notificacionesState.agregarNotificacion(nuevaNotificacion)
             }
-        } else {
-            // Si el chat es visible, no mostramos nada (silenciamos la notificación)
-            completionHandler([])
         }
     }
 }

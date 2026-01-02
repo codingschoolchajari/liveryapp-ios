@@ -43,10 +43,9 @@ class PedidosService {
         limit: Int
     ) async throws -> [Pedido] {
 
-        var components = URLComponents(string: pedidosURL)!
+        guard var components = URLComponents(string: "\(pedidosURL)/buscar/\(email)/\(estado)") else { throw URLError(.badURL) }
+        
         components.queryItems = [
-            URLQueryItem(name: "email", value: email),
-            URLQueryItem(name: "estado", value: estado),
             URLQueryItem(name: "skip", value: "\(skip)"),
             URLQueryItem(name: "limit", value: "\(limit)")
         ]

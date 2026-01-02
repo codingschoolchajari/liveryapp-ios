@@ -1,0 +1,192 @@
+//
+//  PedidoSeleccionadoView.swift
+//  livery
+//
+//  Created by Nicolas Matias Garay on 02/01/2026.
+//
+import SwiftUI
+
+struct BottomSheetPedidoDescripcion: View {
+    @ObservedObject var pedidosViewModel: PedidosViewModel
+    @StateObject var pedidoChatViewModel : PedidoChatViewModel
+    
+    init(perfilUsuarioState: PerfilUsuarioState, pedidosViewModel: PedidosViewModel) {
+        self.pedidosViewModel = pedidosViewModel
+        
+        _pedidoChatViewModel = StateObject(
+            wrappedValue: PedidoChatViewModel(perfilUsuarioState: perfilUsuarioState)
+        )
+    }
+
+    @State private var selectedTabIndex = 0
+    
+    let tabsFila1 = ["Descripción", "Pago", "Recorrido"]
+    let tabsFila2 = ["Comentario", "Chat Comercio", "Chat Repartidor"]
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            if let pedido = pedidosViewModel.pedidoSeleccionado {
+                let estadoPedido = EstadoPedido.desdeString(pedido.estado?.nombre ?? "")
+                
+                ScrollView {
+                    VStack(spacing: 0) {
+                        Spacer().frame(height: 16)
+                        
+                        // Header con Logo y botones
+                        PortadaPedido(
+                            pedidosViewModel: pedidosViewModel,
+                            pedido: pedido,
+                            onClose: {
+                                pedidoChatViewModel.setChatTabActive(active: false)
+                                pedidosViewModel.setRecorridoTabActive(active: false)
+                            }
+                        )
+                        
+                        Spacer().frame(height: 8)
+                        EstadoPedidoView(estadoPedido: estadoPedido)
+                        Spacer().frame(height: 16)
+                        
+                        Divider()
+                        
+                        // Sistema de Tabs
+                        TabsConBoxes(
+                            tabsFila1: tabsFila1,
+                            tabsFila2: tabsFila2,
+                            selectedTabIndex: $selectedTabIndex
+                        )
+                        
+                        Divider()
+                        Spacer().frame(height: 8)
+                        
+                        // Contenido dinámico según el Tab
+                        /*
+                        VStack {
+                            switch selectedTabIndex {
+                            case 0: DescripcionTab(viewModel: pedidosViewModel, pedido: pedido, estado: estadoPedido, onDismiss: onDismiss)
+                            case 1: PagoTab(viewModel: pedidosViewModel, pedido: pedido, estado: estadoPedido)
+                            case 2: RecorridoTab(viewModel: pedidosViewModel)
+                            case 3: ComentarioTab(viewModel: pedidosViewModel)
+                            case 4: ChatComercioTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
+                            case 5: ChatRepartidorTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
+                            default: EmptyView()
+                            }
+                        }
+                         */
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemBackground))
+        // Equivale al LaunchedEffect(selectedTabIndex)
+        .onChange(of: selectedTabIndex) { oldValue, newValue in
+            /*
+            let isChatTab = (newValue == 4 || newValue == 5)
+            pedidoChatViewModel.setChatTabActive(isChatTab)
+            
+            let isRecorridoTab = (newValue == 2)
+            pedidosViewModel.setRecorridoTabActive(isRecorridoTab)
+             */
+        }
+    }
+}
+
+// --- Componentes de Apoyo ---
+
+struct TabsConBoxes: View {
+    let tabsFila1: [String]
+    let tabsFila2: [String]
+    @Binding var selectedTabIndex: Int
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Fila 1
+            HStack(spacing: 0) {
+                ForEach(0..<tabsFila1.count, id: \.self) { index in
+                    tabButton(title: tabsFila1[index], index: index)
+                }
+            }
+            // Fila 2
+            HStack(spacing: 0) {
+                ForEach(0..<tabsFila2.count, id: \.self) { index in
+                    let realIndex = index + tabsFila1.count
+                    tabButton(title: tabsFila2[index], index: realIndex)
+                }
+            }
+        }
+    }
+    
+    func tabButton(title: String, index: Int) -> some View {
+        Button(action: { selectedTabIndex = index }) {
+            Text(title)
+                .font(.custom("Barlow-Bold", size: 14))
+                .foregroundColor(selectedTabIndex == index ? .blue : .secondary)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct PortadaPedido: View {
+    @ObservedObject var pedidosViewModel: PedidosViewModel
+    let pedido: Pedido
+    var onClose: () -> Void
+    
+    var body: some View {
+        HStack(alignment: .top) {
+            // Botón Reload
+            Button(action: {
+                Task {
+                    await pedidosViewModel.refrescarPedidoSeleccionado(pedido: pedido) }}) {
+                Image("icono_reload")
+                    .resizable()
+                    .frame(width: 32, height: 32)
+            }
+            
+            Spacer()
+            
+            // Logo Comercio
+            AsyncImage(url: URL(string: API.baseURL + "/" + pedido.logoComercioURL)) { img in
+                img.resizable().aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Color.gray.opacity(0.3)
+            }
+            .frame(width: 65, height: 65)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            
+            Spacer()
+            
+            // Botón Cerrar
+            Button(action: onClose) {
+                Image("icono_cerrar")
+                    .resizable()
+                    .frame(width: 32, height: 32)
+                    .background(Color(.systemBackground))
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.primary, lineWidth: 2))
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+}
+
+struct EstadoPedidoView: View {
+    let estadoPedido: EstadoPedido?
+    
+    var body: some View {
+        if let estado = estadoPedido {
+            VStack(spacing: 2) {
+                Text(estado.descripcion)
+                    .font(.custom("Barlow-Bold", size: 14))
+                    .foregroundColor(estado.color)
+                
+                Text(estado.aclaracion)
+                    .font(.custom("Barlow-Bold", size: 14))
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 16)
+        }
+    }
+}

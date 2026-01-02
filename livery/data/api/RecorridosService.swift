@@ -8,7 +8,13 @@ import Foundation
 import CoreLocation
 
 class RecorridosService {
-    func buscar(token: String, dispositivoID: String, idPedido: String) async throws -> Recorrido {
+    
+    func buscar(
+        token: String,
+        dispositivoID: String,
+        idPedido: String
+    ) async throws -> Recorrido {
+        
         guard var urlComponents = URLComponents(string: "\(API.baseURL)\(API.Endpoints.recorridos)/buscar") else {
             fatalError("URL incorrecta")
         }

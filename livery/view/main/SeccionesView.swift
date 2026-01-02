@@ -77,12 +77,10 @@ struct SeccionesView: View {
                             }
                     }
                 case .pedidos:
-                    NavigationStack(path: $navManager.pedidosPath) {
-                        PedidosView()
-                            .navigationDestination(for: String.self) { view in
-                                // Destinos específicos de pedidos
-                            }
-                    }
+                    //NavigationStack(path: $navManager.pedidosPath) {
+                        PedidosView(perfilUsuarioState: perfilUsuarioState)
+                            
+                    //}
                 case .perfil:
                     NavigationStack(path: $navManager.perfilPath) {
                         PerfilView()

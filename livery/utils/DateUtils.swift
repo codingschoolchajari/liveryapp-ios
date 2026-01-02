@@ -58,4 +58,35 @@ struct DateUtils {
         default: return "Hace \(dias) días"
         }
     }
+    
+    static func fechaATexto(fechaStr: String) -> String {
+        // 1. Configuramos el formateador de entrada para el String del servidor
+        let formatterEntrada = DateFormatter()
+        formatterEntrada.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatterEntrada.timeZone = .current // Aseguramos que interprete la hora local
+        
+        // 2. Intentamos convertir el String a Date
+        guard let fecha = formatterEntrada.date(from: fechaStr) else {
+            return fechaStr // Si falla, devolvemos el original por seguridad
+        }
+        
+        // 3. Obtenemos el nombre del día de la semana usando Calendar
+        let calendar = Calendar.current
+        let numeroDia = calendar.component(.weekday, from: fecha)
+        
+        // Lista manual de días (domingo es 1 en Swift)
+        let diasSemana = ["", "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
+        let nombreDia = diasSemana[numeroDia]
+        
+        // 4. Configuramos el formateador de salida para la fecha y hora
+        let formatterSalida = DateFormatter()
+        formatterSalida.dateFormat = "dd/MM/yyyy"
+        
+        // 5. Obtenemos componentes de hora y minuto manualmente
+        let hh = String(format: "%02d", calendar.component(.hour, from: fecha))
+        let min = String(format: "%02d", calendar.component(.minute, from: fecha))
+        let fechaFormateada = formatterSalida.string(from: fecha)
+        
+        return "\(nombreDia) \(fechaFormateada) a las \(hh):\(min)"
+    }
 }

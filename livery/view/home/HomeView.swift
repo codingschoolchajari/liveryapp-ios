@@ -628,6 +628,7 @@ struct BottomSheetNotificaciones: View {
         VStack(spacing: 0) {
             Spacer().frame(height: 8)
             Titulo(titulo: "Notificaciones")
+            Spacer().frame(height: 8)
             
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 8) {

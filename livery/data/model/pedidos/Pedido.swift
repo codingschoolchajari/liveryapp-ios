@@ -14,7 +14,7 @@ struct Estado: Codable {
     var extra: String? = nil
 }
 
-struct Pedido: Codable {
+struct Pedido: Codable, Identifiable {
     let idInterno: String
     let email: String
     let nombreUsuario: String
@@ -33,4 +33,8 @@ struct Pedido: Codable {
     let itemsPromociones: [ItemPromocion]
     var estado: Estado? = nil
     var comentario: Comentario? = nil
+    
+    var id: String {
+        idInterno
+    }
 }

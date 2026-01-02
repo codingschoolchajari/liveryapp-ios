@@ -16,10 +16,10 @@ class NotificacionesState: ObservableObject {
     
     func agregarNotificacion(_ notificacion: Notificacion) {
         // Si la notificación pertenece a un chat
-        if let idChat = notificacion.idChat {
-            // No agrega si ya existe una pendiente no leída para ese chat
+        if let idChat = notificacion.idChat, !idChat.isEmpty {
+            // 2. Solo si es un chat válido, comprobamos si ya existe en la lista
             if notificacionesNoLeidas.contains(where: { $0.idChat == idChat }) {
-                return
+                return // Ya existe una notificación de este chat, no agregamos otra
             }
         }
         self.notificacionesNoLeidas.insert(notificacion, at: 0)

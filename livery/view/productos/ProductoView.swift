@@ -347,10 +347,9 @@ struct PortadaProducto: View {
     let producto: Producto
     
     var body: some View {
-        let altoDeseado = UIScreen.main.bounds.width * (3/4)
+        let altoDeseado = UIScreen.main.bounds.height * (1/3)
         
         ZStack(alignment: .topTrailing) {
-            // 1. Imagen base con bordes redondeados inferiores
             AsyncImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? ""))) { phase in
                 if let image = phase.image {
                     image
@@ -360,7 +359,8 @@ struct PortadaProducto: View {
                     Color.blanco
                 }
             }
-            .frame(width: UIScreen.main.bounds.width, height: altoDeseado)
+            .frame(maxWidth: .infinity)
+            .frame(height: altoDeseado)
             .clipped()
             .clipShape(
                 RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight])

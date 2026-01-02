@@ -26,6 +26,7 @@ struct CarritoView: View {
                     
                     VStack(spacing: 8) {
                         
+                        Spacer().frame(height: 16)
                         TituloComercio(comercio: carritoViewModel.comercio!)
                             .onTapGesture {
                                 navManager.carritoPath.append(NavigationManager.CarritoDestination.comercio(idComercio: carritoViewModel.comercio!.idInterno))
@@ -176,12 +177,14 @@ struct NotasView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         
         TextEditor(text: $carritoViewModel.notas)
+            .scrollContentBackground(.hidden)
+            .background(Color.blanco)
             .tint(.verdePrincipal)
             .font(.custom("Barlow", size: 16))
             .bold()
+            .foregroundColor(.negro)
             .frame(minHeight: 50, maxHeight: 50)
             .padding(4)
-            .background(Color.blanco)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.grisSecundario, lineWidth: 1)

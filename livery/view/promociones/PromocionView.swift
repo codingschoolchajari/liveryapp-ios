@@ -169,6 +169,9 @@ struct BottomSheetSeleccionPromocion: View {
             .padding(.vertical, 12)
             
             VStack(spacing: 4) {
+                
+                Spacer()
+                
                 CantidadUnidadesYPrecio(
                     cambioUnidadesHabilitado: itemPromocionViewModel.productosSeleccionablesState.isEmpty,
                     cantidad: itemPromocionViewModel.cantidad,
@@ -246,7 +249,7 @@ struct PortadaPromocion: View {
     let promocion: Promocion
     
     var body: some View {
-        let altoDeseado = UIScreen.main.bounds.width * (3/4)
+        let altoDeseado = UIScreen.main.bounds.height * (1/3)
         
         ZStack(alignment: .topTrailing) {
             AsyncImage(url: URL(string: API.baseURL + "/" + promocion.imagenURL)) { phase in

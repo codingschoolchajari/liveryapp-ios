@@ -43,13 +43,14 @@ struct HomeView: View {
             }
         }
         .padding(.bottom, 16)
+        .background(Color.blanco)
     }
 }
 
 struct FranjaPrincipal: View {
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    //@EnvironmentObject var notificacionesState: NotificacionesState
+    @EnvironmentObject var notificacionesState: NotificacionesState
     @EnvironmentObject var navManager: NavigationManager
 
     @State private var mostrarDirecciones = false
@@ -90,11 +91,18 @@ struct FranjaPrincipal: View {
                             .scaledToFit()
                             .frame(width: 24, height: 24)
                             .foregroundColor(.blanco)
-                        /*
-                        if !notificacionesState.noLeidas.isEmpty {
-                            //BadgeView(count: notificacionesState.noLeidas.count)
-                        }
-                         */
+                            .overlay(alignment: .topTrailing) {
+                                if !notificacionesState.notificacionesNoLeidas.isEmpty {
+                                    Text("\(notificacionesState.notificacionesNoLeidas.count)")
+                                        .font(.custom("Barlow", size: 12))
+                                        .bold()
+                                        .foregroundColor(.blanco)
+                                        .frame(width: 22, height: 22)
+                                        .background(Color.red)
+                                        .clipShape(Circle())
+                                        .offset(x: 10, y: -8)
+                                }
+                            }
                     }
                 }
 
@@ -132,7 +140,14 @@ struct FranjaPrincipal: View {
             .presentationDetents([.medium])
         }
         .sheet(isPresented: $mostrarNotificaciones) {
-            //BottomSheetNotificaciones()
+            BottomSheetNotificaciones(
+                onNotificacionClick: { idPedido in
+                    mostrarNotificaciones = false
+                }
+            )
+            .onDisappear {
+                notificacionesState.marcarTodasComoLeidas()
+            }
         }
     }
 }
@@ -323,6 +338,7 @@ struct SelectorCategorias: View {
                             Text(categoria.nombre)
                                 .font(.custom("Barlow", size: 11))
                                 .bold()
+                                .foregroundColor(.negro)
                         }
                         .id(categoria.idInterno)
                     }
@@ -575,6 +591,7 @@ struct BottomSheetDirecciones: View {
             Spacer()
         }
         .padding()
+        .background(Color.blanco)
     }
 }
 
@@ -599,5 +616,96 @@ struct DireccionFueraDeCobertura: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct BottomSheetNotificaciones: View {
+    var onNotificacionClick: (String) -> Void
+    
+    @EnvironmentObject var notificacionesState: NotificacionesState
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: 8)
+            Titulo(titulo: "Notificaciones")
+            
+            ScrollView(showsIndicators: false) {
+                LazyVStack(spacing: 8) {
+                    
+                    // Notificaciones No Leídas
+                    ForEach(notificacionesState.notificacionesNoLeidas) { notificacion in
+                        NotificationRow(
+                            notificacion: notificacion,
+                            isLeida: false,
+                            action: {
+                                onNotificacionClick(notificacion.idPedido)
+                            }
+                        )
+                    }
+                    
+                    // Notificaciones Leídas
+                    ForEach(notificacionesState.notificacionesLeidas) { notificacion in
+                        NotificationRow(
+                            notificacion: notificacion,
+                            isLeida: true,
+                            action: {
+                                onNotificacionClick(notificacion.idPedido)
+                            }
+                        )
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+        .background(Color.blanco)
+        .presentationDetents([.fraction(0.75)])
+        .presentationDragIndicator(.hidden)
+    }
+}
+
+// Componente para la fila (Row)
+struct NotificationRow: View {
+    let notificacion: Notificacion
+    let isLeida: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: 16) {
+                // Icono dinámico
+                Image(isLeida ? "icono_mensaje_leido" : "icono_mensaje_noleido")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 26, height: 26)
+                    .foregroundColor(.negro)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(notificacion.titulo)
+                        .font(.custom("Barlow", size: 14))
+                        .bold()
+                        .foregroundColor(.negro)
+                    
+                    Text(notificacion.mensaje)
+                        .font(.custom("Barlow", size: 14))
+                        .foregroundColor(.negro)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+            }
+            .padding(16)
+            .background(
+                // Fondo sólido si no leída, borde si leída
+                Group {
+                    if isLeida {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.grisSurface, lineWidth: 1)
+                    } else {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.grisSurface)
+                    }
+                }
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }

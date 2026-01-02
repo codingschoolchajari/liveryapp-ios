@@ -26,17 +26,18 @@ class NotificationManager: NSObject, MessagingDelegate, UNUserNotificationCenter
         let userInfo = notification.request.content.userInfo
         
         // Extraemos la data (FCM envía la data en el diccionario userInfo)
-        let titulo = userInfo["titulo"] as? String ?? ""
-        let mensaje = userInfo["mensaje"] as? String ?? ""
+        let titulo = notification.request.content.title
+        let mensaje = notification.request.content.body
+        let id = userInfo["id"] as? String ?? ""
         let idPedido = userInfo["idPedido"] as? String ?? ""
-        let idChat = userInfo["idChat"] as? String
+        let idChat = userInfo["idChat"] as? String ?? ""
         
         Task {
             // Extraemos el valor de forma segura
             let idChatActual = await notificacionesState.idChatVisible
             
             // Ahora hacemos la comparación con la variable local
-            let esChatVisible = idChat != nil && idChatActual == idChat
+            let esChatVisible = idChatActual == idChat
             
             if !esChatVisible {
                 let nuevaNotificacion = Notificacion(
@@ -47,6 +48,10 @@ class NotificationManager: NSObject, MessagingDelegate, UNUserNotificationCenter
                 )
                 
                 await notificacionesState.agregarNotificacion(nuevaNotificacion)
+                
+                completionHandler([.banner, .sound, .badge])
+            } else {
+                completionHandler([])
             }
         }
     }

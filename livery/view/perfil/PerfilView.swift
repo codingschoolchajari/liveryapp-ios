@@ -161,6 +161,7 @@ struct BottomSheetDireccionesView: View {
             Text("Direcciones")
                 .font(.custom("Barlow", size: 16))
                 .bold()
+                .foregroundColor(.negro)
                 .padding(.top, 8)
 
             let direcciones: [UsuarioDireccion] = perfilUsuarioState.usuario?.direcciones ?? []
@@ -179,6 +180,7 @@ struct BottomSheetDireccionesView: View {
                         )
                     )
                     .font(.custom("Barlow", size: 16))
+                    .foregroundColor(.negro)
                     
                     Spacer()
                     Button {
@@ -202,5 +204,7 @@ struct BottomSheetDireccionesView: View {
             }
             Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.blanco)
     }
 }

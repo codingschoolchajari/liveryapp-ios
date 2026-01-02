@@ -21,6 +21,7 @@ struct FavoritosView: View {
                 // Contenido principal
                 Favoritos()
             }
+            .background(Color.blanco)
         }
     }
 }
@@ -122,32 +123,126 @@ struct FavoritoItemCard: View {
                         await perfilUsuarioState.eliminarFavorito(idFavorito: favorito.id)
                     }
                 }) {
-                    Image(systemName: esFavorito ? "heart.fill" : "heart")
-                        .resizable()
-                        .frame(width: 14, height: 14)
-                        .padding(6)
-                        .background(Color.white)
-                        .clipShape(Circle())
-                        .foregroundColor(esFavorito ? .green : .gray) // VerdePrincipal
+                    ZStack {
+                        Circle()
+                            .fill(Color.white)
+                            .frame(width: 25, height: 25)
+                        Image(esFavorito ? "icono_favoritos_relleno" : "icono_favoritos_vacio")
+                            .resizable()
+                            .renderingMode(.template)
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(esFavorito ? .verdePrincipal : .negro)
+                    }
                 }
                 .padding(6)
             }
             
             Text(favorito.nombre)
                 .font(.custom("Barlow", size: 14))
+                .foregroundColor(.negro)
                 .lineLimit(3)
                 .multilineTextAlignment(.center)
                 .frame(width: 120)
         }
         // Llamada a los BottomSheets
         .sheet(isPresented: $mostrarBottomSheet) {
-            /*
-            if !favorito.idProducto.isEmpty {
-                //SeleccionProductoFavoritoView(favorito: favorito)
+            if favorito.idProducto != nil && !favorito.idProducto!.isEmpty {
+                SeleccionProductoFavorito(
+                    favorito: favorito,
+                    onClose: {
+                        mostrarBottomSheet = false
+                    }
+                )
             } else {
-                //SeleccionPromocionFavoritaView(favorito: favorito)
+                SeleccionPromocionFavorita(
+                    favorito: favorito,
+                    onClose: {
+                        mostrarBottomSheet = false
+                    }
+                )
             }
-             */
+        }
+    }
+}
+
+struct SeleccionProductoFavorito: View {
+    let favorito: UsuarioFavorito
+    let onClose: () -> Void
+    
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @StateObject private var favoritosViewModel: FavoritosViewModel
+    
+    init(favorito: UsuarioFavorito, onClose: @escaping () -> Void) {
+        self.favorito = favorito
+        self.onClose = onClose
+        _favoritosViewModel = StateObject(wrappedValue: FavoritosViewModel())
+    }
+    
+    var body: some View {
+        Group {
+            if let comercio = favoritosViewModel.comercioSeleccionado,
+               let producto = favoritosViewModel.producto,
+               let categoria = favoritosViewModel.categoria {
+                
+                BottomSheetSeleccionProducto(
+                    producto: producto,
+                    categoria: categoria,
+                    comercio: comercio,
+                    onClose: onClose
+                )
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.blanco)
+            }
+        }
+        .onAppear {
+            Task {
+                await favoritosViewModel.inicializarProductoFavorito(
+                    perfilUsuarioState: perfilUsuarioState,
+                    favorito: favorito
+                )
+            }
+        }
+    }
+}
+
+struct SeleccionPromocionFavorita: View {
+    let favorito: UsuarioFavorito
+    let onClose: () -> Void
+    
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @StateObject private var favoritosViewModel: FavoritosViewModel
+    
+    init(favorito: UsuarioFavorito, onClose: @escaping () -> Void) {
+        self.favorito = favorito
+        self.onClose = onClose
+        _favoritosViewModel = StateObject(wrappedValue: FavoritosViewModel())
+    }
+    
+    var body: some View {
+        Group {
+            if let comercio = favoritosViewModel.comercioSeleccionado,
+               let promocion = favoritosViewModel.promocion {
+                
+                BottomSheetSeleccionPromocion(
+                    promocion: promocion,
+                    comercio: comercio,
+                    onClose: onClose
+                )
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.blanco)
+            }
+        }
+        .onAppear {
+            Task {
+                await favoritosViewModel.inicializarPromocionFavorita(
+                    perfilUsuarioState: perfilUsuarioState,
+                    favorito: favorito
+                )
+            }
         }
     }
 }

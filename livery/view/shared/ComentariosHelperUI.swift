@@ -128,8 +128,8 @@ struct PedidoItemsView: View {
             .cornerRadius(12)
             
             Text(nombre)
-                .font(.system(size: 14))
-                .foregroundColor(.primary)
+                .font(.custom("Barlow", size: 14))
+                .foregroundColor(.negro)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

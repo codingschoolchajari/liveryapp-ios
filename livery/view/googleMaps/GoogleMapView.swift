@@ -19,6 +19,7 @@ struct GoogleMapView: UIViewRepresentable {
         map.settings.scrollGestures = true
         map.settings.rotateGestures = true
         map.settings.tiltGestures = true
+        map.overrideUserInterfaceStyle = .light
     
         map.delegate = context.coordinator
         return map

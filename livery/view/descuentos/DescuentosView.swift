@@ -39,6 +39,7 @@ struct DescuentosView: View {
                     )
                 }
             }
+            .background(Color.blanco)
         }
         .sheet(item: $descuentosViewModel.productoSeleccionado) { productoSeleccionado in
             if(descuentosViewModel.categoria != nil &&

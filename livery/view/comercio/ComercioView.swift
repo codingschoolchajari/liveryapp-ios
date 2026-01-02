@@ -19,6 +19,7 @@ struct ComercioView: View {
                 Productos(comercioViewModel: comercioViewModel)
                 Spacer()
             }
+            .background(Color.blanco)
             .ignoresSafeArea(edges: .top)
         } else {
             ProgressView()

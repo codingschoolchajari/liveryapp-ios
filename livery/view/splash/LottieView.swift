@@ -14,11 +14,21 @@ struct LottieView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: .zero)
+        view.backgroundColor = .verdeSplashScreen
 
         let animationView = LottieAnimationView(name: animationName)
 
-        animationView.contentMode = .scaleAspectFill
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            // En iPad usamos .scaleAspectFit para evitar que se corte
+            // ya que la pantalla es más cuadrada (4:3)
+            animationView.contentMode = .scaleAspectFit
+        } else {
+            // En iPhone usamos .scaleAspectFill para llenar toda la pantalla
+            // aprovechando que la animación es 9:16 (vertical)
+            animationView.contentMode = .scaleAspectFill
+        }
         animationView.loopMode = loopMode
+        
 
         animationView.play { finished in
             if finished {

@@ -26,6 +26,7 @@ struct LoginView: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.blanco)
         }
     }
 }

@@ -38,6 +38,7 @@ struct DireccionView: View {
             FormularioDireccionView(direccionViewModel: direccionViewModel)
             Spacer()
         }
+        .background(Color.blanco)
         .task {
             direccionViewModel.verificarPermisoUbicacion()
         }
@@ -52,44 +53,68 @@ struct FormularioDireccionView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            TextField("Calle", text: $direccionViewModel.calle)
-                .tint(.verdePrincipal)
-                .autocapitalization(.words)
-                .disableAutocorrection(true)
-                .font(.custom("Barlow", size: 16))
-                .bold()
-                .background(Color.blanco)
-                .padding(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.grisSecundario, lineWidth: 1)
-                )
+            TextField(
+                text: $direccionViewModel.calle,
+                prompt: Text("Calle")
+                    .foregroundColor(.grisSecundario)
+                    .font(.custom("Barlow", size: 16))
+            ) {
+                Text("Calle")
+            }
+            .tint(.verdePrincipal)
+            .autocapitalization(.words)
+            .disableAutocorrection(true)
+            .font(.custom("Barlow", size: 16))
+            .bold()
+            .foregroundColor(.negro)
+            .background(Color.blanco)
+            .padding(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.grisSecundario, lineWidth: 1)
+            )
             
-            TextField("Número", text: $direccionViewModel.numero)
-                .tint(.verdePrincipal)
-                .autocapitalization(.words)
-                .disableAutocorrection(true)
-                .font(.custom("Barlow", size: 16))
-                .bold()
-                .background(Color.blanco)
-                .padding(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.grisSecundario, lineWidth: 1)
-                )
+            TextField(
+                text: $direccionViewModel.numero,
+                prompt: Text("Número")
+                    .foregroundColor(.grisSecundario)
+                    .font(.custom("Barlow", size: 16))
+            ) {
+                Text("Número")
+            }
+            .tint(.verdePrincipal)
+            .autocapitalization(.words)
+            .disableAutocorrection(true)
+            .font(.custom("Barlow", size: 16))
+            .bold()
+            .foregroundColor(.negro)
+            .background(Color.blanco)
+            .padding(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.grisSecundario, lineWidth: 1)
+            )
             
-            TextField("Departamento", text: $direccionViewModel.departamento)
-                .tint(.verdePrincipal)
-                .autocapitalization(.words)
-                .disableAutocorrection(true)
-                .font(.custom("Barlow", size: 16))
-                .bold()
-                .background(Color.blanco)
-                .padding(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.grisSecundario, lineWidth: 1)
-                )
+            TextField(
+                text: $direccionViewModel.departamento,
+                prompt: Text("Departamento")
+                    .foregroundColor(.grisSecundario)
+                    .font(.custom("Barlow", size: 16))
+            ) {
+                Text("Departamento")
+            }
+            .tint(.verdePrincipal)
+            .autocapitalization(.words)
+            .disableAutocorrection(true)
+            .font(.custom("Barlow", size: 16))
+            .bold()
+            .foregroundColor(.negro)
+            .background(Color.blanco)
+            .padding(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.grisSecundario, lineWidth: 1)
+            )
             
             Text("Indicaciones de Entrega")
                 .foregroundColor(.grisSecundario)
@@ -100,12 +125,14 @@ struct FormularioDireccionView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             TextEditor(text: $direccionViewModel.indicaciones)
+                .scrollContentBackground(.hidden)
+                .background(Color.blanco)
                 .tint(.verdePrincipal)
                 .font(.custom("Barlow", size: 16))
                 .bold()
+                .foregroundColor(.negro)
                 .frame(minHeight: 70, maxHeight: 70) // ≈ 3 líneas
                 .padding(8)
-                .background(Color.blanco)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.grisSecundario, lineWidth: 1)

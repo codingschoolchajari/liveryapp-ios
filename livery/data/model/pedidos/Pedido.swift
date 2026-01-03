@@ -37,4 +37,12 @@ struct Pedido: Codable, Identifiable {
     var id: String {
         idInterno
     }
+    
+    // CodingKeys para evitar errores con campos extra como _id
+    enum CodingKeys: String, CodingKey {
+        case idInterno, email, nombreUsuario, idComercio, nombreComercio
+        case logoComercioURL, idRepartidor, direccion, notas
+        case retiroEnComercio, tarifaServicio, envio, tiempoRecorridoEstimado
+        case precioTotal, itemsProductos, itemsPromociones, estado, comentario
+    }
 }

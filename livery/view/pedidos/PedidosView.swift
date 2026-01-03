@@ -55,16 +55,17 @@ struct PedidosView: View {
             }
         }
         .sheet(isPresented: $pedidosViewModel.mostrarBottomSheet) {
-            if(pedidosViewModel.pedidoSeleccionado != nil){
-                BottomSheetPedidoDescripcion(
-                    perfilUsuarioState: perfilUsuarioState,
-                    pedidosViewModel: pedidosViewModel
-                )
-                .onDisappear {
-                    pedidosViewModel.onPedidoSeleccionadoChange(pedido: nil)
-                    pedidosViewModel.refrescarPedidos()
+            BottomSheetPedidoDescripcion(
+                perfilUsuarioState: perfilUsuarioState,
+                pedidosViewModel: pedidosViewModel,
+                onClose: {
                     pedidosViewModel.onMostrarBottomSheetChange(mostrar: false)
                 }
+            )
+            .onDisappear {
+                pedidosViewModel.onPedidoSeleccionadoChange(pedido: nil)
+                pedidosViewModel.refrescarPedidos()
+                pedidosViewModel.onMostrarBottomSheetChange(mostrar: false)
             }
         }
     }

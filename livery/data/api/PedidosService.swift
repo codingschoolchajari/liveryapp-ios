@@ -66,13 +66,21 @@ class PedidosService {
         idPedido: String
     ) async throws -> Pedido {
 
-        let url = URL(string: "\(pedidosURL)/\(idPedido)")!
+        guard let url = URL(string: "\(pedidosURL)/buscarPedido/\(idPedido)") else {
+            throw URLError(.badURL)
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+        
         return try JSONDecoder().decode(Pedido.self, from: data)
     }
 

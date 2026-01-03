@@ -7,11 +7,17 @@
 import SwiftUI
 
 struct BottomSheetPedidoDescripcion: View {
+    var onClose: () -> Void
+    
     @ObservedObject var pedidosViewModel: PedidosViewModel
     @StateObject var pedidoChatViewModel : PedidoChatViewModel
     
-    init(perfilUsuarioState: PerfilUsuarioState, pedidosViewModel: PedidosViewModel) {
+    init(perfilUsuarioState: PerfilUsuarioState,
+         pedidosViewModel: PedidosViewModel,
+         onClose: @escaping () -> Void
+    ) {
         self.pedidosViewModel = pedidosViewModel
+        self.onClose = onClose
         
         _pedidoChatViewModel = StateObject(
             wrappedValue: PedidoChatViewModel(perfilUsuarioState: perfilUsuarioState)
@@ -25,8 +31,8 @@ struct BottomSheetPedidoDescripcion: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            if let pedido = pedidosViewModel.pedidoSeleccionado {
-                let estadoPedido = EstadoPedido.desdeString(pedido.estado?.nombre ?? "")
+            if(pedidosViewModel.pedidoSeleccionado != nil){
+                let estadoPedido = EstadoPedido.desdeString(pedidosViewModel.pedidoSeleccionado!.estado?.nombre ?? "")
                 
                 ScrollView {
                     VStack(spacing: 0) {
@@ -35,11 +41,8 @@ struct BottomSheetPedidoDescripcion: View {
                         // Header con Logo y botones
                         PortadaPedido(
                             pedidosViewModel: pedidosViewModel,
-                            pedido: pedido,
-                            onClose: {
-                                pedidoChatViewModel.setChatTabActive(active: false)
-                                pedidosViewModel.setRecorridoTabActive(active: false)
-                            }
+                            pedido: pedidosViewModel.pedidoSeleccionado!,
+                            onClose: onClose
                         )
                         
                         Spacer().frame(height: 8)
@@ -60,25 +63,24 @@ struct BottomSheetPedidoDescripcion: View {
                         
                         // Contenido dinámico según el Tab
                         /*
-                        VStack {
-                            switch selectedTabIndex {
-                            case 0: DescripcionTab(viewModel: pedidosViewModel, pedido: pedido, estado: estadoPedido, onDismiss: onDismiss)
-                            case 1: PagoTab(viewModel: pedidosViewModel, pedido: pedido, estado: estadoPedido)
-                            case 2: RecorridoTab(viewModel: pedidosViewModel)
-                            case 3: ComentarioTab(viewModel: pedidosViewModel)
-                            case 4: ChatComercioTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
-                            case 5: ChatRepartidorTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
-                            default: EmptyView()
-                            }
-                        }
+                         VStack {
+                         switch selectedTabIndex {
+                         case 0: DescripcionTab(viewModel: pedidosViewModel, pedido: pedido, estado: estadoPedido, onDismiss: onDismiss)
+                         case 1: PagoTab(viewModel: pedidosViewModel, pedido: pedido, estado: estadoPedido)
+                         case 2: RecorridoTab(viewModel: pedidosViewModel)
+                         case 3: ComentarioTab(viewModel: pedidosViewModel)
+                         case 4: ChatComercioTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
+                         case 5: ChatRepartidorTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
+                         default: EmptyView()
+                         }
+                         }
                          */
                     }
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
-        // Equivale al LaunchedEffect(selectedTabIndex)
+        .background(Color.blanco)
         .onChange(of: selectedTabIndex) { oldValue, newValue in
             /*
             let isChatTab = (newValue == 4 || newValue == 5)
@@ -119,8 +121,9 @@ struct TabsConBoxes: View {
     func tabButton(title: String, index: Int) -> some View {
         Button(action: { selectedTabIndex = index }) {
             Text(title)
-                .font(.custom("Barlow-Bold", size: 14))
-                .foregroundColor(selectedTabIndex == index ? .blue : .secondary)
+                .font(.custom("Barlow", size: 14))
+                .bold()
+                .foregroundColor(selectedTabIndex == index ? .verdePrincipal : .grisSecundario)
                 .padding(.vertical, 8)
                 .frame(maxWidth: .infinity)
         }
@@ -136,12 +139,17 @@ struct PortadaPedido: View {
     var body: some View {
         HStack(alignment: .top) {
             // Botón Reload
-            Button(action: {
-                Task {
-                    await pedidosViewModel.refrescarPedidoSeleccionado(pedido: pedido) }}) {
+            Button(
+                action: {
+                    Task {
+                        await pedidosViewModel.refrescarPedidoSeleccionado(pedido: pedido)
+                    }
+                }
+            ) {
                 Image("icono_reload")
                     .resizable()
                     .frame(width: 32, height: 32)
+                    .foregroundColor(Color.negro)
             }
             
             Spacer()
@@ -162,9 +170,10 @@ struct PortadaPedido: View {
                 Image("icono_cerrar")
                     .resizable()
                     .frame(width: 32, height: 32)
-                    .background(Color(.systemBackground))
+                    .foregroundColor(Color.negro)
+                    .background(Color.blanco)
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.primary, lineWidth: 2))
+                    .overlay(Circle().stroke(Color.negro, lineWidth: 2))
             }
         }
         .padding(.horizontal, 16)
@@ -178,12 +187,14 @@ struct EstadoPedidoView: View {
         if let estado = estadoPedido {
             VStack(spacing: 2) {
                 Text(estado.descripcion)
-                    .font(.custom("Barlow-Bold", size: 14))
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
                     .foregroundColor(estado.color)
                 
                 Text(estado.aclaracion)
-                    .font(.custom("Barlow-Bold", size: 14))
-                    .foregroundColor(.secondary)
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.grisSecundario)
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 16)

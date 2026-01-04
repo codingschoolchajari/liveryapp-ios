@@ -246,11 +246,11 @@ class PedidosViewModel: ObservableObject {
             while true {
                 // Obtenemos intervalo de configuración
                 guard let config = perfilUsuarioState.configuracion else {
-                    try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 seg
+                    try? await Task.sleep(nanoseconds: 5_000_000_000) // 1 seg
                     continue
                 }
                 
-                let intervaloNano = UInt64(config.intervalosTiempo.intervaloBuscarRecorrido * 1_000_000) // ms a nanos
+                let intervaloNano = UInt64(config.intervalosTiempo.intervaloBuscarRecorrido * 5_000_000) // ms a nanos
                 try? await Task.sleep(nanoseconds: intervaloNano)
                 
                 // Lógica de validación para actualizar mapa

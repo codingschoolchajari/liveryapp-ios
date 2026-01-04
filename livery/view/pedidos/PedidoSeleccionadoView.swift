@@ -74,10 +74,12 @@ struct BottomSheetPedidoDescripcion: View {
                             pedido: pedidosViewModel.pedidoSeleccionado!,
                             estadoPedido: estadoPedido
                          )
-                         /*
-                         case 2: RecorridoTab(viewModel: pedidosViewModel)
-                              */
-                         case 3: ComentarioTab(pedidosViewModel: pedidosViewModel)
+                         case 2: RecorridoTab(
+                            pedidosViewModel: pedidosViewModel
+                         )
+                         case 3: ComentarioTab(
+                            pedidosViewModel: pedidosViewModel
+                         )
                          case 4: ChatComercioTab(
                             pedidosViewModel: pedidosViewModel,
                             pedidoChatViewModel: pedidoChatViewModel

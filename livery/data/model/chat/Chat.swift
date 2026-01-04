@@ -7,13 +7,21 @@
 import Foundation
 
 struct Mensaje: Codable, Identifiable {
+    // ID calculado para garantizar unicidad en la UI
+    var id: String {
+        return "\(timestamp)_\(emisorId)_\(texto.hashValue)"
+    }
+    
     var texto: String = ""
     var emisorId: String = ""
     var emisorNombre: String = ""
     var timestamp: Int64 = 0
-    
-    var id: Int64 {
-        timestamp
+
+    enum CodingKeys: String, CodingKey {
+        case texto
+        case emisorId
+        case emisorNombre
+        case timestamp
     }
 }
 

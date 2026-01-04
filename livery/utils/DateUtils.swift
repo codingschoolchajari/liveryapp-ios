@@ -89,4 +89,23 @@ struct DateUtils {
         
         return "\(nombreDia) \(fechaFormateada) a las \(hh):\(min)"
     }
+    
+    static func sumarMinutos(hora: String, minutos: Int) -> String {
+        // 1. Separamos el string "HH:mm" y convertimos a Int
+        let partes = hora.split(separator: ":").compactMap { Int($0) }
+        
+        // Validamos que tengamos exactamente hora y minuto
+        guard partes.count == 2 else { return hora }
+        
+        let h = partes[0]
+        let m = partes[1]
+        
+        // 2. Calculamos el total
+        let totalMinutos = h * 60 + m + minutos
+        let nuevaHora = (totalMinutos / 60) % 24
+        let nuevoMinuto = totalMinutos % 60
+        
+        // 3. Formateamos el resultado con 2 dígitos (equivalente al %02d)
+        return String(format: "%02d:%02d", nuevaHora, nuevoMinuto)
+    }
 }

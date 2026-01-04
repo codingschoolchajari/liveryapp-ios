@@ -25,15 +25,13 @@ struct CarritoView: View {
                 } else if !carritoViewModel.itemsProductos.isEmpty || !carritoViewModel.itemsPromociones.isEmpty {
                     
                     VStack(spacing: 8) {
-                        
-                        Spacer().frame(height: 16)
                         TituloComercio(comercio: carritoViewModel.comercio!)
                             .onTapGesture {
                                 navManager.carritoPath.append(NavigationManager.CarritoDestination.comercio(idComercio: carritoViewModel.comercio!.idInterno))
                             }
                         
                         ItemsPedidoView()
-                            .frame(height: UIScreen.main.bounds.height * 0.4)
+                            .frame(height: UIScreen.main.bounds.height * 0.35)
                         
                         // Notas
                         NotasView()
@@ -60,6 +58,7 @@ struct CarritoView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.blanco)
     }
 }
@@ -123,7 +122,6 @@ struct ItemPromocionRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
             ItemPromocionDescripcion(
-                carritoViewModel: carritoViewModel,
                 itemPromocion: itemPromocion,
                 eliminable: true
             )
@@ -150,7 +148,6 @@ struct ItemProductoRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
             ItemProductoDescripcion(
-                carritoViewModel: carritoViewModel,
                 itemProducto: itemProducto,
                 eliminable: true
             )

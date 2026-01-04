@@ -175,6 +175,41 @@ class PedidosViewModel: ObservableObject {
         }
     }
     
+    func enviarComentario(
+        estrellas: Int,
+        texto: String,
+        nombreUsuario: String
+    ) {
+        Task {
+            let comentario = Comentario(
+                fecha: "",
+                texto: texto,
+                nombreUsuario: nombreUsuario,
+                cantidadEstrellas: estrellas
+            )
+
+            // Verificamos si hay un pedido seleccionado de forma segura
+            guard let pedidoActual = self.pedidoSeleccionado else { return }
+
+            do {
+                await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+                let accessToken = TokenRepository.repository.accessToken ?? ""
+                
+                let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+                
+                try await comentariosService.enviarComentario(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    email: pedidoActual.email,
+                    idPedido: pedidoActual.idInterno,
+                    comentario: comentario
+                )
+            } catch {
+                print("Error al enviar comentario: \(error.localizedDescription)")
+            }
+        }
+    }
+    
     private func iniciarPollingRecorrido() {
         Task {
             await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)

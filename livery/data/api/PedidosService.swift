@@ -116,18 +116,21 @@ class PedidosService {
         idPedido: String
     ) async throws {
 
-        var components = URLComponents(string: pedidosURL)!
-        components.queryItems = [
-            URLQueryItem(name: "email", value: email),
-            URLQueryItem(name: "idPedido", value: idPedido)
-        ]
-
-        let url = components.url!
+        guard let url = URL(string: "\(pedidosURL)/eliminar/\(email)/\(idPedido)") else {
+            throw URLError(.badURL)
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+        
         _ = try await URLSession.shared.data(for: request)
     }
 

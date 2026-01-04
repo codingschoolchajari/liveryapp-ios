@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct ItemProductoDescripcion: View {
-    @ObservedObject var carritoViewModel: CarritoViewModel
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
     let itemProducto: ItemProducto
     var eliminable: Bool = false
     
@@ -55,7 +55,7 @@ struct ItemProductoDescripcion: View {
 }
 
 struct ItemPromocionDescripcion: View {
-    @ObservedObject var carritoViewModel: CarritoViewModel
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
     let itemPromocion: ItemPromocion
     var eliminable: Bool = false
     

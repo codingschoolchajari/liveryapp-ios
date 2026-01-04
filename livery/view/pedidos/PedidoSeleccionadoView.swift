@@ -34,48 +34,53 @@ struct BottomSheetPedidoDescripcion: View {
             if(pedidosViewModel.pedidoSeleccionado != nil){
                 let estadoPedido = EstadoPedido.desdeString(pedidosViewModel.pedidoSeleccionado!.estado?.nombre ?? "")
                 
-                ScrollView {
-                    VStack(spacing: 0) {
-                        Spacer().frame(height: 16)
-                        
-                        // Header con Logo y botones
-                        PortadaPedido(
+                VStack(spacing: 0) {
+                    Spacer().frame(height: 16)
+                    
+                    // Header con Logo y botones
+                    PortadaPedido(
+                        pedidosViewModel: pedidosViewModel,
+                        pedido: pedidosViewModel.pedidoSeleccionado!,
+                        onClose: onClose
+                    )
+                    
+                    Spacer().frame(height: 8)
+                    EstadoPedidoView(estadoPedido: estadoPedido)
+                    Spacer().frame(height: 16)
+                    
+                    Divider()
+                    
+                    // Sistema de Tabs
+                    TabsConBoxes(
+                        tabsFila1: tabsFila1,
+                        tabsFila2: tabsFila2,
+                        selectedTabIndex: $selectedTabIndex
+                    )
+                    
+                    Divider()
+                    Spacer().frame(height: 8)
+                    
+                    // Contenido dinámico según el Tab
+                     VStack {
+                         switch selectedTabIndex {
+                         case 0: DescripcionTab(
                             pedidosViewModel: pedidosViewModel,
                             pedido: pedidosViewModel.pedidoSeleccionado!,
-                            onClose: onClose
-                        )
-                        
-                        Spacer().frame(height: 8)
-                        EstadoPedidoView(estadoPedido: estadoPedido)
-                        Spacer().frame(height: 16)
-                        
-                        Divider()
-                        
-                        // Sistema de Tabs
-                        TabsConBoxes(
-                            tabsFila1: tabsFila1,
-                            tabsFila2: tabsFila2,
-                            selectedTabIndex: $selectedTabIndex
-                        )
-                        
-                        Divider()
-                        Spacer().frame(height: 8)
-                        
-                        // Contenido dinámico según el Tab
-                        /*
-                         VStack {
-                         switch selectedTabIndex {
-                         case 0: DescripcionTab(viewModel: pedidosViewModel, pedido: pedido, estado: estadoPedido, onDismiss: onDismiss)
+                            estadoPedido: estadoPedido,
+                            onCancel: onClose
+                         )
+                             /*
                          case 1: PagoTab(viewModel: pedidosViewModel, pedido: pedido, estado: estadoPedido)
                          case 2: RecorridoTab(viewModel: pedidosViewModel)
-                         case 3: ComentarioTab(viewModel: pedidosViewModel)
+                              */
+                         case 3: ComentarioTab(pedidosViewModel: pedidosViewModel)
+                             /*
                          case 4: ChatComercioTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
                          case 5: ChatRepartidorTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
+                              */
                          default: EmptyView()
                          }
-                         }
-                         */
-                    }
+                     }
                 }
             }
         }

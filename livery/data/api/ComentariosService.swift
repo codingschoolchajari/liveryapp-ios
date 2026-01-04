@@ -16,15 +16,21 @@ class ComentariosService {
         comentario: Comentario
     ) async throws {
 
-        let url = URL(string: comentariosURL + "/enviar")!
+        let url = URL(string: comentariosURL + "/enviarComentario/\(email)/\(idPedido)")!
 
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
+        request.httpMethod = "PUT"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         request.httpBody = try JSONEncoder().encode(comentario)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
 
         _ = try await URLSession.shared.data(for: request)
     }

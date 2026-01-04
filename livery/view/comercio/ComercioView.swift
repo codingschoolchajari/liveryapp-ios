@@ -133,6 +133,7 @@ struct ComercioTitulo: View {
                         Image("icono_estrella_relleno")
                             .resizable()
                             .frame(width: 20, height: 20)
+                            .foregroundColor(Color.negro)
                         
                         Text(String(format: "%.1f", comercio.puntuacion))
                             .font(.custom("Barlow", size: 18))

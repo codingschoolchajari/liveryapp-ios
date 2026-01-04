@@ -17,7 +17,7 @@ class ChatsService {
         idRepartidor: String? = nil
     ) async throws -> Chat {
 
-        var components = URLComponents(string: chatsURL + "/obtener")!
+        var components = URLComponents(string: chatsURL + "/obtenerChat")!
 
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "idPedido", value: idPedido),
@@ -58,7 +58,7 @@ class ChatsService {
         idRepartidor: String? = nil
     ) async throws -> [Mensaje] {
 
-        var components = URLComponents(string: chatsURL + "/mensajes")!
+        var components = URLComponents(string: chatsURL + "/obtenerNuevosMensajes")!
 
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "desde", value: String(describing: desde)),
@@ -100,7 +100,7 @@ class ChatsService {
         mensaje: Mensaje
     ) async throws {
 
-        var components = URLComponents(string: chatsURL + "/enviar")!
+        var components = URLComponents(string: chatsURL + "/enviarMensaje")!
 
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "idPedido", value: idPedido),
@@ -122,7 +122,7 @@ class ChatsService {
         }
 
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
+        request.httpMethod = "PUT"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

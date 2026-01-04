@@ -17,8 +17,9 @@ struct PedidosView: View {
     // Observador del ciclo de vida (Foreground/Background)
     @Environment(\.scenePhase) var scenePhase
     
-    init(perfilUsuarioState: PerfilUsuarioState) {
+    init(perfilUsuarioState: PerfilUsuarioState, idPedido: String? = nil) {
         self.perfilUsuarioState = perfilUsuarioState
+        self.idPedido = idPedido
         
         _pedidosViewModel = StateObject(
             wrappedValue: PedidosViewModel(perfilUsuarioState: perfilUsuarioState)

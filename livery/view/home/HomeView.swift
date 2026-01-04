@@ -143,6 +143,7 @@ struct FranjaPrincipal: View {
             BottomSheetNotificaciones(
                 onNotificacionClick: { idPedido in
                     mostrarNotificaciones = false
+                    navManager.irAPedido(idPedido: idPedido)
                 }
             )
             .onDisappear {
@@ -694,6 +695,8 @@ struct NotificationRow: View {
                 Spacer()
             }
             .padding(16)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
             .background(
                 // Fondo sólido si no leída, borde si leída
                 Group {

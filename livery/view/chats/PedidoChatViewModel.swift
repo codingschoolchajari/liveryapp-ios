@@ -162,9 +162,9 @@ class PedidoChatViewModel: ObservableObject {
         self.isChatTabActive = active
     }
     
-    func setChatParams(idPedido: String?, email: String?, idComercio: String?, idRepartidor: String?) {
+    func setChatParams(idPedido: String?, emailUsuario: String?, idComercio: String?, idRepartidor: String?) {
         self.idPedido = idPedido
-        self.emailUsuario = email
+        self.emailUsuario = emailUsuario
         self.idComercio = idComercio
         self.idRepartidor = idRepartidor
         self.refreshCounter += 1
@@ -172,6 +172,13 @@ class PedidoChatViewModel: ObservableObject {
     
     func limpiarError() {
         self.errorMensaje = nil
+    }
+    
+    func limpiarChat() {
+        self.mensajes = []
+        self.ultimoTimestamp = nil
+        self.idComercio = nil
+        self.idRepartidor = nil
     }
     
     struct ChatParams {

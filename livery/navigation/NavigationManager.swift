@@ -17,6 +17,7 @@ class NavigationManager: ObservableObject {
     
     @Published var currentPhase: AppPhase = .loading
     @Published var selectedSection: SeccionesView.Section = .home
+    @Published var idPedidoPendiente: String? = nil // Para redirección
     
     // Tus paths actuales se mantienen para la navegación interna de cada pestaña
     @Published var homePath = NavigationPath()
@@ -90,5 +91,10 @@ class NavigationManager: ObservableObject {
     
     func irADireccion() {
         homePath.append(HomeDestination.direccion)
+    }
+    
+    func irAPedido(idPedido: String) {
+        self.idPedidoPendiente = idPedido
+        self.selectedSection = .pedidos
     }
 }

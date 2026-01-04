@@ -6,6 +6,7 @@
 //
 import UIKit
 import AVFoundation
+import PDFKit
 
 func redimensionarImagen(
     imageBytes: Data,
@@ -40,4 +41,30 @@ func redimensionarImagen(
     // 4. Convertir de nuevo a Data (Equivalente a compress)
     // Usamos jpegData para comprimir con calidad, o pngData() si necesitas transparencia
     return scaledImage?.jpegData(compressionQuality: quality)
+}
+
+func convertirPdfAJpg(pdfData: Data) -> Data? {
+    // 1. Crear el documento PDF a partir de los bytes
+    guard let provider = CGDataProvider(data: pdfData as CFData),
+          let pdfDoc = CGPDFDocument(provider),
+          let page = pdfDoc.page(at: 1) else { return nil }
+
+    // 2. Obtener el tamaño de la página (MediaBox)
+    let pageRect = page.getBoxRect(.mediaBox)
+    
+    // 3. Crear un renderizador de imagen
+    let renderer = UIGraphicsImageRenderer(size: pageRect.size)
+    
+    let img = renderer.image { ctx in
+        UIColor.white.set() // Fondo blanco (importante si el PDF es transparente)
+        ctx.fill(pageRect)
+        
+        ctx.cgContext.translateBy(x: 0.0, y: pageRect.size.height)
+        ctx.cgContext.scaleBy(x: 1.0, y: -1.0)
+        
+        ctx.cgContext.drawPDFPage(page)
+    }
+    
+    // 4. Retornar como JPEG (usando tu calidad estándar de 0.9)
+    return img.jpegData(compressionQuality: 0.9)
 }

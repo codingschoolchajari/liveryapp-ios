@@ -77,10 +77,16 @@ struct SeccionesView: View {
                             }
                     }
                 case .pedidos:
-                    //NavigationStack(path: $navManager.pedidosPath) {
-                        PedidosView(perfilUsuarioState: perfilUsuarioState)
-                            
-                    //}
+                    NavigationStack(path: $navManager.pedidosPath) {
+                        // Pasamos el idPedidoPendiente si existe
+                        PedidosView(
+                            perfilUsuarioState: perfilUsuarioState,
+                            idPedido: navManager.idPedidoPendiente
+                        )
+                        .onAppear {
+                            navManager.idPedidoPendiente = nil
+                        }
+                    }
                 case .perfil:
                     NavigationStack(path: $navManager.perfilPath) {
                         PerfilView()

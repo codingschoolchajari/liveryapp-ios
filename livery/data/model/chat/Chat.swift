@@ -6,11 +6,15 @@
 //
 import Foundation
 
-struct Mensaje: Codable {
+struct Mensaje: Codable, Identifiable {
     var texto: String = ""
     var emisorId: String = ""
     var emisorNombre: String = ""
     var timestamp: Int64 = 0
+    
+    var id: Int64 {
+        timestamp
+    }
 }
 
 struct Chat: Codable {

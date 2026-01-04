@@ -78,10 +78,14 @@ struct BottomSheetPedidoDescripcion: View {
                          case 2: RecorridoTab(viewModel: pedidosViewModel)
                               */
                          case 3: ComentarioTab(pedidosViewModel: pedidosViewModel)
-                             /*
-                         case 4: ChatComercioTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
-                         case 5: ChatRepartidorTab(viewModel: pedidosViewModel, chatViewModel: pedidoChatViewModel)
-                              */
+                         case 4: ChatComercioTab(
+                            pedidosViewModel: pedidosViewModel,
+                            pedidoChatViewModel: pedidoChatViewModel
+                         )
+                         case 5: ChatRepartidorTab(
+                            pedidosViewModel: pedidosViewModel,
+                            pedidoChatViewModel: pedidoChatViewModel
+                         )
                          default: EmptyView()
                          }
                      }
@@ -91,13 +95,11 @@ struct BottomSheetPedidoDescripcion: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.blanco)
         .onChange(of: selectedTabIndex) { oldValue, newValue in
-            /*
             let isChatTab = (newValue == 4 || newValue == 5)
-            pedidoChatViewModel.setChatTabActive(isChatTab)
+            pedidoChatViewModel.setChatTabActive(active: isChatTab)
             
             let isRecorridoTab = (newValue == 2)
-            pedidosViewModel.setRecorridoTabActive(isRecorridoTab)
-             */
+            pedidosViewModel.setRecorridoTabActive(active: isRecorridoTab)
         }
     }
 }

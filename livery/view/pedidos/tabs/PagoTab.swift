@@ -302,23 +302,32 @@ struct ComprobanteView: View {
                     let extensionArchivo = url.pathExtension.lowercased()
                     
                     var dataFinal: Data = dataOriginal
+                    var extensionFinal = extensionArchivo
+                    var nombreFinal = nombre
                     
-                    // 1. Redimensionar solo si NO es un PDF
-                    if extensionArchivo != "pdf" {
-                        if let imagenRedimensionada = redimensionarImagen(
-                            imageBytes: dataOriginal,
-                            maxWidth: 1000,
-                            maxHeight: 1200
-                        ) {
-                            dataFinal = imagenRedimensionada
+                    if extensionArchivo == "pdf" {
+                        // CONVERTIR PDF A JPG
+                        if let imagenDesdePdf = convertirPdfAJpg(pdfData: dataOriginal) {
+                            dataFinal = imagenDesdePdf
+                            extensionFinal = "jpg"
+                            nombreFinal = nombre.replacingOccurrences(of: ".pdf", with: ".jpg", options: .caseInsensitive)
                         }
+                    }
+                    
+                    // 1. Redimensionar
+                    if let imagenRedimensionada = redimensionarImagen(
+                        imageBytes: dataFinal,
+                        maxWidth: 1000,
+                        maxHeight: 1200
+                    ) {
+                        dataFinal = imagenRedimensionada
                     }
                     
                     // 2. Crear el objeto comprobante (Ajusta los nombres según tu modelo en Swift)
                     let comprobante = Comprobante(
                         contenido: dataFinal,
-                        nombre: nombre,
-                        extension: extensionArchivo
+                        nombre: nombreFinal,
+                        extension: extensionFinal
                     )
                     
                     // 3. Llamar al ViewModel

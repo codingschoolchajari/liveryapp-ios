@@ -2,7 +2,7 @@
 //  Comprobante.swift
 //  livery
 //
-//  Created by Nicolas Matias Garay on 15/12/2025.
+//  Created by Nicolas Matias Garay on 04/01/2026.
 //
 import Foundation
 

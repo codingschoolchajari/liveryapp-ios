@@ -130,7 +130,7 @@ struct FilaComercioDescuento: View {
 }
 
 struct DescuentoSeleccionado: Identifiable {
-    let id = UUID()
+    let id = UUID().uuidString.lowercased()
     let idComercio: String
     let producto: Producto
 }

@@ -142,8 +142,8 @@ class PedidosService {
         comprobante: Comprobante
     ) async throws {
 
-        let boundary = UUID().uuidString
-        let url = URL(string: "\(pedidosURL)/comprobante")!
+        let boundary = UUID().uuidString.lowercased()
+        let url = URL(string: "\(pedidosURL)/cargarComprobante/\(email)/\(idPedido)")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

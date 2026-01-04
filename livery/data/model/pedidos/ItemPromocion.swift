@@ -7,7 +7,7 @@
 import Foundation
 
 struct ItemPromocion: Codable, Identifiable {
-    var idInterno: String = UUID().uuidString
+    var idInterno: String = UUID().uuidString.lowercased()
     let idPromocion: String
     let nombrePromocion: String
     var imagenPromocionURL: String = ""

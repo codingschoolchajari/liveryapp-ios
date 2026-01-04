@@ -214,7 +214,7 @@ class CarritoViewModel: ObservableObject {
         guard let comercioActual = comercio else { return }
         
         let pedido = Pedido(
-            idInterno: UUID().uuidString,
+            idInterno: UUID().uuidString.lowercased(),
             email: email,
             nombreUsuario: nombreUsuario,
             idComercio: String(comercioActual.idInterno),

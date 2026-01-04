@@ -210,6 +210,32 @@ class PedidosViewModel: ObservableObject {
         }
     }
     
+    func cargarComprobante(
+        pedido: Pedido,
+        comprobante: Comprobante
+    ) async {
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            let email = perfilUsuarioState.usuario?.email ?? ""
+            
+            try await pedidosService.cargarComprobante(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email,
+                idPedido: pedido.idInterno,
+                comprobante: comprobante
+            )
+            await refrescarPedidoSeleccionado(pedido: pedido)
+            
+        } catch {
+            print("Error al cargar comprobante: \(error)")
+        }
+    }
+    
     private func iniciarPollingRecorrido() {
         Task {
             await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)

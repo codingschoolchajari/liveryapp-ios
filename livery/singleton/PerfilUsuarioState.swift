@@ -57,7 +57,7 @@ class PerfilUsuarioState: ObservableObject {
         if let dispositivoID = UserDefaults.standard.object(forKey: key) {
             print("DispositivoID encontrado: \(dispositivoID)")
         } else {
-            let nuevoDispositivoID = UUID().uuidString
+            let nuevoDispositivoID = UUID().uuidString.lowercased()
             
             UserDefaults.standard.set(nuevoDispositivoID, forKey: key)
             print("Nuevo DispositivoID: \(nuevoDispositivoID)")

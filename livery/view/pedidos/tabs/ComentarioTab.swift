@@ -115,7 +115,7 @@ struct ComentarioTab: View {
     private func enviarComentario() {
         Task {
             // 1. Enviar el comentario
-            await pedidosViewModel.enviarComentario(
+            pedidosViewModel.enviarComentario(
                 estrellas: cantidadEstrellas,
                 texto: textoComentario,
                 nombreUsuario: perfilUsuarioState.usuario?.datosPersonales?.nombre ?? ""

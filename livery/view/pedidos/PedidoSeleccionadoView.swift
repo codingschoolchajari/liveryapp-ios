@@ -69,8 +69,12 @@ struct BottomSheetPedidoDescripcion: View {
                             estadoPedido: estadoPedido,
                             onCancel: onClose
                          )
-                             /*
-                         case 1: PagoTab(viewModel: pedidosViewModel, pedido: pedido, estado: estadoPedido)
+                         case 1: PagoTab(
+                            pedidosViewModel: pedidosViewModel,
+                            pedido: pedidosViewModel.pedidoSeleccionado!,
+                            estadoPedido: estadoPedido
+                         )
+                         /*
                          case 2: RecorridoTab(viewModel: pedidosViewModel)
                               */
                          case 3: ComentarioTab(pedidosViewModel: pedidosViewModel)

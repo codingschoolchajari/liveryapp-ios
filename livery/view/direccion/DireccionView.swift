@@ -181,7 +181,7 @@ struct FormularioDireccionView: View {
     ) {
         if let email = perfilUsuarioState.usuario?.email {
             Task {
-                let idDireccion = UUID().uuidString
+                let idDireccion = UUID().uuidString.lowercased()
                 
                 await direccionViewModel.guardarDireccion(
                     perfilUsuarioState: perfilUsuarioState,

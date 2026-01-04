@@ -7,7 +7,7 @@
 import Foundation
 
 struct Notificacion: Codable, Identifiable {
-    var id = UUID()
+    var id = UUID().uuidString.lowercased()
     let titulo: String
     let mensaje: String
     let idPedido: String

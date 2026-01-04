@@ -15,7 +15,7 @@ struct SeleccionableProducto: Codable, Identifiable {
 }
 
 struct ItemProducto: Codable, Identifiable {
-    var idInterno: String = UUID().uuidString
+    var idInterno: String = UUID().uuidString.lowercased()
     let idProducto: String
     let nombreProducto: String
     var imagenProductoURL: String = ""

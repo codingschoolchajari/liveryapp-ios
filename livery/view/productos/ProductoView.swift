@@ -97,7 +97,7 @@ struct ProductoTitulo: View {
         Task {
             if esFavorito {
                 await perfilUsuarioState.agregarFavorito(
-                    idFavorito: UUID().uuidString,
+                    idFavorito: UUID().uuidString.lowercased(),
                     idComercio: comercio.idInterno,
                     nombreComercio: comercio.nombre,
                     logoComercioURL: comercio.logoURL,

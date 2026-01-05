@@ -70,6 +70,7 @@ class NavigationManager: ObservableObject {
     enum HomeDestination: Hashable {
         case direccion
         case comercio(idComercio: String)
+        case premios
     }
     
     enum DescuentosDestination: Hashable {
@@ -91,6 +92,10 @@ class NavigationManager: ObservableObject {
     
     func irADireccion() {
         homePath.append(HomeDestination.direccion)
+    }
+    
+    func irAPremios() {
+        homePath.append(HomeDestination.premios)
     }
     
     func irAPedido(idPedido: String) {

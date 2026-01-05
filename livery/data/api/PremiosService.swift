@@ -7,33 +7,28 @@
 import Foundation
 
 class PremiosService {
-    func obtenerResultadoGirarRuleta(token: String, dispositivoID: String, ciudad: String, email: String) async throws -> Premio? {
-        guard var urlComponents = URLComponents(string: "\(API.baseURL)\(API.Endpoints.premios)/resultadoGirarRuleta") else {
-            fatalError("URL incorrecta")
+    func obtenerResultadoGirarRuleta(
+        token: String,
+        dispositivoID: String,
+        ciudad: String,
+        email: String
+    ) async throws -> Premio? {
+        
+        guard let url = URL(string: "\(premiosURL)/obtenerResultadoGirarRuleta/\(ciudad)/\(email)") else {
+            throw URLError(.badURL)
         }
-        
-        urlComponents.queryItems = [
-            URLQueryItem(name: "dispositivoID", value: dispositivoID),
-            URLQueryItem(name: "ciudad", value: ciudad),
-            URLQueryItem(name: "email", value: email)
-        ]
-        
-        guard let url = urlComponents.url else {
-            fatalError("No se pudo construir la URL")
-        }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
         let (data, response) = try await URLSession.shared.data(for: request)
-        
         guard let httpResponse = response as? HTTPURLResponse,
               200...299 ~= httpResponse.statusCode else {
-            return nil // Permite devolver null si el backend responde con error
+            throw URLError(.badServerResponse)
         }
-        
-        let premio = try JSONDecoder().decode(Premio?.self, from: data)
-        return premio
+
+        return try JSONDecoder().decode(Premio?.self, from: data)
     }
 }

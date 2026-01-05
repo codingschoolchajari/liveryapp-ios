@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "personaje_con_premio.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

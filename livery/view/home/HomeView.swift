@@ -107,7 +107,7 @@ struct FranjaPrincipal: View {
                 }
 
                 Button {
-                    //NavigationManager.shared.navigate("premios")
+                    navManager.irAPremios()
                 } label: {
                     ZStack(alignment: .topTrailing) {
                         Image("icono_premios")
@@ -115,11 +115,19 @@ struct FranjaPrincipal: View {
                             .scaledToFit()
                             .frame(width: 24, height: 24)
                             .foregroundColor(.blanco)
-                        
-                        let giros = perfilUsuarioState.usuario?.premios?.girosRestantes
-                        if let giros, giros > 0 {
-                            //BadgeView(count: giros)
-                        }
+                            .overlay(alignment: .topTrailing) {
+                                let giros = perfilUsuarioState.usuario?.premios?.girosRestantes
+                                if let giros, giros > 0  {
+                                    Text("\(giros)")
+                                        .font(.custom("Barlow", size: 12))
+                                        .bold()
+                                        .foregroundColor(.blanco)
+                                        .frame(width: 22, height: 22)
+                                        .background(Color.red)
+                                        .clipShape(Circle())
+                                        .offset(x: 10, y: -8)
+                                }
+                            }
                     }
                 }
             }

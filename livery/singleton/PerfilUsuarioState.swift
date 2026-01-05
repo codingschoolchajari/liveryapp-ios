@@ -73,7 +73,7 @@ class PerfilUsuarioState: ObservableObject {
             do {
                 // Intentamos obtener el token.
                 // Si expiró, Firebase lo refresca automáticamente aquí.
-                let token = try await user.getIDToken(forcingRefresh: false)
+                var token = try await user.getIDToken(forcingRefresh: false)
                 print("Token validado/refrescado correctamente")
                 
                 // 2. Una vez que el token es seguro, buscamos al usuario en TU backend
@@ -400,6 +400,15 @@ class PerfilUsuarioState: ObservableObject {
             
         } catch {
             print("❌ El tokenFCM no ha podido ser generado o enviado: \(error.localizedDescription)")
+        }
+    }
+    
+    // Premios
+    func restarGirosRuleta() {
+        // Si 'usuario' es @Published, esto notificará automáticamente a la UI
+        if var u = usuario, let giros = u.premios?.girosRestantes {
+            u.premios?.girosRestantes = max(0, giros - 1)
+            self.usuario = u
         }
     }
 }

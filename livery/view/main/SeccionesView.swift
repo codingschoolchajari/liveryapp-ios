@@ -37,6 +37,11 @@ struct SeccionesView: View {
                                         )
                                     )
                                         .navigationBarBackButtonHidden(true)
+                                case .premios:
+                                    PremiosView(
+                                        perfilUsuarioState: perfilUsuarioState
+                                    )
+                                        .navigationBarBackButtonHidden(true)
                                 }
                             }
                     }

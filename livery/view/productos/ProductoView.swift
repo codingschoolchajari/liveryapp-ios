@@ -200,6 +200,8 @@ struct BottomSheetSeleccionProducto: View {
             
             // 2. Bloque Central (Descripción + Seleccionables) - NO Scrolleable externamente
             VStack(alignment: .leading, spacing: 0) {
+                Spacer().frame(height: 12)
+                
                 ProductoDescripcion(
                     producto: producto,
                     fontSizeNombre: 20,

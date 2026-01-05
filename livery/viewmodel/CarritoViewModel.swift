@@ -88,7 +88,7 @@ class CarritoViewModel: ObservableObject {
             
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             
-            var booleanResponse: BooleanResponse = try await comerciosService.comercioAbierto(
+            let booleanResponse: BooleanResponse = try await comerciosService.comercioAbierto(
                 token: accessToken,
                 dispositivoID: dispositivoID,
                 idInterno: comercio!.idInterno
@@ -310,5 +310,12 @@ class CarritoViewModel: ObservableObject {
         itemsProductos = []
         itemsPromociones = []
         comercio = nil
+    }
+    
+    // Premios
+    func existePremioEnCarrito(idInterno: String) -> Bool {
+        return itemsProductos.contains { item in
+            item.idPremio == idInterno
+        }
     }
 }

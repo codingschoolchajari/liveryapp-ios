@@ -4,7 +4,7 @@
 //
 //  Created by Nicolas Matias Garay on 19/12/2025.
 //
-enum ComerciosHelper {
+struct ComerciosHelper {
 
     static func obtenerProducto(
         comercio: Comercio,

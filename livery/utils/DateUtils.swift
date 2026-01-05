@@ -108,4 +108,18 @@ struct DateUtils {
         // 3. Formateamos el resultado con 2 dígitos (equivalente al %02d)
         return String(format: "%02d:%02d", nuevaHora, nuevoMinuto)
     }
+    
+    static func fechaSinSegundos(_ fecha: String) -> String {
+        // Dividimos el string por el carácter ":"
+        let partes = fecha.components(separatedBy: ":")
+        
+        // Verificamos que tengamos al menos hora y minutos (2 partes)
+        if partes.count >= 2 {
+            // Retornamos las primeras dos partes unidas por ":"
+            return "\(partes[0]):\(partes[1])"
+        } else {
+            // Si el formato es distinto o falla, devolvemos el string original
+            return fecha
+        }
+    }
 }

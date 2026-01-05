@@ -96,8 +96,8 @@ class PremiosViewModel: ObservableObject {
             self.comercio = resultadoComercio
             
             if let comercioActual = self.comercio {
-                self.categoria = obtenerCategoria(comercio: comercioActual, idProducto: idProducto)
-                var producto = obtenerProducto(comercio: comercioActual, idProducto: idProducto)
+                self.categoria = ComerciosHelper.obtenerCategoria(comercio: comercioActual, idProducto: idProducto)
+                var producto = ComerciosHelper.obtenerProducto(comercio: comercioActual, idProducto: idProducto)
                 
                 // Configuración de los valores del premio
                 producto?.esPremio = true
@@ -115,16 +115,5 @@ class PremiosViewModel: ObservableObject {
 
     func limpiarProductoSeleccionado() {
         self.productoSeleccionado = nil
-    }
-    
-    // MARK: - Helpers (Implementar según lógica de negocio)
-    private func obtenerCategoria(comercio: Comercio, idProducto: String) -> Categoria? {
-        // Lógica para filtrar categoría dentro del objeto comercio
-        return nil
-    }
-
-    private func obtenerProducto(comercio: Comercio, idProducto: String) -> Producto? {
-        // Lógica para filtrar producto dentro del objeto comercio
-        return nil
     }
 }

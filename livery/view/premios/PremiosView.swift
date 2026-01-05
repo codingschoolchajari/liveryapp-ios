@@ -21,69 +21,86 @@ struct PremiosView: View {
     @State private var segmentos: [String] = []
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack {
+            VStack(spacing: 0) {
+                
+                FranjaSuperior()
+                
+                // Ruleta
+                if !segmentos.isEmpty {
+                    RuletaPremios(
+                        segmentos: segmentos,
+                        girar: premiosViewModel.girarRuleta,
+                        resultado: premiosViewModel.resultadoGirarRuleta
+                    ) {
+                        Task {
+                            premiosViewModel.onGirarRuletaChange(valor: false)
+                            await perfilUsuarioState.buscarUsuario()
+                            mostrarPopUpResultado = true
+                        }
+                    }
+                }
+                
+                Spacer().frame(height: 16)
+                
+                // Botón Girar
+                let girosRestantes = perfilUsuarioState.usuario?.premios?.girosRestantes ?? 0
+                let enabled = !premiosViewModel.girarRuleta && girosRestantes > 0
+                
+                Button(action: {
+                    if enabled {
+                        Task {
+                            perfilUsuarioState.restarGirosRuleta()
+                            await premiosViewModel.obtenerResultadoGirarRuleta()
+                            premiosViewModel.onGirarRuletaChange(valor: true)
+                        }
+                    }
+                }) {
+                    Text("Girar")
+                        .font(.custom("Barlow", size: 18))
+                        .bold()
+                        .frame(width: 250, height: 40)
+                        .background(enabled ? Color.verdePrincipal : Color.grisSurface)
+                        .foregroundColor(enabled ? Color.blanco : Color.grisSecundario)
+                        .cornerRadius(24)
+                }
+                .disabled(!enabled)
+                
+                Spacer().frame(height: 16)
+                Divider()
+                Spacer().frame(height: 16)
+                
+                ListaPremios(premiosViewModel: premiosViewModel)
+                    .padding(.bottom, 20)
+            }
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.blanco)
+            .disabled(mostrarPopUpResultado)
             
-            FranjaSuperior()
-            
-            // Ruleta
-            if !segmentos.isEmpty {
-                RuletaPremios(
-                    segmentos: segmentos,
-                    girar: premiosViewModel.girarRuleta,
+            if mostrarPopUpResultado {
+                // Fondo oscuro semitransparente
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        // Opcional: cerrar al tocar fuera
+                        withAnimation { mostrarPopUpResultado = false }
+                    }
+                
+                // Tu componente de diálogo
+                DialogoResultadoGirarRuleta(
+                    mostrarPopUpResultado: $mostrarPopUpResultado,
                     resultado: premiosViewModel.resultadoGirarRuleta
-                ) {
-                    Task {
-                        premiosViewModel.onGirarRuletaChange(valor: false)
-                        await perfilUsuarioState.buscarUsuario()
-                        mostrarPopUpResultado = true
-                    }
-                }
+                )
+                .transition(.scale.combined(with: .opacity)) // Animación de entrada
+                .zIndex(1) // Asegura que esté por encima de todo
             }
-            
-            Spacer().frame(height: 16)
-            
-            // Botón Girar
-            let girosRestantes = perfilUsuarioState.usuario?.premios?.girosRestantes ?? 0
-            let enabled = !premiosViewModel.girarRuleta && girosRestantes > 0
-            
-            Button(action: {
-                if enabled {
-                    Task {
-                        perfilUsuarioState.restarGirosRuleta()
-                        await premiosViewModel.obtenerResultadoGirarRuleta()
-                        premiosViewModel.onGirarRuletaChange(valor: true)
-                    }
-                }
-            }) {
-                Text("Girar")
-                    .font(.custom("Barlow", size: 18))
-                    .bold()
-                    .frame(width: 250, height: 40)
-                    .background(enabled ? Color.verdePrincipal : Color.grisSurface)
-                    .foregroundColor(enabled ? Color.blanco : Color.grisSecundario)
-                    .cornerRadius(24)
-            }
-            .disabled(!enabled)
-            
-            Spacer().frame(height: 16)
-            Divider()
-            
-            ListaPremios(premiosViewModel: premiosViewModel)
         }
-        .padding(.horizontal, 16)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.blanco)
         .onAppear {
             Task {
                 await premiosViewModel.refresh()
                 prepararSegmentos()
             }   
-        }
-        .sheet(isPresented: $mostrarPopUpResultado) {
-            DialogoResultadoGirarRuleta(
-                mostrarPopUpResultado: $mostrarPopUpResultado,
-                resultado: premiosViewModel.resultadoGirarRuleta
-            )
         }
     }
     
@@ -99,7 +116,8 @@ struct FranjaSuperior: View {
     var body: some View {
         HStack(alignment: .top) {
             // Círculo con el número de giros restantes
-            Text("\(perfilUsuarioState.usuario?.premios?.girosRestantes ?? 0)")                .font(.custom("Barlow", size: 20))
+            Text("\(perfilUsuarioState.usuario?.premios?.girosRestantes ?? 0)")
+                .font(.custom("Barlow", size: 20))
                 .bold()
                 .foregroundColor(Color.naranjaIntentosRestantes)
                 .frame(width: 40, height: 40)
@@ -254,43 +272,126 @@ struct RuletaPremios: View {
 struct ListaPremios: View {
     @ObservedObject var premiosViewModel: PremiosViewModel
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
     
+    @State private var mostrarAlertaError = false
+
     var body: some View {
-        let historial = perfilUsuarioState.usuario?.premios?.historialPremios.reversed() ?? []
+        let listaFiltrada = (perfilUsuarioState.usuario?.premios?.historialPremios ?? [])
+            .filter { $0.localidad == perfilUsuarioState.ciudadSeleccionada }
+            .reversed()
         
         ScrollView {
             LazyVStack(spacing: 12) {
-                ForEach(historial, id: \.idInterno) { premio in
+                ForEach(listaFiltrada, id: \.idInterno) { premio in
                     HStack(alignment: .top) {
-                        // Imagen Logo
+                        // Imagen Logo (con URL base)
                         AsyncImage(url: URL(string: API.baseURL + "/" + premio.logoComercioURL)) { img in
                             img.resizable().aspectRatio(contentMode: .fill)
                         } placeholder: {
-                            Color.gray
+                            Color.gray.opacity(0.2)
                         }
                         .frame(width: 65, height: 65)
-                        .cornerRadius(12)
+                        .clipShape(RoundedCorners(radius: 12))
                         
-                        VStack(alignment: .leading) {
-                            Text(premio.nombreProducto)
-                                .font(.headline)
-                            Text("Ganado: \(premio.fechaAsignacion)")
-                                .font(.subheadline)
-                            Text(premio.estado)
-                                .font(.caption).bold()
-                                .foregroundColor(.orange)
-                        }
+                        PremioDescripcion(premio: premio)
+                        
                         Spacer()
                     }
                     .padding(12)
-                    .background(Color(UIColor.secondarySystemBackground))
+                    .background(Color.grisSurface)
                     .cornerRadius(12)
                     .onTapGesture {
-                        premiosViewModel.seleccionarPremio(premio: premio)
+                        if carritoViewModel.existePremioEnCarrito(idInterno: premio.idInterno) {
+                            mostrarAlertaError = true
+                        } else if EstadoPremio.desdeString(premio.estado) == .asignado {
+                            premiosViewModel.seleccionarPremio(premio: premio)
+                        }
                     }
                 }
             }
-            .padding(.bottom, 100)
+        }
+        .alert("Premio utilizado", isPresented: $mostrarAlertaError) {
+            Button("Aceptar", role: .cancel) { }
+        } message: {
+            Text("El premio seleccionado ya se encuentra en el carrito")
+        }
+        // 4. Llamada al Sheet de Selección de Producto
+        .sheet(item: $premiosViewModel.premioSeleccionado) { premio in
+            SeleccionProductoView(
+                premiosViewModel: premiosViewModel,
+                premio: premio
+            )
+        }
+        .onDisappear(){
+            premiosViewModel.limpiarPremioSeleccionado()
+            premiosViewModel.limpiarProductoSeleccionado()
+        }
+    }
+}
+
+struct SeleccionProductoView: View {
+    @ObservedObject var premiosViewModel: PremiosViewModel
+    let premio: Premio
+    
+    var body: some View {
+        VStack {
+            if let producto = premiosViewModel.productoSeleccionado,
+               let categoria = premiosViewModel.categoria,
+               let comercio = premiosViewModel.comercio {
+                
+                BottomSheetSeleccionProducto(
+                    producto: producto,
+                    categoria: categoria,
+                    comercio: comercio,
+                    onClose: {
+                        premiosViewModel.limpiarPremioSeleccionado()
+                        premiosViewModel.limpiarProductoSeleccionado()
+                    }
+                )
+            } else {
+                ProgressView("Cargando producto...")
+            }
+        }
+        .onAppear {
+            Task{
+                await premiosViewModel.inicializarProductoSeleccionado(
+                    idComercio: premio.idComercio,
+                    idProducto: premio.idProducto,
+                    idPremio: premio.idInterno
+                )
+            }
+        }
+    }
+}
+
+struct PremioDescripcion: View {
+    let premio: Premio
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            // Nombre del Producto
+            Text(premio.nombreProducto)
+                .font(.custom("Barlow", size: 16))
+                .bold()
+                .foregroundColor(.negro)
+            
+            // Fecha de Asignación
+            Text("Ganado : \(DateUtils.fechaSinSegundos(premio.fechaAsignacion))")
+                .font(.custom("Barlow", size: 14))
+                .foregroundColor(.negro)
+            
+            // Fecha de Utilización (Conditional)
+            if let fechaUti = premio.fechaUtilizacion, !fechaUti.isEmpty {
+                Text("Utilizado : \(DateUtils.fechaSinSegundos(fechaUti))")
+                    .font(.custom("Barlow", size: 14))
+                    .foregroundColor(.negro)
+            }
+            // Estado del Premio
+            Text(PremiosHelper.obtenerEstadoPremio(premio.estado))
+                .font(.custom("Barlow", size: 14))
+                .bold()
+                .foregroundColor(PremiosHelper.obtenerColorEstadoPremio(premio.estado) ?? .primary)
         }
     }
 }
@@ -308,7 +409,7 @@ struct DialogoResultadoGirarRuleta: View {
 
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(alignment: .center, spacing: 24) {
+                    VStack(alignment: .center, spacing: 12) {
                         
                         if resultado == nil {
                             // --- CASO: SIN PREMIO ---
@@ -317,7 +418,7 @@ struct DialogoResultadoGirarRuleta: View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 200)
 
-                            TextStrokeView(text: "Suerte la Próxima", color: .blue)
+                            TextStrokeView(text: "Suerte la Próxima", color: Color.verdePrincipal)
                             
                         } else {
                             // --- CASO: CON PREMIO ---
@@ -326,13 +427,14 @@ struct DialogoResultadoGirarRuleta: View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 200)
 
-                            TextStrokeView(text: "Ganaste un Premio", color: .blue)
+                            TextStrokeView(text: "Ganaste un Premio", color: Color.verdePrincipal)
 
                             Divider()
-                                .padding(.vertical, 8)
 
                             Text(resultado?.nombreProducto ?? "")
-                                .font(.system(size: 16, weight: .bold))
+                                .font(.custom("Barlow", size: 20))
+                                .bold()
+                                .foregroundColor(.negro)
                                 .multilineTextAlignment(.center)
 
                             // Imagen del Producto
@@ -347,16 +449,18 @@ struct DialogoResultadoGirarRuleta: View {
                             .clipped()
 
                             Text("Cortesía de \(resultado?.nombreComercio ?? "")")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.secondary)
+                                .font(.custom("Barlow", size: 20))
+                                .bold()
+                                .foregroundColor(.negro)
                         }
                     }
                     .padding(.vertical, 32)
                     .frame(maxWidth: .infinity)
                 }
             }
-            .frame(width: UIScreen.main.bounds.width * 0.9)
-            .background(Color(UIColor.systemBackground))
+            .frame(maxWidth: .infinity)
+            .frame(height: resultado != nil ? UIScreen.main.bounds.height * 0.60 : UIScreen.main.bounds.height * 0.40)
+            .background(Color.blanco)
             .cornerRadius(16)
             .shadow(radius: 10)
         }
@@ -368,19 +472,30 @@ struct TextStrokeView: View {
     let text: String
     let color: Color
     
+    // Definimos los puntos de offset de forma clara
+    private let offsets: [CGPoint] = [
+        CGPoint(x: -1.5, y: -1.5),
+        CGPoint(x: 1.5, y: -1.5),
+        CGPoint(x: -1.5, y: 1.5),
+        CGPoint(x: 1.5, y: 1.5)
+    ]
+    
     var body: some View {
         ZStack {
-            // Simulación de Stroke mediante 4 offsets (técnica común en SwiftUI)
-            ForEach([(-1.5, -1.5), (1.5, -1.5), (-1.5, 1.5), (1.5, 1.5)], id: \.0) { offset in
+            // Usamos el rango de índices (0, 1, 2, 3) para garantizar IDs únicos
+            ForEach(0..<offsets.count, id: \.self) { index in
                 Text(text)
-                    .font(.system(size: 40, weight: .black))
-                    .foregroundColor(.primary) // El color del borde
-                    .offset(x: offset.0, y: offset.1)
+                    .font(.custom("Barlow", size: 40))
+                    .bold()
+                    .foregroundColor(.negro)
+                    .offset(x: offsets[index].x, y: offsets[index].y)
             }
             
+            // Texto principal
             Text(text)
-                .font(.system(size: 40, weight: .black))
-                .foregroundColor(color) // El color del relleno
+                .font(.custom("Barlow", size: 40))
+                .bold()
+                .foregroundColor(color)
         }
         .multilineTextAlignment(.center)
     }

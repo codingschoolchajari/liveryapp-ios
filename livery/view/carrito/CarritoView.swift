@@ -157,7 +157,11 @@ struct ItemProductoRow: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(itemProducto.esPremio ? Color.oroPremio : Color.clear, lineWidth: 3)
+                    .inset(by: 1)
+                    .stroke(
+                        itemProducto.esPremio ? Color.oroPremio : .clear,
+                        lineWidth: 2
+                    )
         )
     }
 }

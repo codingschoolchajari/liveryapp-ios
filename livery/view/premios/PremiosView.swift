@@ -349,8 +349,6 @@ struct SeleccionProductoView: View {
                         premiosViewModel.limpiarProductoSeleccionado()
                     }
                 )
-            } else {
-                ProgressView("Cargando producto...")
             }
         }
         .onAppear {

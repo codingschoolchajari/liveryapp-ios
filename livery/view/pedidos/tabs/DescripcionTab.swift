@@ -21,6 +21,8 @@ struct DescripcionTab: View {
                         titulo: "Productos",
                         expandidoInicialmente: false,
                         contenido: {
+                            Spacer().frame(height: 8)
+                            
                             VStack(spacing: 8) {
                                 ItemsProductosView(pedido: pedido)
                                 ItemsPromocionesView(pedido: pedido)

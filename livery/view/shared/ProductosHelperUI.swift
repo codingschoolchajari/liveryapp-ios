@@ -117,7 +117,6 @@ struct Seleccionables: View {
                 }
             }
         }
-        .frame(maxHeight: 250)
         .overlay(ToastView(mensaje: $mensajeToast), alignment: .bottom)
     }
     

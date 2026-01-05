@@ -165,12 +165,11 @@ struct BottomSheetSeleccionPromocion: View {
                     viewModel: itemPromocionViewModel
                 )
             }
+            .frame(maxHeight: .infinity)
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             
             VStack(spacing: 4) {
-                
-                Spacer()
                 
                 CantidadUnidadesYPrecio(
                     cambioUnidadesHabilitado: itemPromocionViewModel.productosSeleccionablesState.isEmpty,
@@ -332,7 +331,9 @@ struct ProductosSeleccionablesTabs: View {
                                 viewModel.cambiarSeleccionadoMultiple(productoState: state, id: id, cantidad: cantidad)
                             }
                         )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

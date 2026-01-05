@@ -116,7 +116,7 @@ struct AgregarCarrito: View {
                 .cornerRadius(24)
         }
         .disabled(!enabled)
-        .padding(.bottom, 12)
+        .padding(.bottom, 0)
         .alert("Productos de otro Comercio", isPresented: $mostrarDialogoConflicto) {
             Button("Cancelar", role: .cancel) { }
             Button("Aceptar") {

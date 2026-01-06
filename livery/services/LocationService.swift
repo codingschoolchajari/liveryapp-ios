@@ -51,4 +51,21 @@ final class LocationService: NSObject, LocationServicing, CLLocationManagerDeleg
         guard let coord = locations.last?.coordinate else { return }
         onLocationUpdate?(coord)
     }
+    
+    func checkPermissionStatus() {
+        switch manager.authorizationStatus {
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+
+        case .restricted, .denied:
+            // Mostrar UI explicando y botón a Ajustes
+            print("Permiso denegado")
+
+        case .authorizedWhenInUse, .authorizedAlways:
+            manager.startUpdatingLocation()
+
+        @unknown default:
+            break
+        }
+    }
 }

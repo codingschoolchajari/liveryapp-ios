@@ -13,6 +13,7 @@ class DireccionViewModel: ObservableObject {
     private let usuariosService = UsuariosService()
     private let locationService: LocationServicing
 
+    @Published var permissionState: LocationPermissionState = .checking
     @Published var coordenadas: CLLocationCoordinate2D?
     @Published var permisoConcedido: Bool = false
 
@@ -24,18 +25,18 @@ class DireccionViewModel: ObservableObject {
     init(locationService: LocationServicing = LocationService()) {
         self.locationService = locationService
 
-        self.locationService.onAuthorizationChange = { [weak self] status in
-            Task { @MainActor in
-                let granted = status == .authorizedWhenInUse || status == .authorizedAlways
-                self?.permisoConcedido = granted
-                if granted {
-                    self?.locationService.startUpdatingLocation()
-                }
+        bindLocationService()
+    }
+    
+    private func bindLocationService() {
+        locationService.onAuthorizationChange = { [weak self] status in
+            DispatchQueue.main.async {
+                self?.handleAuthorization(status)
             }
         }
 
-        self.locationService.onLocationUpdate = { [weak self] coord in
-            Task { @MainActor in
+        locationService.onLocationUpdate = { [weak self] coord in
+            DispatchQueue.main.async {
                 self?.coordenadas = coord
             }
         }
@@ -47,17 +48,38 @@ class DireccionViewModel: ObservableObject {
         }
     }
     
+    private func handleAuthorization(_ status: CLAuthorizationStatus) {
+            switch status {
+            case .notDetermined:
+                permissionState = .checking
+                locationService.requestPermission()
+
+            case .authorizedWhenInUse, .authorizedAlways:
+                permissionState = .granted
+                locationService.startUpdatingLocation()
+
+            case .denied:
+                permissionState = .denied
+
+            case .restricted:
+                permissionState = .restricted
+
+            @unknown default:
+                break
+            }
+        }
+    
     func guardarDireccion(
         perfilUsuarioState: PerfilUsuarioState,
         email: String,
         idDireccion: String
-    ) async {
+    ) async -> Bool {
         await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
         let accessToken = TokenRepository.repository.accessToken ?? ""
         
         guard let coords = self.coordenadas else {
             print("Error: El objeto coordenadas es nulo")
-            return
+            return false
         }
         
         do {
@@ -78,9 +100,11 @@ class DireccionViewModel: ObservableObject {
                 email: email,
                 usuarioDireccion: usuarioDireccion
             )
-
+            
+            return true
         } catch {
             print("Error al guardar direccion: \(error.localizedDescription)")
+            return false
         }
     }
 }

@@ -10,11 +10,52 @@ import GoogleMaps
 struct DireccionView: View {
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    //@EnvironmentObject var carritoViewModel: CarritoViewModel
-
-    @StateObject var direccionViewModel = DireccionViewModel()
+    @StateObject private var direccionViewModel = DireccionViewModel()
 
     var body: some View {
+        VStack {
+            switch direccionViewModel.permissionState {
+
+            case .checking:
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            case .denied:
+                LocationPermissionView()
+
+            case .restricted:
+                VStack(spacing: 12) {
+                    Text("Ubicación restringida")
+                        .font(.custom("Barlow", size: 16))
+                        .bold()
+                        .foregroundColor(.negro)
+
+                    Text("El acceso a la ubicación está restringido por el sistema.")
+                        .font(.custom("Barlow", size: 16))
+                        .bold()
+                        .foregroundColor(.negro)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+
+            case .granted:
+                contenidoPrincipal
+            }
+        }
+        .background(Color.blanco)
+        .task {
+            direccionViewModel.verificarPermisoUbicacion()
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIApplication.didBecomeActiveNotification
+            )
+        ) { _ in
+            direccionViewModel.verificarPermisoUbicacion()
+        }
+    }
+    
+    private var contenidoPrincipal: some View {
         VStack {
             ZStack {
                 if direccionViewModel.coordenadas != nil {
@@ -37,10 +78,6 @@ struct DireccionView: View {
 
             FormularioDireccionView(direccionViewModel: direccionViewModel)
             Spacer()
-        }
-        .background(Color.blanco)
-        .task {
-            direccionViewModel.verificarPermisoUbicacion()
         }
     }
 }
@@ -171,7 +208,15 @@ struct FormularioDireccionView: View {
     private func esFormularioValido(
         _ direccionViewModel: DireccionViewModel
     ) -> Bool {
-        return !direccionViewModel.calle.isEmpty && !direccionViewModel.numero.isEmpty
+        
+        if(direccionViewModel.calle.isEmpty
+           || direccionViewModel.numero.isEmpty
+           || direccionViewModel.coordenadas == nil
+        ) {
+            return false
+        } else {
+            return true
+        }
     }
     
     private func guardarDireccion(
@@ -183,12 +228,14 @@ struct FormularioDireccionView: View {
             Task {
                 let idDireccion = UUID().uuidString.lowercased()
                 
-                await direccionViewModel.guardarDireccion(
+                let direccionGuardada = await direccionViewModel.guardarDireccion(
                     perfilUsuarioState: perfilUsuarioState,
                     email: email,
                     idDireccion: idDireccion
                 )
-                await perfilUsuarioState.actualizarDireccionSeleccionada(idDireccion: idDireccion)
+                if (direccionGuardada) {
+                    await perfilUsuarioState.actualizarDireccionSeleccionada(idDireccion: idDireccion)
+                }
                 await perfilUsuarioState.buscarUsuario()
                 navManager.select(.home)
             }

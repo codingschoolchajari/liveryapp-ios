@@ -24,54 +24,68 @@ struct PremiosView: View {
         ZStack {
             VStack(spacing: 0) {
                 
-                FranjaSuperior()
-                
-                // Ruleta
-                if !segmentos.isEmpty {
-                    RuletaPremios(
-                        segmentos: segmentos,
-                        girar: premiosViewModel.girarRuleta,
-                        resultado: premiosViewModel.resultadoGirarRuleta
-                    ) {
-                        Task {
-                            premiosViewModel.onGirarRuletaChange(valor: false)
-                            await perfilUsuarioState.buscarUsuario()
-                            mostrarPopUpResultado = true
+                if  ( perfilUsuarioState.ciudadSeleccionada != nil
+                      && perfilUsuarioState.ciudadSeleccionada == StringUtils.sinCobertura
+                    ) || (
+                        perfilUsuarioState.usuario != nil
+                        && perfilUsuarioState.usuario!.direcciones?.isEmpty ?? true
+                    ) || (
+                        perfilUsuarioState.idDireccionSeleccionada == nil
+                    )
+                {
+                    DireccionFueraDeCobertura()
+                } else {
+                    Spacer().frame(height: 8)
+                    
+                    FranjaSuperior()
+                    
+                    // Ruleta
+                    if !segmentos.isEmpty {
+                        RuletaPremios(
+                            segmentos: segmentos,
+                            girar: premiosViewModel.girarRuleta,
+                            resultado: premiosViewModel.resultadoGirarRuleta
+                        ) {
+                            Task {
+                                premiosViewModel.onGirarRuletaChange(valor: false)
+                                await perfilUsuarioState.buscarUsuario()
+                                mostrarPopUpResultado = true
+                            }
                         }
                     }
-                }
-                
-                Spacer().frame(height: 16)
-                
-                // Botón Girar
-                let girosRestantes = perfilUsuarioState.usuario?.premios?.girosRestantes ?? 0
-                let enabled = !premiosViewModel.girarRuleta && girosRestantes > 0
-                
-                Button(action: {
-                    if enabled {
-                        Task {
-                            perfilUsuarioState.restarGirosRuleta()
-                            await premiosViewModel.obtenerResultadoGirarRuleta()
-                            premiosViewModel.onGirarRuletaChange(valor: true)
+                    
+                    Spacer().frame(height: 16)
+                    
+                    // Botón Girar
+                    let girosRestantes = perfilUsuarioState.usuario?.premios?.girosRestantes ?? 0
+                    let enabled = !premiosViewModel.girarRuleta && girosRestantes > 0
+                    
+                    Button(action: {
+                        if enabled {
+                            Task {
+                                perfilUsuarioState.restarGirosRuleta()
+                                await premiosViewModel.obtenerResultadoGirarRuleta()
+                                premiosViewModel.onGirarRuletaChange(valor: true)
+                            }
                         }
+                    }) {
+                        Text("Girar")
+                            .font(.custom("Barlow", size: 18))
+                            .bold()
+                            .frame(width: 250, height: 40)
+                            .background(enabled ? Color.verdePrincipal : Color.grisSurface)
+                            .foregroundColor(enabled ? Color.blanco : Color.grisSecundario)
+                            .cornerRadius(24)
                     }
-                }) {
-                    Text("Girar")
-                        .font(.custom("Barlow", size: 18))
-                        .bold()
-                        .frame(width: 250, height: 40)
-                        .background(enabled ? Color.verdePrincipal : Color.grisSurface)
-                        .foregroundColor(enabled ? Color.blanco : Color.grisSecundario)
-                        .cornerRadius(24)
+                    .disabled(!enabled)
+                    
+                    Spacer().frame(height: 16)
+                    Divider()
+                    Spacer().frame(height: 16)
+                    
+                    ListaPremios(premiosViewModel: premiosViewModel)
+                        .padding(.bottom, 20)
                 }
-                .disabled(!enabled)
-                
-                Spacer().frame(height: 16)
-                Divider()
-                Spacer().frame(height: 16)
-                
-                ListaPremios(premiosViewModel: premiosViewModel)
-                    .padding(.bottom, 20)
             }
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity)

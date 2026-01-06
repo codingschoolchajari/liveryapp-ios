@@ -47,6 +47,7 @@ struct Bienvenida: View {
                 .font(.custom("Barlow", size: 16))
                 .bold()
                 .lineLimit(1)
+                .foregroundColor(Color.negro)
 
             if let email = perfilUsuarioState.usuario?.email {
                 Text(email)
@@ -112,6 +113,7 @@ struct TituloSeccion: View {
         Text(text)
             .font(.custom("Barlow", size: 22))
             .bold()
+            .foregroundColor(Color.negro)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 20)
     }

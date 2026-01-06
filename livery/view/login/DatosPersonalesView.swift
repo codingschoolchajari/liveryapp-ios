@@ -56,44 +56,68 @@ struct FormularioDatosPersonalesView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            TextField("Nombre", text: $nombre)
-                .tint(.verdePrincipal)
-                .autocapitalization(.words)
-                .disableAutocorrection(true)
-                .font(.custom("Barlow", size: 16))
-                .bold()
-                .background(Color.blanco)
-                .padding(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.negro, lineWidth: 1)
-                )
+            TextField(
+                text: $nombre,
+                prompt: Text("Nombre")
+                    .foregroundColor(.grisSecundario)
+                    .font(.custom("Barlow", size: 16))
+            ) {
+                Text("Nombre")
+            }
+            .tint(.verdePrincipal)
+            .autocapitalization(.words)
+            .disableAutocorrection(true)
+            .font(.custom("Barlow", size: 16))
+            .bold()
+            .foregroundColor(.negro)
+            .background(Color.blanco)
+            .padding(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.negro, lineWidth: 1)
+            )
             
-            TextField("Apellido", text: $apellido)
-                .tint(.verdePrincipal)
-                .autocapitalization(.words)
-                .disableAutocorrection(true)
-                .font(.custom("Barlow", size: 16))
-                .bold()
-                .background(Color.blanco)
-                .padding(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.negro, lineWidth: 1)
-                )
+            TextField(
+                text: $apellido,
+                prompt: Text("Apellido")
+                    .foregroundColor(.grisSecundario)
+                    .font(.custom("Barlow", size: 16))
+            ) {
+                Text("Apellido")
+            }
+            .tint(.verdePrincipal)
+            .autocapitalization(.words)
+            .disableAutocorrection(true)
+            .font(.custom("Barlow", size: 16))
+            .bold()
+            .foregroundColor(.negro)
+            .background(Color.blanco)
+            .padding(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.negro, lineWidth: 1)
+            )
             
-            TextField("DNI", text: $dni)
-                .tint(.verdePrincipal)
-                .autocapitalization(.words)
-                .disableAutocorrection(true)
-                .font(.custom("Barlow", size: 16))
-                .bold()
-                .background(Color.blanco)
-                .padding(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.negro, lineWidth: 1)
-                )
+            TextField(
+                text: $dni,
+                prompt: Text("DNI")
+                    .foregroundColor(.grisSecundario)
+                    .font(.custom("Barlow", size: 16))
+            ) {
+                Text("DNI")
+            }
+            .tint(.verdePrincipal)
+            .autocapitalization(.words)
+            .disableAutocorrection(true)
+            .font(.custom("Barlow", size: 16))
+            .bold()
+            .foregroundColor(.negro)
+            .background(Color.blanco)
+            .padding(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.negro, lineWidth: 1)
+            )
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 16)

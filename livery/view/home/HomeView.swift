@@ -28,6 +28,8 @@ struct HomeView: View {
                 ) || (
                     perfilUsuarioState.usuario != nil
                     && perfilUsuarioState.usuario!.direcciones?.isEmpty ?? true
+                ) || (
+                    perfilUsuarioState.idDireccionSeleccionada == nil
                 )
             {
                 DireccionFueraDeCobertura()

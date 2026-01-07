@@ -7,6 +7,7 @@
 import SwiftUI
 import FirebaseCore
 import GoogleMaps
+import GooglePlaces
 import FirebaseMessaging
 
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -24,6 +25,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             forInfoDictionaryKey: "GOOGLE_MAPS_API_KEY"
         ) as? String {
             GMSServices.provideAPIKey(apiKey)
+            GMSPlacesClient.provideAPIKey(apiKey)
         }
         
         // Registro para el token de Apple (necesario para FCM)

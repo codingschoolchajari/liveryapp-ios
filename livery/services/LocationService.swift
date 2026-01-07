@@ -10,6 +10,7 @@ protocol LocationServicing: AnyObject {
     var authorizationStatus: CLAuthorizationStatus { get }
     func requestPermission()
     func startUpdatingLocation()
+    func stopUpdatingLocation()
 
     var onAuthorizationChange: ((CLAuthorizationStatus) -> Void)? { get set }
     var onLocationUpdate: ((CLLocationCoordinate2D) -> Void)? { get set }
@@ -38,6 +39,10 @@ final class LocationService: NSObject, LocationServicing, CLLocationManagerDeleg
 
     func startUpdatingLocation() {
         manager.startUpdatingLocation()
+    }
+    
+    func stopUpdatingLocation() {
+        manager.stopUpdatingLocation()
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {

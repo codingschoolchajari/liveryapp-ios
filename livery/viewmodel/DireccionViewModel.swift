@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import CoreLocation
+import GooglePlaces
 
 @MainActor
 class DireccionViewModel: ObservableObject {
@@ -21,6 +22,9 @@ class DireccionViewModel: ObservableObject {
     @Published var numero: String = ""
     @Published var departamento: String = ""
     @Published var indicaciones: String = ""
+    
+    private var yaFijoUbicacionInicial = false
+    @Published var coordenadasInicialesGPS: CLLocationCoordinate2D?
 
     init(locationService: LocationServicing = LocationService()) {
         self.locationService = locationService
@@ -37,7 +41,15 @@ class DireccionViewModel: ObservableObject {
 
         locationService.onLocationUpdate = { [weak self] coord in
             DispatchQueue.main.async {
-                self?.coordenadas = coord
+                guard let self = self else { return }
+                
+                // 2. Solo actualizamos si es la primera carga
+                if !self.yaFijoUbicacionInicial {
+                    self.coordenadas = coord
+                    self.coordenadasInicialesGPS = coord
+                    self.yaFijoUbicacionInicial = true
+                    self.locationService.stopUpdatingLocation()
+                }
             }
         }
     }
@@ -105,6 +117,27 @@ class DireccionViewModel: ObservableObject {
         } catch {
             print("Error al guardar direccion: \(error.localizedDescription)")
             return false
+        }
+    }
+    
+    func actualizarDesdePlace(_ place: GMSPlace) {
+        var calle = ""
+        var numero = ""
+
+        place.addressComponents?.forEach { component in
+            if component.types.contains("route") {
+                calle = component.name
+            }
+            if component.types.contains("street_number") {
+                numero = component.name
+            }
+        }
+
+        self.calle = calle
+        self.numero = numero
+        
+        if let coords = place.coordinate.latitude != 0 ? place.coordinate : nil {
+            self.coordenadas = coords
         }
     }
 }

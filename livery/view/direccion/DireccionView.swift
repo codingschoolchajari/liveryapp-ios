@@ -58,6 +58,7 @@ struct DireccionView: View {
     private var contenidoPrincipal: some View {
         VStack {
             ZStack {
+                // 🗺️ MAPA (fondo)
                 if direccionViewModel.coordenadas != nil {
                     GoogleMapView(coordenadas: $direccionViewModel.coordenadas)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -65,13 +66,24 @@ struct DireccionView: View {
                             RoundedRectangle(cornerRadius: 16)
                                 .stroke(.verdePrincipal, lineWidth: 2)
                         )
-
-                    Image("icono_ubicacion_mapa")
-                        .resizable()
-                        .frame(width: 60, height: 60)
-                } else {
-                    ProgressView()
                 }
+                // 📍 PIN CENTRADO
+                Image("icono_ubicacion_mapa")
+                    .resizable()
+                    .frame(width: 60, height: 60)
+                    .zIndex(1)
+
+                // 🔍 BARRA ARRIBA
+                VStack {
+                    PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in
+                        direccionViewModel.actualizarDesdePlace(place)
+                    }
+                    .padding(.horizontal, 60)
+                    .padding(.top, 12)
+
+                    Spacer()
+                }
+                .zIndex(2)
             }
             .padding(8)
             .frame(maxHeight: 350)
@@ -98,18 +110,18 @@ struct FormularioDireccionView: View {
             ) {
                 Text("Calle")
             }
-            .tint(.verdePrincipal)
+            .disabled(true)
             .autocapitalization(.words)
-            .disableAutocorrection(true)
             .font(.custom("Barlow", size: 16))
             .bold()
-            .foregroundColor(.negro)
-            .background(Color.blanco)
+            .foregroundColor(.grisSecundario)
             .padding(12)
+            .background(Color.grisSurface)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.grisSecundario, lineWidth: 1)
             )
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             
             TextField(
                 text: $direccionViewModel.numero,

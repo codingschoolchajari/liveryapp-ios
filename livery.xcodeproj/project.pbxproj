@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B35EF5FA2F0DBA0900D2D907 /* GooglePlacesSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B35EF5F92F0DBA0900D2D907 /* GooglePlacesSwift */; };
+		B35EF5FC2F0DBB9000D2D907 /* GooglePlaces in Frameworks */ = {isa = PBXBuildFile; productRef = B35EF5FB2F0DBB9000D2D907 /* GooglePlaces */; };
 		B3AFD24F2EF3A14A00C9EDB2 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD24E2EF3A14A00C9EDB2 /* Lottie */; };
 		B3AFD2572EF3A9AE00C9EDB2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD2562EF3A9AE00C9EDB2 /* FirebaseAuth */; };
 		B3AFD2592EF3A9AE00C9EDB2 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD2582EF3A9AE00C9EDB2 /* FirebaseMessaging */; };
@@ -75,9 +77,11 @@
 			files = (
 				B3AFD2592EF3A9AE00C9EDB2 /* FirebaseMessaging in Frameworks */,
 				B3AFD24F2EF3A14A00C9EDB2 /* Lottie in Frameworks */,
+				B35EF5FC2F0DBB9000D2D907 /* GooglePlaces in Frameworks */,
 				B3CEC5DB2EF9BFB2003052F9 /* GoogleMaps in Frameworks */,
 				B3AFD3012EF448DF00C9EDB2 /* JWTDecode in Frameworks */,
 				B3AFD2572EF3A9AE00C9EDB2 /* FirebaseAuth in Frameworks */,
+				B35EF5FA2F0DBA0900D2D907 /* GooglePlacesSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,12 +102,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B35EF5FD2F0DBD1300D2D907 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B3D0DD4A2EDFD53600DF1EDF = {
 			isa = PBXGroup;
 			children = (
 				B3D0DD552EDFD53600DF1EDF /* livery */,
 				B3D0DD672EDFD53B00DF1EDF /* liveryTests */,
 				B3D0DD712EDFD53B00DF1EDF /* liveryUITests */,
+				B35EF5FD2F0DBD1300D2D907 /* Frameworks */,
 				B3D0DD542EDFD53600DF1EDF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -143,6 +155,8 @@
 				B3AFD2582EF3A9AE00C9EDB2 /* FirebaseMessaging */,
 				B3AFD3002EF448DF00C9EDB2 /* JWTDecode */,
 				B3CEC5DA2EF9BFB2003052F9 /* GoogleMaps */,
+				B35EF5F92F0DBA0900D2D907 /* GooglePlacesSwift */,
+				B35EF5FB2F0DBB9000D2D907 /* GooglePlaces */,
 			);
 			productName = livery;
 			productReference = B3D0DD532EDFD53600DF1EDF /* livery.app */;
@@ -231,6 +245,7 @@
 				B3AFD2552EF3A9AE00C9EDB2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				B3AFD2FF2EF447F900C9EDB2 /* XCRemoteSwiftPackageReference "JWTDecode" */,
 				B3CEC5D92EF9BFB2003052F9 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */,
+				B35EF5F82F0DBA0900D2D907 /* XCRemoteSwiftPackageReference "ios-places-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B3D0DD542EDFD53600DF1EDF /* Products */;
@@ -427,7 +442,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = livery/livery.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"livery/Preview Content\"";
 				DEVELOPMENT_TEAM = A936JYG3RK;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -470,7 +485,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = livery/livery.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"livery/Preview Content\"";
 				DEVELOPMENT_TEAM = A936JYG3RK;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -638,6 +653,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		B35EF5F82F0DBA0900D2D907 /* XCRemoteSwiftPackageReference "ios-places-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googlemaps/ios-places-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.6.0;
+			};
+		};
 		B3AFD24D2EF3A14A00C9EDB2 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-ios";
@@ -673,6 +696,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B35EF5F92F0DBA0900D2D907 /* GooglePlacesSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B35EF5F82F0DBA0900D2D907 /* XCRemoteSwiftPackageReference "ios-places-sdk" */;
+			productName = GooglePlacesSwift;
+		};
+		B35EF5FB2F0DBB9000D2D907 /* GooglePlaces */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B35EF5F82F0DBA0900D2D907 /* XCRemoteSwiftPackageReference "ios-places-sdk" */;
+			productName = GooglePlaces;
+		};
 		B3AFD24E2EF3A14A00C9EDB2 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B3AFD24D2EF3A14A00C9EDB2 /* XCRemoteSwiftPackageReference "lottie-ios" */;

@@ -172,7 +172,7 @@ class UsuariosService {
         email: String,
         tokenFCM: String
     ) async throws {
-        guard let url = URL(string: "\(usuariosURL)/actualizarTokenFCM/\(email)") else {
+        guard let url = URL(string: "\(usuariosURL)/actualizarTokenFCM/\(email)/\(StringUtils.plataforma)") else {
             throw URLError(.badURL)
         }
         

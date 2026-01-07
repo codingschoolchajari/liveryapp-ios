@@ -8,6 +8,8 @@ import Foundation
 
 struct StringUtils {
     
+    static let plataforma = "ios"
+    
     static let sinCobertura = "SIN_COBERTURA"
     
     static let tarifaServicioDefault = 500.0

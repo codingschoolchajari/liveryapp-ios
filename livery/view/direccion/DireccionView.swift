@@ -39,7 +39,8 @@ struct DireccionView: View {
                 .padding()
 
             case .granted:
-                contenidoPrincipal
+                FormularioDireccionView(direccionViewModel: direccionViewModel)
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
             }
         }
         .background(Color.blanco)
@@ -54,9 +55,164 @@ struct DireccionView: View {
             direccionViewModel.verificarPermisoUbicacion()
         }
     }
+}
+
+struct FormularioDireccionView: View {
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @EnvironmentObject var navManager: NavigationManager
     
-    private var contenidoPrincipal: some View {
-        VStack {
+    @ObservedObject var direccionViewModel: DireccionViewModel
+    
+    @FocusState private var campoEnFoco: Campos?
+
+    enum Campos {
+        case calle, numero, departamento, indicaciones
+    }
+    
+    var body: some View {
+        ScrollViewReader { proxy in // Permite mover el scroll por código
+            ScrollView {
+                VStack(spacing: 8) {
+                    
+                    MapaView(direccionViewModel: direccionViewModel)
+                    
+                    TextField(
+                        text: $direccionViewModel.calle,
+                        prompt: Text("Calle")
+                            .foregroundColor(.grisSecundario)
+                            .font(.custom("Barlow", size: 16))
+                    ) {
+                        Text("Calle")
+                    }
+                    .focused($campoEnFoco, equals: .calle)
+                    .id(Campos.calle)
+                    .tint(.verdePrincipal)
+                    .autocapitalization(.words)
+                    .disableAutocorrection(true)
+                    .font(.custom("Barlow", size: 16))
+                    .bold()
+                    .foregroundColor(.negro)
+                    .padding(12)
+                    .background(Color.blanco)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.grisSecundario, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    
+                    TextField(
+                        text: $direccionViewModel.numero,
+                        prompt: Text("Número")
+                            .foregroundColor(.grisSecundario)
+                            .font(.custom("Barlow", size: 16))
+                    ) {
+                        Text("Número")
+                    }
+                    .focused($campoEnFoco, equals: .numero)
+                    .id(Campos.numero)
+                    .tint(.verdePrincipal)
+                    .autocapitalization(.words)
+                    .disableAutocorrection(true)
+                    .font(.custom("Barlow", size: 16))
+                    .bold()
+                    .foregroundColor(.negro)
+                    .background(Color.blanco)
+                    .padding(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.grisSecundario, lineWidth: 1)
+                    )
+                    
+                    TextField(
+                        text: $direccionViewModel.departamento,
+                        prompt: Text("Departamento")
+                            .foregroundColor(.grisSecundario)
+                            .font(.custom("Barlow", size: 16))
+                    ) {
+                        Text("Departamento")
+                    }
+                    .focused($campoEnFoco, equals: .departamento)
+                    .id(Campos.departamento)
+                    .tint(.verdePrincipal)
+                    .autocapitalization(.words)
+                    .disableAutocorrection(true)
+                    .font(.custom("Barlow", size: 16))
+                    .bold()
+                    .foregroundColor(.negro)
+                    .background(Color.blanco)
+                    .padding(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.grisSecundario, lineWidth: 1)
+                    )
+                    
+                    Text("Indicaciones de Entrega")
+                        .foregroundColor(.grisSecundario)
+                        .font(.custom("Barlow", size: 16))
+                        .bold()
+                        .padding(.top, 4)
+                        .padding(.leading, 6)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    TextEditor(text: $direccionViewModel.indicaciones)
+                        .focused($campoEnFoco, equals: .indicaciones)
+                        .id(Campos.indicaciones)
+                        .scrollContentBackground(.hidden)
+                        .background(Color.blanco)
+                        .tint(.verdePrincipal)
+                        .font(.custom("Barlow", size: 16))
+                        .bold()
+                        .foregroundColor(.negro)
+                        .frame(minHeight: 70, maxHeight: 70) // ≈ 3 líneas
+                        .padding(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.grisSecundario, lineWidth: 1)
+                        )
+                        .onChange(of: direccionViewModel.indicaciones) { oldValue, newValue in
+                            if newValue.count > 100 {
+                                direccionViewModel.indicaciones = String(newValue.prefix(100))
+                            }
+                        }
+                    HStack {
+                        Spacer()
+                        Button {
+                            guardarDireccion(
+                                navManager: navManager,
+                                perfilUsuarioState: perfilUsuarioState,
+                                direccionViewModel: direccionViewModel
+                            )
+                        } label : {
+                            Text("Guardar Dirección")
+                                .font(.custom("Barlow", size: 16))
+                                .bold()
+                                .frame(width: 250, height: 40)
+                                .foregroundColor(.blanco)
+                                .background(esFormularioValido(direccionViewModel) ?
+                                    .verdePrincipal : .grisSecundario)
+                                .cornerRadius(16)
+                        }
+                        .disabled(!esFormularioValido(direccionViewModel))
+                        Spacer()
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+            .onChange(of: campoEnFoco) { old, nuevoCampo in
+                if let campo = nuevoCampo {
+                    // Cuando un campo recibe el foco, hacemos scroll hacia él
+                    withAnimation {
+                        proxy.scrollTo(campo, anchor: .center)
+                    }
+                }
+            }
+        }
+    }
+    
+    private struct MapaView: View {
+        @ObservedObject var direccionViewModel: DireccionViewModel
+        
+        var body: some View {
             ZStack {
                 // 🗺️ MAPA (fondo)
                 if direccionViewModel.coordenadas != nil {
@@ -86,134 +242,7 @@ struct DireccionView: View {
                 .zIndex(2)
             }
             .padding(8)
-            .frame(maxHeight: 350)
-
-            FormularioDireccionView(direccionViewModel: direccionViewModel)
-            Spacer()
-        }
-    }
-}
-
-struct FormularioDireccionView: View {
-    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    @EnvironmentObject var navManager: NavigationManager
-    
-    @ObservedObject var direccionViewModel: DireccionViewModel
-
-    var body: some View {
-        VStack(spacing: 8) {
-            TextField(
-                text: $direccionViewModel.calle,
-                prompt: Text("Calle")
-                    .foregroundColor(.grisSecundario)
-                    .font(.custom("Barlow", size: 16))
-            ) {
-                Text("Calle")
-            }
-            .disabled(true)
-            .autocapitalization(.words)
-            .font(.custom("Barlow", size: 16))
-            .bold()
-            .foregroundColor(.grisSecundario)
-            .padding(12)
-            .background(Color.grisSurface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.grisSecundario, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            
-            TextField(
-                text: $direccionViewModel.numero,
-                prompt: Text("Número")
-                    .foregroundColor(.grisSecundario)
-                    .font(.custom("Barlow", size: 16))
-            ) {
-                Text("Número")
-            }
-            .tint(.verdePrincipal)
-            .autocapitalization(.words)
-            .disableAutocorrection(true)
-            .font(.custom("Barlow", size: 16))
-            .bold()
-            .foregroundColor(.negro)
-            .background(Color.blanco)
-            .padding(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.grisSecundario, lineWidth: 1)
-            )
-            
-            TextField(
-                text: $direccionViewModel.departamento,
-                prompt: Text("Departamento")
-                    .foregroundColor(.grisSecundario)
-                    .font(.custom("Barlow", size: 16))
-            ) {
-                Text("Departamento")
-            }
-            .tint(.verdePrincipal)
-            .autocapitalization(.words)
-            .disableAutocorrection(true)
-            .font(.custom("Barlow", size: 16))
-            .bold()
-            .foregroundColor(.negro)
-            .background(Color.blanco)
-            .padding(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.grisSecundario, lineWidth: 1)
-            )
-            
-            Text("Indicaciones de Entrega")
-                .foregroundColor(.grisSecundario)
-                .font(.custom("Barlow", size: 16))
-                .bold()
-                .padding(.top, 4)
-                .padding(.leading, 6)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            TextEditor(text: $direccionViewModel.indicaciones)
-                .scrollContentBackground(.hidden)
-                .background(Color.blanco)
-                .tint(.verdePrincipal)
-                .font(.custom("Barlow", size: 16))
-                .bold()
-                .foregroundColor(.negro)
-                .frame(minHeight: 70, maxHeight: 70) // ≈ 3 líneas
-                .padding(8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.grisSecundario, lineWidth: 1)
-                )
-                .onChange(of: direccionViewModel.indicaciones) { oldValue, newValue in
-                    if newValue.count > 100 {
-                        direccionViewModel.indicaciones = String(newValue.prefix(100))
-                    }
-                }
-        }
-        .padding(.horizontal, 16)
-        
-        HStack {
-            Spacer()
-            Button {
-                guardarDireccion(
-                    navManager: navManager,
-                    perfilUsuarioState: perfilUsuarioState,
-                    direccionViewModel: direccionViewModel
-                )
-            } label : {
-                Text("Guardar Dirección")
-                    .font(.custom("Barlow", size: 16))
-                    .bold()
-                    .frame(width: 250, height: 40)
-                    .foregroundColor(.blanco)
-                    .background(esFormularioValido(direccionViewModel) ?
-                        .verdePrincipal : .grisSecundario)
-                    .cornerRadius(16)
-            }
-            .disabled(!esFormularioValido(direccionViewModel))
-            Spacer()
+            .frame(height: 350)
         }
     }
     
@@ -254,3 +283,5 @@ struct FormularioDireccionView: View {
         }
     }
 }
+
+

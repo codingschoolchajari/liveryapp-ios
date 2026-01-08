@@ -30,7 +30,7 @@ class PlaceAutocompleteManager: ObservableObject {
             let sur = CLLocationCoordinate2D(latitude: coords.latitude - 0.15, longitude: coords.longitude - 0.15)
             
             // Rectángulo de búsqueda alrededor de la ubicación actual
-            filter.locationBias = GMSPlaceRectangularLocationOption(norte, sur)
+            filter.locationRestriction = GMSPlaceRectangularLocationOption(norte, sur)
         }
         
         client.findAutocompletePredictions(

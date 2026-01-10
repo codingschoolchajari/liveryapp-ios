@@ -85,6 +85,30 @@ class ComerciosService {
         return try JSONDecoder().decode([Comercio].self, from: data)
     }
 
+    func buscarComercioEnvios(
+        token: String,
+        dispositivoID: String,
+        idInterno: String
+    ) async throws -> ComercioEnvios {
+        
+        guard let url = URL(string: "\(comerciosURL)/buscarComercioEnvios/\(idInterno)") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        return try JSONDecoder().decode(ComercioEnvios.self, from: data)
+    }
+    
     func buscarDescuentos(
         token: String,
         dispositivoID: String,

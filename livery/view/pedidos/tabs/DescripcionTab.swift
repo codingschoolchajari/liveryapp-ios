@@ -202,7 +202,7 @@ struct ResumenPedidoView: View {
             
             Divider()
             
-            if pedido.retiroEnComercio {
+            if (TipoEntrega.desdeString(pedido.tipoEntrega) == TipoEntrega.retiroEnComercio) {
                 Text("Retiro en Comercio")
                     .font(.custom("Barlow", size: 14))
                     .bold()

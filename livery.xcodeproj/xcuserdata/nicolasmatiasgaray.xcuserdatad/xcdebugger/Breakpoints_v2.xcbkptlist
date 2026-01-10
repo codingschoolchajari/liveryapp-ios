@@ -39,22 +39,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "57004FEE-358B-4AE0-A1B7-68AC43BB1FE4"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "livery/viewmodel/CarritoViewModel.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "246"
-            endingLineNumber = "246"
-            landmarkName = "crearPedido(perfilUsuarioState:email:nombreUsuario:direccion:tarifaServicio:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "F555CB6E-C0EF-4722-8793-819E2E0D47CE"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -81,22 +65,6 @@
             startingLineNumber = "53"
             endingLineNumber = "53"
             landmarkName = "configurarObservers()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "6F0C2495-C9D7-4CB9-93D4-5A5D50BF3284"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "livery/view/chats/PedidoChatViewModel.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "166"
-            endingLineNumber = "166"
-            landmarkName = "setChatParams(idPedido:emailUsuario:idComercio:idRepartidor:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -130,6 +98,80 @@
             endingLineNumber = "88"
             landmarkName = "obtenerChat(idPedido:emailUsuario:idComercio:idRepartidor:)"
             landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "94BA6428-5828-430B-936F-557E4C71E00A"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "livery/viewmodel/CarritoViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "385"
+            endingLineNumber = "385"
+            landmarkName = "actualizarComercioEnvios(perfilUsuarioState:usuarioDireccion:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "94BA6428-5828-430B-936F-557E4C71E00A - a30f60dbac8fc1cf"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for livery.CarritoViewModel.actualizarComercioEnvios(perfilUsuarioState: livery.PerfilUsuarioState) async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/viewmodel/CarritoViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "385"
+                  endingLineNumber = "385">
+               </Location>
+               <Location
+                  uuid = "94BA6428-5828-430B-936F-557E4C71E00A - b0d7051638fd49c3"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(5) suspend resume partial function for livery.CarritoViewModel.actualizarComercioEnvios(perfilUsuarioState: livery.PerfilUsuarioState) async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/viewmodel/CarritoViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "385"
+                  endingLineNumber = "385">
+               </Location>
+               <Location
+                  uuid = "94BA6428-5828-430B-936F-557E4C71E00A - 4b85e3bb5f00efc2"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(6) suspend resume partial function for livery.CarritoViewModel.actualizarComercioEnvios(perfilUsuarioState: livery.PerfilUsuarioState) async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/viewmodel/CarritoViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "385"
+                  endingLineNumber = "385">
+               </Location>
+               <Location
+                  uuid = "94BA6428-5828-430B-936F-557E4C71E00A - d57bd956fa7425ef"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(5) suspend resume partial function for livery.CarritoViewModel.actualizarComercioEnvios(perfilUsuarioState: livery.PerfilUsuarioState, usuarioDireccion: Swift.Optional&lt;livery.UsuarioDireccion&gt;) async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/liveryapp-ios/livery/viewmodel/CarritoViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "385"
+                  endingLineNumber = "385">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

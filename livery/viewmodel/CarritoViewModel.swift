@@ -18,7 +18,8 @@ class CarritoViewModel: ObservableObject {
     @Published var itemsPromociones: [ItemPromocion] = []
     @Published var comercio: Comercio? = nil
     @Published var notas: String = ""
-    @Published var retiroEnComercio: Bool = false
+    @Published var tipoEntregaSeleccionada: TipoEntrega = TipoEntrega.retiroEnComercio
+    @Published var enviosLiveryActivo: Bool = false
     @Published var envio: Double = 0.0
     @Published var tiempoRecorridoEstimado: Int = 0
     @Published var pedidoConfirmado: Bool = false
@@ -58,6 +59,28 @@ class CarritoViewModel: ObservableObject {
                 return true
             }
             .assign(to: &$aplicaTarifaServicio)
+    }
+
+    func cargarEstadoInicial(
+        perfilUsuarioState: PerfilUsuarioState,
+        ciudadSeleccionada: String?,
+        usuarioDireccion: UsuarioDireccion?
+    ) async {
+        guard
+            let ciudadSeleccionada,
+            !ciudadSeleccionada.isEmpty,
+            comercio != nil,
+            (!itemsProductos.isEmpty || !itemsPromociones.isEmpty)
+        else { return }
+
+        await actualizarComercioEnvios(
+            perfilUsuarioState: perfilUsuarioState,
+            usuarioDireccion: usuarioDireccion
+        )
+        await actualizarEnviosLiveryActivo(
+            perfilUsuarioState: perfilUsuarioState,
+            localidad: ciudadSeleccionada
+        )
     }
 
     func validacionComercio(comercio: Comercio) -> Bool {
@@ -222,7 +245,7 @@ class CarritoViewModel: ObservableObject {
             logoComercioURL: comercioActual.logoURL,
             direccion: direccion,
             notas: notas,
-            retiroEnComercio: retiroEnComercio,
+            tipoEntrega: tipoEntregaSeleccionada.rawValue,
             tarifaServicio: tarifaServicio,
             envio: envio,
             tiempoRecorridoEstimado: tiempoRecorridoEstimado,
@@ -289,16 +312,35 @@ class CarritoViewModel: ObservableObject {
         self.notas = texto.prefix(1).uppercased() + texto.dropFirst()
     }
 
-    func onRetiroEnComercioChange(
+    func onTipoEntregaChange(
         perfilUsuarioState: PerfilUsuarioState,
-        valor: Bool,
+        tipoEntrega: TipoEntrega,
         usuarioDireccion: UsuarioDireccion?
     ) {
-        self.retiroEnComercio = valor
-        if valor {
+        
+        self.tipoEntregaSeleccionada = tipoEntrega
+        refrescarCostoEnvio(
+            perfilUsuarioState: perfilUsuarioState,
+            usuarioDireccion: usuarioDireccion
+        )
+    }
+
+    func refrescarCostoEnvio(
+        perfilUsuarioState: PerfilUsuarioState,
+        usuarioDireccion: UsuarioDireccion?
+    ) {
+        switch tipoEntregaSeleccionada {
+        case .retiroEnComercio:
             self.envio = 0.0
-        } else {
-            calcularCostoEnvio(perfilUsuarioState: perfilUsuarioState, direccion: usuarioDireccion)
+            
+        case .envioPropio:
+            self.envio = comercio?.envios.precioEnvioPropio ?? StringUtils.envioPropioTarifaDefault
+            
+        default :
+            calcularCostoEnvio(
+                perfilUsuarioState: perfilUsuarioState, 
+                direccion: usuarioDireccion
+            )
         }
     }
 
@@ -318,4 +360,59 @@ class CarritoViewModel: ObservableObject {
             item.idPremio == idInterno
         }
     }
+    
+    // Envios
+    func actualizarComercioEnvios(
+        perfilUsuarioState: PerfilUsuarioState,
+        usuarioDireccion: UsuarioDireccion?
+    ) async {
+        guard let comercioActual = comercio else { return }
+
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            let nuevosEnvios = try await comerciosService.buscarComercioEnvios(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                idInterno: comercioActual.idInterno
+            )
+
+            var comercioActualizado = comercioActual
+            comercioActualizado.envios = nuevosEnvios
+            comercio = comercioActualizado
+            
+            refrescarCostoEnvio(
+                perfilUsuarioState: perfilUsuarioState,
+                usuarioDireccion: usuarioDireccion
+            )
+        } catch {
+            print("Error al actualizar Comercio Envios")
+        }
+    }
+    
+    func actualizarEnviosLiveryActivo(perfilUsuarioState: PerfilUsuarioState, localidad: String) async {
+        
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            let booleanResponse: BooleanResponse = try await enviosService.enviosLiveryActivo(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                localidad: localidad
+            )
+            
+            enviosLiveryActivo = booleanResponse.valor
+        } catch {
+            print("Error al actualizar Envios Livery Activo")
+        }
+        
+        
+    }
+
 }

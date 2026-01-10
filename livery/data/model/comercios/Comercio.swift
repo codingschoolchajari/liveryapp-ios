@@ -17,6 +17,13 @@ struct ComercioHorario: Codable {
     var intervalos: [ComercioIntervalo] = []
 }
 
+struct ComercioEnvios: Codable {
+    var envioPropio: Bool = false
+    var precioEnvioPropio: Double = 0.0
+    var envioLivery: Bool = false
+
+}
+
 struct ComercioDatosBancarios: Codable {
     var alias: String = ""
     var cbu: String = ""
@@ -36,6 +43,7 @@ struct Comercio: Codable, Identifiable {
     var nombre: String = ""
     var puntuacion: Double = 0.0
     var direccion: ComercioDireccion = ComercioDireccion()
+    var envios: ComercioEnvios = ComercioEnvios()
     var horarios: [ComercioHorario]? = []
     var datosBancarios: ComercioDatosBancarios = ComercioDatosBancarios()
     var imagenURL: String = ""

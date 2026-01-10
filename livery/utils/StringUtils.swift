@@ -14,6 +14,8 @@ struct StringUtils {
     
     static let tarifaServicioDefault = 500.0
     
+    static let envioPropioTarifaDefault = 4000.0
+    
     static let tituloPedidoPendiente = "Pedido Pendiente"
     static let textoPedidoPendiente = "Actualmente tiene un Pedido Pendiente en este comercio.\n\n" +
             "Solo es posible realizar un nuevo pedido una vez que se haya abonado o cancelado el anterior."

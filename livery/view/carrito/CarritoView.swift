@@ -60,6 +60,13 @@ struct CarritoView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.blanco)
+        .task {
+            await carritoViewModel.cargarEstadoInicial(
+                perfilUsuarioState: perfilUsuarioState,
+                ciudadSeleccionada: perfilUsuarioState.ciudadSeleccionada,
+                usuarioDireccion: perfilUsuarioState.obtenerUsuarioDireccion()
+            )
+        }
     }
 }
 
@@ -201,35 +208,103 @@ struct NotasView: View {
 struct TipoEntregaView: View {
     @EnvironmentObject var carritoViewModel: CarritoViewModel
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    
+
+    var opciones: [TipoEntrega] {
+        var result: [TipoEntrega] = []
+
+        if carritoViewModel.comercio?.envios.envioPropio == true {
+            result.append(.envioPropio)
+        }
+        if carritoViewModel.enviosLiveryActivo {
+            result.append(.envioLivery)
+        }
+        result.append(.retiroEnComercio)
+
+        return result
+    }
+
     var body: some View {
-        HStack(spacing: 0) {
-            // Botón Envío
-            opcionBoton(
-                titulo: "Envío a Domicilio",
-                esSeleccionado: !carritoViewModel.retiroEnComercio,
-                radius: .init(topLeading: 20, bottomLeading: 20, bottomTrailing: 0, topTrailing: 0)
-            ) {
-                carritoViewModel.retiroEnComercio = false
+        VStack(spacing: 8) {
+
+            // MARK: Segmented buttons
+            HStack(spacing: 0) {
+                ForEach(opciones.indices, id: \.self) { index in
+                    let tipo = opciones[index]
+
+                    TipoEntregaButton(
+                        tipo: tipo,
+                        seleccionado: carritoViewModel.tipoEntregaSeleccionada == tipo,
+                        isFirst: index == 0,
+                        isLast: index == opciones.count - 1
+                    ) {
+                        carritoViewModel.onTipoEntregaChange(
+                            perfilUsuarioState: perfilUsuarioState,
+                            tipoEntrega: tipo,
+                            usuarioDireccion: perfilUsuarioState.obtenerUsuarioDireccion()
+                        )
+                    }
+                }
             }
-            
-            // Botón Retiro
-            opcionBoton(
-                titulo: "Retiro en Comercio",
-                esSeleccionado: carritoViewModel.retiroEnComercio,
-                radius: .init(topLeading: 0, bottomLeading: 0, bottomTrailing: 20, topTrailing: 20)
-            ) {
-                carritoViewModel.retiroEnComercio = true
+            .padding(.horizontal, 16)
+
+            // MARK: Aclaración
+            Text(carritoViewModel.tipoEntregaSeleccionada.aclaracion)
+                .font(.custom("Barlow", size: 14))
+                .bold()
+                .foregroundColor(.grisSecundario)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
+                .lineLimit(2)
+                .frame(minHeight: 36)
+
+            Spacer().frame(height: 8)
+        }
+        .onChange(of: opciones) { _, nuevasOpciones in
+            if !nuevasOpciones.contains(carritoViewModel.tipoEntregaSeleccionada) {
+                carritoViewModel.onTipoEntregaChange(
+                    perfilUsuarioState: perfilUsuarioState,
+                    tipoEntrega: .retiroEnComercio,
+                    usuarioDireccion: perfilUsuarioState.obtenerUsuarioDireccion()
+                )
             }
         }
-        .padding(.horizontal, 40)
-        .onChange(of: carritoViewModel.retiroEnComercio) { _, newValue in
-            carritoViewModel.onRetiroEnComercioChange(
-                perfilUsuarioState: perfilUsuarioState,
-                valor: newValue,
-                usuarioDireccion: perfilUsuarioState.obtenerUsuarioDireccion()
-            )
+    }
+}
+
+struct TipoEntregaButton: View {
+    let tipo: TipoEntrega
+    let seleccionado: Bool
+    let isFirst: Bool
+    let isLast: Bool
+    let action: () -> Void
+
+    var shape: RoundedCorners {
+        RoundedCorners(
+            radius: 16,
+            corners: [
+                isFirst ? .topLeft : [],
+                isFirst ? .bottomLeft : [],
+                isLast ? .topRight : [],
+                isLast ? .bottomRight : []
+            ]
+        )
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Text(tipo.descripcion)
+                .font(.custom("Barlow", size: 12))
+                .bold()
+                .foregroundColor(seleccionado ? .verdePrincipal : .negro)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background(seleccionado ? Color.grisSurface : Color.blanco)
         }
+        .clipShape(shape)
+        .overlay(
+            shape.stroke(Color.grisSecundario, lineWidth: 2)
+        )
     }
 }
 
@@ -274,7 +349,7 @@ struct ResumenView: View {
             .bold()
             .foregroundColor(.negro)
             
-            if !carritoViewModel.retiroEnComercio {
+            if (carritoViewModel.tipoEntregaSeleccionada != TipoEntrega.retiroEnComercio) {
                 Divider().padding(.vertical, 4)
                 
                 HStack {

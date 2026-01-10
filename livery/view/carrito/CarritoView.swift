@@ -191,7 +191,7 @@ struct NotasView: View {
             .font(.custom("Barlow", size: 16))
             .bold()
             .foregroundColor(.negro)
-            .frame(minHeight: 50, maxHeight: 50)
+            .frame(minHeight: 40, maxHeight: 40)
             .padding(4)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
@@ -254,10 +254,8 @@ struct TipoEntregaView: View {
                 .foregroundColor(.grisSecundario)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 16)
-                .lineLimit(2)
-                .frame(minHeight: 36)
-
-            Spacer().frame(height: 8)
+                .lineLimit(1)
+                .frame(minHeight: 26)
         }
         .onChange(of: opciones) { _, nuevasOpciones in
             if !nuevasOpciones.contains(carritoViewModel.tipoEntregaSeleccionada) {

@@ -25,7 +25,7 @@ enum TipoEntrega: String, CaseIterable {
         case .envioPropio:
             return "Repartidor propio del comercio"
         case .envioLivery:
-            return "De acuerdo a la demanda puede llegar a presentar cierta demora"
+            return "En caso de mucha demanda, puede presentar demoras"
         case .retiroEnComercio:
             return ""
         }

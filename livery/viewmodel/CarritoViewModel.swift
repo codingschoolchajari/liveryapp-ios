@@ -243,6 +243,7 @@ class CarritoViewModel: ObservableObject {
             idComercio: String(comercioActual.idInterno),
             nombreComercio: comercioActual.nombre,
             logoComercioURL: comercioActual.logoURL,
+            localidad: comercioActual.localidad,
             direccion: direccion,
             notas: notas,
             tipoEntrega: tipoEntregaSeleccionada.rawValue,

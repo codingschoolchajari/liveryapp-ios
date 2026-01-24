@@ -40,6 +40,8 @@ struct ItemProductoDescripcion: View {
             // Descripción de seleccionables
             SeleccionablesDescripcion(seleccionables: itemProducto.seleccionables)
             
+            AlternativaDescripcion(nombreAlternativaProducto: itemProducto.nombreAlternativaProducto)
+            
             Spacer().frame(height: 16)
             
             // Cantidad y Precio
@@ -161,6 +163,18 @@ struct SeleccionablesDescripcion: View {
     private func chunked<T>(_ array: [T], size: Int) -> [[T]] {
         stride(from: 0, to: array.count, by: size).map {
             Array(array[$0 ..< Swift.min($0 + size, array.count)])
+        }
+    }
+}
+
+struct AlternativaDescripcion: View {
+    let nombreAlternativaProducto: String?
+    
+    var body: some View {
+        if(nombreAlternativaProducto != nil && !nombreAlternativaProducto!.isEmpty){
+            Text(nombreAlternativaProducto!)
+                .font(.custom("Barlow", size: 14))
+                .foregroundColor(.negro)
         }
     }
 }

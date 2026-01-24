@@ -306,7 +306,8 @@ struct ListaPremios: View {
                             Color.gray.opacity(0.2)
                         }
                         .frame(width: 65, height: 65)
-                        .clipShape(RoundedCorners(radius: 12))
+                        .cornerRadius(12)
+                        .clipped()
                         
                         PremioDescripcion(premio: premio)
                         

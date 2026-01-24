@@ -80,6 +80,7 @@ struct PagoTab: View {
                     .multilineTextAlignment(.center)
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
+                Spacer()
             }
         }
     }

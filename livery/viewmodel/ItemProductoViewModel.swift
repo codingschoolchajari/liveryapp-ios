@@ -16,6 +16,8 @@ class ItemProductoViewModel: ObservableObject {
     @Published var seleccionadosUnitarios: [String: Bool] = [:]
     @Published var seleccionadosMultiples: [String: Int] = [:]
     
+    @Published var alternativaSeleccionada: ProductoAlternativa? = nil
+    
     private let productosService = ProductosService()
     
     private var producto: Producto?
@@ -45,14 +47,18 @@ class ItemProductoViewModel: ObservableObject {
         self.cantidad = 1
         
         inicializarProductoSeleccionable(producto: producto, categoria: categoria)
+        inicializarProductoConAlternativas(producto: producto)
+        
+        let precio = obtenerPrecio()
         
         self.itemProducto = ItemProducto(
             idProducto: producto.idInterno,
             nombreProducto: producto.nombre,
+            nombreAlternativaProducto: alternativaSeleccionada != nil ? alternativaSeleccionada?.nombreAbreviado: nil,
             imagenProductoURL: producto.imagenURL ?? "",
             cantidad: self.cantidad,
-            precioUnitario: producto.precio,
-            precio: producto.precio * Double(self.cantidad),
+            precioUnitario: precio,
+            precio: precio * Double(self.cantidad),
             esPremio: producto.esPremio ?? false,
             idPremio: producto.idPremio
         )
@@ -67,6 +73,12 @@ class ItemProductoViewModel: ObservableObject {
         }
         
         self.productoSeleccionableState = resultado
+    }
+    
+    func inicializarProductoConAlternativas(producto: Producto) {
+        if(producto.alternativas.count > 0) {
+            alternativaSeleccionada = producto.alternativas.first
+        }
     }
     
     func cambiarSeleccionadoUnitario(
@@ -107,6 +119,28 @@ class ItemProductoViewModel: ObservableObject {
         itemProducto!.seleccionables = nuevaLista ?? []
     }
     
+    func cambiarAlternativaSeleccionada(productoAlternativa: ProductoAlternativa){
+        if(producto == nil) { return }
+        
+        alternativaSeleccionada = productoAlternativa
+        
+        self.cantidad = 1
+        
+        let precio = obtenerPrecio()
+        
+        self.itemProducto = ItemProducto(
+            idProducto: producto!.idInterno,
+            nombreProducto: producto!.nombre,
+            nombreAlternativaProducto: alternativaSeleccionada != nil ? alternativaSeleccionada?.nombreAbreviado: nil,
+            imagenProductoURL: producto!.imagenURL ?? "",
+            cantidad: self.cantidad,
+            precioUnitario: precio,
+            precio: precio * Double(self.cantidad),
+            esPremio: producto!.esPremio ?? false,
+            idPremio: producto!.idPremio
+        )
+    }
+    
     func aumentarCantidad() {
         self.cantidad += 1
         actualizarItemPedido()
@@ -122,7 +156,7 @@ class ItemProductoViewModel: ObservableObject {
     private func actualizarItemPedido() {
         guard var item = itemProducto, let prod = producto else { return }
         item.cantidad = self.cantidad
-        item.precio = prod.precio * Double(self.cantidad)
+        item.precio = obtenerPrecio() * Double(self.cantidad)
         self.itemProducto = item
     }
     
@@ -156,6 +190,18 @@ class ItemProductoViewModel: ObservableObject {
                     }
                 }
             }
+        }
+    }
+    
+    private func obtenerPrecio() -> Double {
+        if(producto == nil) { return 0 }
+            
+        let esPremio: Bool = producto?.esPremio ?? false
+        
+        if(alternativaSeleccionada != nil && !esPremio){
+            return alternativaSeleccionada!.precio
+        } else {
+            return producto!.precio
         }
     }
 }

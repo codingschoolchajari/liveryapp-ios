@@ -21,6 +21,7 @@ struct Pedido: Codable, Identifiable {
     let idComercio: String
     let nombreComercio: String
     var logoComercioURL: String = ""
+    let localidad: String
     var idRepartidor: String? = nil
     let direccion: UsuarioDireccion
     let notas: String
@@ -41,7 +42,7 @@ struct Pedido: Codable, Identifiable {
     // CodingKeys para evitar errores con campos extra como _id
     enum CodingKeys: String, CodingKey {
         case idInterno, email, nombreUsuario, idComercio, nombreComercio
-        case logoComercioURL, idRepartidor, direccion, notas
+        case logoComercioURL, localidad, idRepartidor, direccion, notas
         case tipoEntrega, tarifaServicio, envio, tiempoRecorridoEstimado
         case precioTotal, itemsProductos, itemsPromociones, estado, comentario
     }

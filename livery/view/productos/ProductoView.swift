@@ -25,7 +25,11 @@ struct ProductoTitulo: View {
         
         ZStack {
             HStack(spacing: 8) {
-                ProductoDescripcion(producto: producto)
+                ProductoDescripcion(
+                    producto: producto,
+                    productoAlternativa: producto.alternativas.first
+                
+                )
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
                 ZStack(alignment: .center) {
@@ -66,8 +70,26 @@ struct ProductoTitulo: View {
                     if let descuento = producto.descuento, descuento > 0 {
                         VStack {
                             Spacer()
-                            RectanguloDescuento(producto: producto, redondeado: 12)
-                                .padding(.bottom, 4)
+                            RectanguloDescuento(
+                                descuento: descuento,
+                                redondeado: 12
+                            )
+                            .padding(.bottom, 4)
+                        }
+                    }
+                    
+                    // Rectángulo de descuento para productos con alternativas
+                    if producto.alternativas.count > 0 &&
+                        producto.alternativas.first?.descuento != nil &&
+                        (producto.alternativas.first?.descuento)! > 0
+                    {
+                        VStack {
+                            Spacer()
+                            RectanguloDescuento(
+                                descuento: producto.alternativas[0].descuento!,
+                                redondeado: 12
+                            )
+                            .padding(.bottom, 4)
                         }
                     }
                 }
@@ -115,6 +137,7 @@ struct ProductoTitulo: View {
 
 struct ProductoDescripcion: View {
     let producto: Producto
+    let productoAlternativa: ProductoAlternativa?
     
     // Valores por defecto
     var fontSizeNombre: CGFloat = 16
@@ -154,28 +177,45 @@ struct ProductoDescripcion: View {
                     }
                 }
             }
+            
+            if productoAlternativa != nil && productoAlternativa!.precio > 0 {
+                HStack(alignment: .center, spacing: 8) {
+                    Text(DoubleUtils.formatearPrecio(valor: productoAlternativa!.precio))
+                        .font(.custom("Barlow", size: fontSizePrecio))
+                        .bold()
+                        .foregroundColor(.negro)
+                    
+                    if let descuento = productoAlternativa!.descuento,
+                       let precioSinDescuento = productoAlternativa!.precioSinDescuento,
+                       descuento > 0 {
+                        
+                        Text(DoubleUtils.formatearPrecio(valor: precioSinDescuento))
+                            .font(.custom("Barlow", size: fontSizePrecio))
+                            .foregroundColor(.grisTerciario)
+                            .strikethrough(true, color: .grisTerciario)
+                    }
+                }
+            }
         }
     }
 }
 
 struct RectanguloDescuento: View {
-    let producto: Producto
+    let descuento: Int
     var fontSizeDescuento: CGFloat = 14
     var redondeado: CGFloat = 8
     
     var body: some View {
-        if let descuento = producto.descuento {
-            Text("\(Int(descuento)) % OFF")
-                .font(.custom("Barlow", size: fontSizeDescuento))
-                .bold()
-                .foregroundColor(.negro)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
-                .background(
-                    Color.amarilloDescuento
-                        .cornerRadius(redondeado)
-                )
-        }
+        Text("\(descuento) % OFF")
+            .font(.custom("Barlow", size: fontSizeDescuento))
+            .bold()
+            .foregroundColor(.negro)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 4)
+            .background(
+                Color.amarilloDescuento
+                    .cornerRadius(redondeado)
+            )
     }
 }
 
@@ -195,8 +235,12 @@ struct BottomSheetSeleccionProducto: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            let esPremio: Bool = producto.esPremio ?? false
             // 1. Portada (Ocupa 3/4 del ancho de pantalla)
-            PortadaProducto(producto: producto)
+            PortadaProducto(
+                producto: producto,
+                productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaSeleccionada
+            )
             
             // 2. Bloque Central (Descripción + Seleccionables) - NO Scrolleable externamente
             VStack(alignment: .leading, spacing: 0) {
@@ -204,6 +248,7 @@ struct BottomSheetSeleccionProducto: View {
                 
                 ProductoDescripcion(
                     producto: producto,
+                    productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaSeleccionada,
                     fontSizeNombre: 20,
                     fontSizePrecio: 22,
                     fontSizeDescripcion: 16
@@ -250,6 +295,40 @@ struct BottomSheetSeleccionProducto: View {
                             limpiarYAgregarItemProducto(onClose: onClose)
                         }
                     )
+                } else if (producto.alternativas.count > 0 && itemProductoViewModel.alternativaSeleccionada != nil){
+                    
+                    if(!esPremio){
+                        Alternativas(
+                            producto: producto,
+                            alternativaSeleccionada: itemProductoViewModel.alternativaSeleccionada!,
+                            onCambiarAlternativaSeleccionada: { alternativa in
+                                itemProductoViewModel.cambiarAlternativaSeleccionada(productoAlternativa: alternativa)
+                            }
+                        )
+                    }
+                    
+                    Spacer()
+                    let item = itemProductoViewModel.itemProducto
+                    
+                    CantidadUnidadesYPrecio(
+                        cambioUnidadesHabilitado: esPremio ? false : true,
+                        cantidad: itemProductoViewModel.cantidad,
+                        precio: item?.precio,
+                        onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
+                        onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
+                    )
+                    Spacer().frame(height: 4)
+                    AgregarCarrito(
+                        enabled: true,
+                        mostrarDialogoConflicto: $mostrarDialogoConflicto,
+                        onConfirmar: {
+                            agregarItemProducto(onClose: onClose)
+                        },
+                        onConfirmarConflicto: {
+                            limpiarYAgregarItemProducto(onClose: onClose)
+                        }
+                    )
+                
                 } else {
                     let item = itemProductoViewModel.itemProducto
                     
@@ -347,6 +426,7 @@ struct BottomSheetSeleccionProducto: View {
 
 struct PortadaProducto: View {
     let producto: Producto
+    let productoAlternativa: ProductoAlternativa?
     
     var body: some View {
         let altoDeseado = UIScreen.main.bounds.height * (1/3)
@@ -374,12 +454,28 @@ struct PortadaProducto: View {
                     HStack {
                         Spacer()
                         RectanguloDescuento(
-                            producto: producto,
+                            descuento: descuento,
                             fontSizeDescuento: 18,
                             redondeado: 18
                         )
                         .padding(12)
                     }
+                }
+            }
+            
+            // Rectángulo de descuento para productos con alternativas
+            if productoAlternativa != nil &&
+                productoAlternativa!.descuento != nil &&
+                (productoAlternativa!.descuento)! > 0
+            {
+                VStack {
+                    Spacer()
+                    RectanguloDescuento(
+                        descuento: productoAlternativa!.descuento!,
+                        fontSizeDescuento: 18,
+                        redondeado: 18
+                    )
+                    .padding(12)
                 }
             }
         }

@@ -18,6 +18,7 @@ struct ItemProducto: Codable, Identifiable {
     var idInterno: String = UUID().uuidString.lowercased()
     let idProducto: String
     let nombreProducto: String
+    let nombreAlternativaProducto: String?
     var imagenProductoURL: String = ""
     var cantidad: Int
     var precioUnitario: Double

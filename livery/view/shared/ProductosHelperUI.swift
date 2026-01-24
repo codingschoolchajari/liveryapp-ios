@@ -28,8 +28,11 @@ struct ProductoMiniatura: View {
                 
                 // Rectángulo de descuento
                 if let descuento = producto.descuento, descuento > 0 {
-                    RectanguloDescuento(producto: producto, redondeado: 12)
-                        .padding(.bottom, 4)
+                    RectanguloDescuento(
+                        descuento: descuento,
+                        redondeado: 12
+                    )
+                    .padding(.bottom, 4)
                 }
             }
             .frame(width: 100, height: 100)
@@ -236,6 +239,49 @@ struct FilaSeleccionable: View {
         .contentShape(Rectangle())
         .onTapGesture {
             if seleccionable.tipo == "unitario" { onUnitarioChange(!seleccionadoUnitario) }
+        }
+    }
+}
+
+struct Alternativas: View {
+    let producto: Producto
+    let alternativaSeleccionada: ProductoAlternativa
+    var onCambiarAlternativaSeleccionada: (ProductoAlternativa) -> Void
+    
+    var body: some View {
+        let alternativas = (producto.alternativas)
+            .filter { $0.disponible }
+        
+        ScrollView (showsIndicators: false){
+            VStack(spacing: 4) {
+                ForEach(alternativas, id: \.idInterno) { alternativa in
+                    
+                    let seleccionada = alternativa.idInterno == alternativaSeleccionada.idInterno
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text(alternativa.nombre)
+                                .font(.custom("Barlow", size: 16))
+                                .bold(seleccionada)
+                                .foregroundColor(.negro)
+                            Spacer()
+                            Toggle("", isOn:
+                                    Binding(
+                                        get: { seleccionada },
+                                        set: { _,_ in }
+                                    )
+                            )
+                            .toggleStyle(CheckboxToggleStyle())
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                        }
+                        Divider().background(.grisSurface)
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        onCambiarAlternativaSeleccionada(alternativa)
+                    }
+                }
+            }
         }
     }
 }

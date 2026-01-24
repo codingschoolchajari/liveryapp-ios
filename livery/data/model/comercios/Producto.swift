@@ -19,6 +19,7 @@ struct Producto: Codable, Identifiable {
     var cantidadMaximaSeleccionables: Int? = nil
     var nombreSeleccionable: String? = nil
     var procesosExtras: [String] = []
+    var alternativas: [ProductoAlternativa] = []
     var esPremio: Bool? = nil
     var idPremio: String? = nil
     

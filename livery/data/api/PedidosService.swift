@@ -26,10 +26,18 @@ class PedidosService {
 
         request.httpBody = try JSONEncoder().encode(pedido)
 
-        let (_, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              200...299 ~= httpResponse.statusCode else {
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        if !(200...299 ~= httpResponse.statusCode) {
+            // 2. Si hay error, imprime el body antes de lanzar la excepción
+            if let errorString = String(data: data, encoding: .utf8) {
+                print("❌ Error del Backend (Status: \(httpResponse.statusCode)): \(errorString)")
+            }
+            
             throw URLError(.badServerResponse)
         }
     }

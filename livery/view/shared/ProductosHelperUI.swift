@@ -34,6 +34,21 @@ struct ProductoMiniatura: View {
                     )
                     .padding(.bottom, 4)
                 }
+                
+                // Rectángulo de descuento para productos con alternativas
+                if producto.alternativas.count > 0 &&
+                    producto.alternativas.first?.descuento != nil &&
+                    (producto.alternativas.first?.descuento)! > 0
+                {
+                    VStack {
+                        Spacer()
+                        RectanguloDescuento(
+                            descuento: producto.alternativas[0].descuento!,
+                            redondeado: 12
+                        )
+                        .padding(.bottom, 4)
+                    }
+                }
             }
             .frame(width: 100, height: 100)
             
@@ -70,6 +85,25 @@ struct ProductoMiniatura: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
+            }
+            // 4. Precio para Productos con Alternativas
+            if (!producto.alternativas.isEmpty && producto.alternativas[0].precio > 0) {
+                VStack(spacing: 4) {
+                    Text(DoubleUtils.formatearPrecio(valor: producto.alternativas[0].precio))
+                        .font(.custom("Barlow", size: 14))
+                        .bold()
+                        .foregroundColor(.negro)
+                    
+                    if let descuento = producto.alternativas[0].descuento,
+                       let precioSinDescuento = producto.alternativas[0].precioSinDescuento,
+                       descuento > 0 {
+                        
+                        Text(DoubleUtils.formatearPrecio(valor: precioSinDescuento))
+                            .font(.custom("Barlow", size: 14))
+                            .foregroundColor(.grisTerciario)
+                            .strikethrough(true, color: .grisTerciario)
+                    }
+                }
             }
             Spacer()
         }

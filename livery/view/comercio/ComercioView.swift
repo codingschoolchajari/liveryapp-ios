@@ -53,7 +53,6 @@ struct Portada: View {
             VStack {
                 ComercioTitulo(
                     comercio: comercio,
-                    mostrarPuntuacion: true,
                     mostrarBotonAdd: false,
                     mostrarHorarios: false
                 )
@@ -75,7 +74,6 @@ struct Portada: View {
 
 struct ComercioTitulo: View {
     let comercio: Comercio
-    var mostrarPuntuacion: Bool = true
     var mostrarBotonAdd: Bool = false
     var mostrarHorarios: Bool = false
     
@@ -127,20 +125,8 @@ struct ComercioTitulo: View {
                 
                 Spacer()
                 
-                // Grupo Derecho: Estrella + Puntuación o Botón Add
+                // Grupo Derecho
                 HStack(spacing: 8) {
-                    if mostrarPuntuacion {
-                        Image("icono_estrella_relleno")
-                            .resizable()
-                            .frame(width: 20, height: 20)
-                            .foregroundColor(Color.negro)
-                        
-                        Text(String(format: "%.1f", comercio.puntuacion))
-                            .font(.custom("Barlow", size: 18))
-                            .bold()
-                            .foregroundColor(.negro)
-                    }
-                    
                     if mostrarBotonAdd {
                         Image("icono_add_circle")
                             .resizable()

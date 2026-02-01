@@ -49,15 +49,21 @@ struct BottomSheetPedidoDescripcion: View {
                     Spacer().frame(height: 16)
                     
                     Divider()
-                    
+                        .frame(height: 1.5)
+                        .background(Color.grisTerciario)
+                    Spacer().frame(height: 4)
+
                     // Sistema de Tabs
                     TabsConBoxes(
                         tabsFila1: tabsFila1,
                         tabsFila2: tabsFila2,
                         selectedTabIndex: $selectedTabIndex
                     )
-                    
+                    Spacer().frame(height: 4)
                     Divider()
+                        .frame(height: 1.5)
+                        .background(Color.grisTerciario)
+                    
                     Spacer().frame(height: 8)
                     
                     // Contenido dinámico según el Tab
@@ -129,6 +135,7 @@ struct TabsConBoxes: View {
                 }
             }
         }
+        .padding(.horizontal, 4)
     }
     
     func tabButton(title: String, index: Int) -> some View {
@@ -136,9 +143,11 @@ struct TabsConBoxes: View {
             Text(title)
                 .font(.custom("Barlow", size: 14))
                 .bold()
-                .foregroundColor(selectedTabIndex == index ? .verdePrincipal : .grisSecundario)
                 .padding(.vertical, 8)
                 .frame(maxWidth: .infinity)
+                .foregroundColor(selectedTabIndex == index ? .blanco : .grisTerciario)
+                .background(selectedTabIndex == index ? .verdePrincipal : .blanco)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(PlainButtonStyle())
     }

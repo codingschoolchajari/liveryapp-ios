@@ -37,9 +37,9 @@ struct PagoTab: View {
                         Spacer().frame(height: 4)
                         
                         Text("El envío se abona directamente al repartidor.")
-                            .font(.custom("Barlow", size: 12))
+                            .font(.custom("Barlow", size: 14))
                             .bold()
-                            .foregroundColor(.negro)
+                            .foregroundColor(.rojoError)
                         
                         Spacer().frame(height: 8)
                         

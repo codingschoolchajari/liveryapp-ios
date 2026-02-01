@@ -9,9 +9,10 @@ import Lottie
 
 struct LottieView: UIViewRepresentable {
     var animationName: String
+    var endFrame: AnimationFrameTime
     var loopMode: LottieLoopMode = .playOnce
     var completion: (() -> Void)? = nil
-
+    
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: .zero)
         view.backgroundColor = .verdeSplashScreen
@@ -30,7 +31,7 @@ struct LottieView: UIViewRepresentable {
         animationView.loopMode = loopMode
         
 
-        animationView.play { finished in
+        animationView.play(fromFrame: 0, toFrame: endFrame, loopMode: loopMode) { finished in
             if finished {
                 completion?()
             }

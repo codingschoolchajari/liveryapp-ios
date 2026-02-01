@@ -12,7 +12,7 @@ struct SplashScreenView: View {
     @AppStorage("logueado") var logueado: Bool = false
     
     var body: some View {
-        LottieView(animationName: "splash_screen") {
+        LottieView(animationName: "splash_screen", endFrame: 171) {
             Task {
                 // 1. Ejecutamos TODA la inicialización
                 await perfilUsuarioState.inicializacion()

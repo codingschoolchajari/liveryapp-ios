@@ -24,7 +24,6 @@ struct BottomSheetComentarios: View {
             Spacer().frame(height: 16)
             TituloComercio(
                 comercio: comercio,
-                mostrarPuntuacion: true,
                 mostrarBotonAdd: false
             )
             ListaPedidosComentarios(pedidosComentariosViewModel: pedidosComentariosViewModel)
@@ -32,6 +31,7 @@ struct BottomSheetComentarios: View {
         .onAppear {
             pedidosComentariosViewModel.onIdComercioSeleccionadoChange(valor: comercio.id)
         }
+        .background(Color.blanco)
     }
 }
 
@@ -118,13 +118,13 @@ struct PedidoItemsView: View {
 
     @ViewBuilder
     private func itemRow(nombre: String, url: String) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 8) {
             AsyncImage(url: URL(string: API.baseURL + "/" + url)) { image in
                 image.resizable().aspectRatio(contentMode: .fill)
             } placeholder: {
                 Color.gray.opacity(0.2)
             }
-            .frame(width: 40, height: 40)
+            .frame(width: 60, height: 60)
             .cornerRadius(12)
             
             Text(nombre)
@@ -133,7 +133,7 @@ struct PedidoItemsView: View {
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(width: 200, height: 40)
+        .frame(width: 200, height: 60)
     }
 }
 

@@ -305,6 +305,7 @@ struct Alternativas: View {
                                     )
                             )
                             .toggleStyle(CheckboxToggleStyle())
+                            .allowsHitTesting(false)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
                         }

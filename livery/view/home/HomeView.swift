@@ -638,7 +638,7 @@ struct BottomSheetNotificaciones: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 8)
-            Titulo(titulo: "Notificaciones")
+            Titulo(titulo: "Notificaciones", textoColor: Color.verdePrincipal)
             Spacer().frame(height: 8)
             
             ScrollView(showsIndicators: false) {

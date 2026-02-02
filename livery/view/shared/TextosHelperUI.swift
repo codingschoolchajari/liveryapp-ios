@@ -8,6 +8,7 @@ import SwiftUI
 
 struct Titulo: View {
     let titulo: String
+    var textoColor: Color = Color.negro
     
     var body: some View {
         HStack {
@@ -16,7 +17,7 @@ struct Titulo: View {
             Text(titulo)
                 .font(.custom("Barlow", size: 16))
                 .bold()
-                .foregroundColor(.negro)
+                .foregroundColor(textoColor)
             
             Spacer()
         }

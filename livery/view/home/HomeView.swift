@@ -121,16 +121,6 @@ struct FranjaPrincipal: View {
                             }
                     }
                 }
-                                        .bold()
-                                        .foregroundColor(.blanco)
-                                        .frame(width: 22, height: 22)
-                                        .background(Color.red)
-                                        .clipShape(Circle())
-                                        .offset(x: 10, y: -8)
-                                }
-                            }
-                    }
-                }
 
                 Button {
                     navManager.irAPremios()

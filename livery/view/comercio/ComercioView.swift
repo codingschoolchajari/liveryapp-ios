@@ -76,9 +76,32 @@ struct ComercioTitulo: View {
     let comercio: Comercio
     var mostrarBotonAdd: Bool = false
     var mostrarHorarios: Bool = false
+    var mostrarEncabezado: Bool = false
+    var mostrarSubtituloDistancia: Bool = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            if mostrarEncabezado, let horarios = comercio.horarios {
+                HStack {
+                    // Distancia al usuario
+                    if let distancia = comercio.distanciaUsuario {
+                        Text("A  \(distancia)  metros")
+                            .font(.custom("Barlow", size: 12))
+                            .bold()
+                            .foregroundColor(.grisTerciario)
+                    }
+                    
+                    Spacer()
+                    
+                    // Horarios
+                    Text(DateUtils.obtenerHorariosHoy(horarios: horarios))
+                        .font(.custom("Barlow", size: 12))
+                        .bold()
+                        .foregroundColor(.grisTerciario)
+                }
+                Spacer().frame(height: 4)
+            }
+            
             if mostrarHorarios, let horarios = comercio.horarios {
                 HStack {
                     Spacer()
@@ -115,10 +138,17 @@ struct ComercioTitulo: View {
                         
                         if !comercio.categoriasPrincipales.isEmpty {
                             Text(comercio.categoriasPrincipalesToString())
-                                .font(.custom("Barlow", size: 16))
+                                .font(.custom("Barlow", size: 14))
                                 .foregroundColor(.negro)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
+                        }
+                        
+                        if mostrarSubtituloDistancia, let distancia = comercio.distanciaUsuario, distancia > 0 {
+                            Text("A  \(distancia)  metros")
+                                .font(.custom("Barlow", size: 12))
+                                .bold()
+                                .foregroundColor(.grisTerciario)
                         }
                     }
                 }

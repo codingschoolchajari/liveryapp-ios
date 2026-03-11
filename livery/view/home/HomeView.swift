@@ -426,7 +426,7 @@ struct TarjetaComercio: View {
             .clipped()
 
             // Mitad Inferior:
-            ComercioTitulo(comercio: comercio, mostrarHorarios: true)
+            ComercioTitulo(comercio: comercio, mostrarHorarios: true, mostrarSubtituloDistancia: true)
                 .frame(height: 80)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 8)

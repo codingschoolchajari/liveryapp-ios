@@ -93,15 +93,26 @@ class PedidoChatViewModel: ObservableObject {
     
     func enviarMensaje(mensaje: Mensaje) {
         
-        if(idPedido == nil || emailUsuario == nil) { return }
+        print("🔵 [PedidoChatViewModel] Iniciando envío de mensaje")
+        print("🔵 [PedidoChatViewModel] idPedido: \(String(describing: idPedido))")
+        print("🔵 [PedidoChatViewModel] emailUsuario: \(String(describing: emailUsuario))")
+        print("🔵 [PedidoChatViewModel] idComercio: \(String(describing: idComercio))")
+        print("🔵 [PedidoChatViewModel] idRepartidor: \(String(describing: idRepartidor))")
+        
+        if(idPedido == nil || emailUsuario == nil) {
+            print("❌ [PedidoChatViewModel] Faltan datos obligatorios para enviar mensaje")
+            return
+        }
         
         Task {
             do {
+                print("🔵 [PedidoChatViewModel] Validando token...")
                 await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
                 let accessToken = TokenRepository.repository.accessToken ?? ""
                 
                 let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
                 
+                print("🔵 [PedidoChatViewModel] Llamando a chatsService.enviarMensaje...")
                 try await chatsService.enviarMensaje(
                     token: accessToken,
                     dispositivoID: dispositivoID,
@@ -111,8 +122,10 @@ class PedidoChatViewModel: ObservableObject {
                     idRepartidor: idRepartidor,
                     mensaje: mensaje
                 )
+                print("✅ [PedidoChatViewModel] Mensaje enviado correctamente")
             } catch {
-                print("Error al enviar mensaje: \(error)")
+                print("❌ [PedidoChatViewModel] Error al enviar mensaje: \(error)")
+                print("❌ [PedidoChatViewModel] Error localizado: \(error.localizedDescription)")
                 self.errorMensaje = error.localizedDescription
             }
         }

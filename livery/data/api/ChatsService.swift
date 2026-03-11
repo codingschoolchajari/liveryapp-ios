@@ -120,6 +120,10 @@ class ChatsService {
         guard let url = components.url else {
             fatalError("URL incorrecta")
         }
+        
+        print("📤 [ChatsService] Enviando mensaje a: \(url.absoluteString)")
+        print("📤 [ChatsService] Mensaje: \(mensaje.texto)")
+        print("📤 [ChatsService] DispositivoID: \(dispositivoID)")
 
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
@@ -127,7 +131,27 @@ class ChatsService {
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(mensaje)
+        
+        // Log del body para debug
+        if let bodyString = String(data: request.httpBody ?? Data(), encoding: .utf8) {
+            print("📤 [ChatsService] Body: \(bodyString)")
+        }
 
-        _ = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ [ChatsService] Respuesta no es HTTPURLResponse")
+            throw URLError(.badServerResponse)
+        }
+        
+        print("📥 [ChatsService] Status Code: \(httpResponse.statusCode)")
+        
+        if !(200...299 ~= httpResponse.statusCode) {
+            let errorBody = String(data: data, encoding: .utf8) ?? "Sin detalles"
+            print("❌ [ChatsService] Error del servidor: \(errorBody)")
+            throw URLError(.badServerResponse)
+        }
+        
+        print("✅ [ChatsService] Mensaje enviado exitosamente")
     }
 }

@@ -9,12 +9,14 @@ import SwiftUI
 struct TituloComercio: View {
     let comercio: Comercio
     var mostrarBotonAdd: Bool = true
+    var mostrarEncabezado: Bool = false
     
     var body: some View {
         ZStack {
             ComercioTitulo(
                 comercio: comercio,
-                mostrarBotonAdd: mostrarBotonAdd
+                mostrarBotonAdd: mostrarBotonAdd,
+                mostrarEncabezado: mostrarEncabezado
             )
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity)

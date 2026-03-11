@@ -426,7 +426,7 @@ struct TarjetaComercio: View {
             .clipped()
 
             // Mitad Inferior:
-            ComercioTitulo(comercio: comercio, mostrarHorarios: true, mostrarSubtituloDistancia: true)
+            ComercioTitulo(comercio: comercio, mostrarEncabezado: true)
                 .frame(height: 80)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 8)
@@ -448,13 +448,14 @@ struct ListaComerciosProductos: View {
                 ForEach(comerciosProductos, id: \.idComercio) { comercioProductos in
                     
                     // 1. Título del Comercio
-                    let comercio = Comercio(
+                    var comercio = Comercio(
                         idInterno: comercioProductos.idComercio,
                         nombre: comercioProductos.nombreComercio,
                         logoURL: comercioProductos.logoComercioURL
                     )
+                    comercio.distanciaUsuario = comercioProductos.distanciaUsuario
                     
-                    TituloComercio(comercio: comercio)
+                    TituloComercio(comercio: comercio, mostrarBotonAdd: false, mostrarEncabezado: true)
                         .padding(.top, 8)
                         .padding(.bottom, 6)
                     

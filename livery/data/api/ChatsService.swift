@@ -12,7 +12,7 @@ class ChatsService {
         token: String,
         dispositivoID: String,
         idPedido: String,
-        emailUsuario: String,
+        idUsuario: String,
         idComercio: String? = nil,
         idRepartidor: String? = nil
     ) async throws -> Chat {
@@ -21,7 +21,7 @@ class ChatsService {
 
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "idPedido", value: idPedido),
-            URLQueryItem(name: "emailUsuario", value: emailUsuario)
+            URLQueryItem(name: "idUsuario", value: idUsuario)
         ]
 
         if let idComercio {
@@ -53,7 +53,7 @@ class ChatsService {
         dispositivoID: String,
         desde: Int64,
         idPedido: String,
-        emailUsuario: String,
+        idUsuario: String,
         idComercio: String? = nil,
         idRepartidor: String? = nil
     ) async throws -> [Mensaje] {
@@ -63,7 +63,7 @@ class ChatsService {
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "desde", value: String(describing: desde)),
             URLQueryItem(name: "idPedido", value: idPedido),
-            URLQueryItem(name: "emailUsuario", value: emailUsuario)
+            URLQueryItem(name: "idUsuario", value: idUsuario)
         ]
 
         if let idComercio {
@@ -94,7 +94,7 @@ class ChatsService {
         token: String,
         dispositivoID: String,
         idPedido: String,
-        emailUsuario: String,
+        idUsuario: String,
         idComercio: String? = nil,
         idRepartidor: String? = nil,
         mensaje: Mensaje
@@ -104,7 +104,7 @@ class ChatsService {
 
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "idPedido", value: idPedido),
-            URLQueryItem(name: "emailUsuario", value: emailUsuario)
+            URLQueryItem(name: "idUsuario", value: idUsuario)
         ]
 
         if let idComercio {

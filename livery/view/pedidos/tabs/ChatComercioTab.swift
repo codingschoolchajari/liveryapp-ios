@@ -47,12 +47,6 @@ struct ChatComercioTab: View {
                 )
             }
         }
-        .onChange(of: pedidoChatViewModel.chat?.idInterno) { oldId, newId in
-            notificacionesState.setChatVisible(idChat: newId ?? "")
-        }
-        .onDisappear {
-            notificacionesState.limpiarChatVisible()
-        }
     }
     
     private func habilitarChat(estado: EstadoPedido?) -> Bool {

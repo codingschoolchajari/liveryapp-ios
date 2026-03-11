@@ -49,12 +49,6 @@ struct ChatRepartidorTab: View {
                 )
             }
         }
-        .onChange(of: pedidoChatViewModel.chat?.idInterno) { oldValue, newValue in
-            notificacionesState.setChatVisible(idChat: newValue ?? "")
-        }
-        .onDisappear {
-            notificacionesState.limpiarChatVisible()
-        }
     }
     
     private func habilitarChat(idRepartidor: String?, estado: EstadoPedido?) -> Bool {

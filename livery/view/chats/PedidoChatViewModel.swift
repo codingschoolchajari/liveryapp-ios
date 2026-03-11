@@ -76,7 +76,7 @@ class PedidoChatViewModel: ObservableObject {
                         token: accessToken,
                         dispositivoID: dispositivoID,
                         idPedido: idPedido,
-                        emailUsuario: emailUsuario,
+                        idUsuario: emailUsuario,
                         idComercio: idComercio,
                         idRepartidor: idRepartidor
                     )
@@ -106,7 +106,7 @@ class PedidoChatViewModel: ObservableObject {
                     token: accessToken,
                     dispositivoID: dispositivoID,
                     idPedido: idPedido!,
-                    emailUsuario: emailUsuario!,
+                    idUsuario: emailUsuario!,
                     idComercio: idComercio,
                     idRepartidor: idRepartidor,
                     mensaje: mensaje
@@ -140,7 +140,7 @@ class PedidoChatViewModel: ObservableObject {
                         dispositivoID: dispositivoID,
                         desde: ultimoTimestamp ?? 0,
                         idPedido: idPedido!,
-                        emailUsuario: emailUsuario!,
+                        idUsuario: emailUsuario!,
                         idComercio: idComercio,
                         idRepartidor: idRepartidor
                     )

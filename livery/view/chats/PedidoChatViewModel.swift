@@ -93,26 +93,15 @@ class PedidoChatViewModel: ObservableObject {
     
     func enviarMensaje(mensaje: Mensaje) {
         
-        print("🔵 [PedidoChatViewModel] Iniciando envío de mensaje")
-        print("🔵 [PedidoChatViewModel] idPedido: \(String(describing: idPedido))")
-        print("🔵 [PedidoChatViewModel] emailUsuario: \(String(describing: emailUsuario))")
-        print("🔵 [PedidoChatViewModel] idComercio: \(String(describing: idComercio))")
-        print("🔵 [PedidoChatViewModel] idRepartidor: \(String(describing: idRepartidor))")
-        
-        if(idPedido == nil || emailUsuario == nil) {
-            print("❌ [PedidoChatViewModel] Faltan datos obligatorios para enviar mensaje")
-            return
-        }
+        if(idPedido == nil || emailUsuario == nil) { return }
         
         Task {
             do {
-                print("🔵 [PedidoChatViewModel] Validando token...")
                 await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
                 let accessToken = TokenRepository.repository.accessToken ?? ""
                 
                 let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
                 
-                print("🔵 [PedidoChatViewModel] Llamando a chatsService.enviarMensaje...")
                 try await chatsService.enviarMensaje(
                     token: accessToken,
                     dispositivoID: dispositivoID,
@@ -122,10 +111,8 @@ class PedidoChatViewModel: ObservableObject {
                     idRepartidor: idRepartidor,
                     mensaje: mensaje
                 )
-                print("✅ [PedidoChatViewModel] Mensaje enviado correctamente")
             } catch {
-                print("❌ [PedidoChatViewModel] Error al enviar mensaje: \(error)")
-                print("❌ [PedidoChatViewModel] Error localizado: \(error.localizedDescription)")
+                print("Error al enviar mensaje: \(error)")
                 self.errorMensaje = error.localizedDescription
             }
         }
@@ -153,6 +140,7 @@ class PedidoChatViewModel: ObservableObject {
                         dispositivoID: dispositivoID,
                         desde: ultimoTimestamp ?? 0,
                         idPedido: idPedido!,
+                        solicitante: emailUsuario!,
                         idUsuario: emailUsuario!,
                         idComercio: idComercio,
                         idRepartidor: idRepartidor

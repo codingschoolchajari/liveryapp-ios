@@ -153,7 +153,7 @@ class HomeViewModel: ObservableObject {
                 }
                 
                 // Ordenar por distancia
-                nuevos.sort { $0.distanciaUsuario < $1.distanciaUsuario }
+                nuevos.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
                 
                 comercios += nuevos
                 paginaActualComercios += 1
@@ -203,7 +203,7 @@ class HomeViewModel: ObservableObject {
                 }
                 
                 // Ordenar por distancia
-                nuevos.sort { $0.distanciaUsuario < $1.distanciaUsuario }
+                nuevos.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
                 
                 comerciosProductos += nuevos
                 paginaActualComerciosProductos += 1
@@ -286,7 +286,7 @@ class HomeViewModel: ObservableObject {
             comercioActualizado.distanciaUsuario = nuevaDistancia
             return comercioActualizado
         }
-        listaActualizadaComercios.sort { $0.distanciaUsuario < $1.distanciaUsuario }
+        listaActualizadaComercios.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
         comercios = listaActualizadaComercios
         
         // Comercios Productos
@@ -299,7 +299,7 @@ class HomeViewModel: ObservableObject {
             comercioProductosActualizado.distanciaUsuario = nuevaDistancia
             return comercioProductosActualizado
         }
-        listaActualizadaComerciosProductos.sort { $0.distanciaUsuario < $1.distanciaUsuario }
+        listaActualizadaComerciosProductos.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
         comerciosProductos = listaActualizadaComerciosProductos
     }
 }

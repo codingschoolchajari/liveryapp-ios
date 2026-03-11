@@ -51,7 +51,7 @@ struct Comercio: Codable, Identifiable {
     var categoriasPrincipales: [String] = []
     var categorias: [Categoria] = []
     var promociones: [Promocion] = []
-    var distanciaUsuario: Int = 0
+    var distanciaUsuario: Int? = nil
     
     var id: String {
         idInterno

@@ -671,7 +671,7 @@ struct BottomSheetNotificaciones: View {
                             notificacion: notificacion,
                             isLeida: false,
                             action: {
-                                onNotificacionClick(notificacion.idPedido)
+                                onNotificacionClick(notificacion.idReferencia)
                             }
                         )
                     }
@@ -682,7 +682,7 @@ struct BottomSheetNotificaciones: View {
                             notificacion: notificacion,
                             isLeida: true,
                             action: {
-                                onNotificacionClick(notificacion.idPedido)
+                                onNotificacionClick(notificacion.idReferencia)
                             }
                         )
                     }
@@ -698,7 +698,7 @@ struct BottomSheetNotificaciones: View {
 
 // Componente para la fila (Row)
 struct NotificationRow: View {
-    let notificacion: Notificacion
+    let notificacion: NotificacionUI
     let isLeida: Bool
     let action: () -> Void
     

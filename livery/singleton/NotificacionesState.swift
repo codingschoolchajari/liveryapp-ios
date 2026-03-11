@@ -25,6 +25,17 @@ class NotificacionesState: ObservableObject {
     // Referencia a PerfilUsuarioState (se inyecta desde la app)
     weak var perfilUsuarioState: PerfilUsuarioState?
     
+    // Propiedades computadas para notificaciones filtradas por estado
+    var notificacionesNoLeidas: [NotificacionUI] {
+        let notificacionesUI = mapearNotificacionesParaUI(notificaciones: notificaciones)
+        return notificacionesUI.filter { $0.estado == ESTADO_NO_LEIDO }
+    }
+    
+    var notificacionesLeidas: [NotificacionUI] {
+        let notificacionesUI = mapearNotificacionesParaUI(notificaciones: notificaciones)
+        return notificacionesUI.filter { $0.estado == ESTADO_LEIDO }
+    }
+    
     // Refresca las notificaciones desde el backend
     func refrescarNotificaciones(receptor: String) {
         Task {

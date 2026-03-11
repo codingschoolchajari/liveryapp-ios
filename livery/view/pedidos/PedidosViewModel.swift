@@ -158,17 +158,40 @@ class PedidosViewModel: ObservableObject {
     }
     
     func buscarPedidoSeleccionado(idPedido: String) async {
+        self.pedidoSeleccionado = nil
+        self.comercioSeleccionado = nil
+        self.recorridoSeleccionado = nil
+        
         do {
             await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
             let accessToken = TokenRepository.repository.accessToken ?? ""
             
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             
-            self.pedidoSeleccionado = try await pedidosService.buscarPedido(
+            let pedidoInfo = try await pedidosService.buscarPedido(
                 token: accessToken,
                 dispositivoID: dispositivoID,
                 idPedido: idPedido
             )
+            
+            // Buscar comercio asociado
+            let comercioInfo = try await comerciosService.buscarComercio(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                idInterno: pedidoInfo.idComercio,
+                datosPrincipales: true
+            )
+            
+            // Buscar recorrido asociado
+            let recorridoInfo = try await recorridosService.buscar(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                idPedido: idPedido
+            )
+            
+            self.pedidoSeleccionado = pedidoInfo
+            self.comercioSeleccionado = comercioInfo
+            self.recorridoSeleccionado = recorridoInfo
             onMostrarBottomSheetChange(mostrar: true)
         } catch {
             print("Error al buscar pedido seleccionado: \(error)")

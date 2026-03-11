@@ -53,6 +53,12 @@ struct HomeView: View {
                 notificacionesState.refrescarNotificaciones(receptor: email)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            // Refrescar notificaciones cuando la app vuelve del background (equivalente a onStart en Android)
+            if let email = perfilUsuarioState.usuario?.email {
+                notificacionesState.refrescarNotificaciones(receptor: email)
+            }
+        }
     }
 }
 

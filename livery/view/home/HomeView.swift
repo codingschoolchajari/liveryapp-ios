@@ -9,6 +9,7 @@ import SwiftUI
 struct HomeView: View {
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @EnvironmentObject var notificacionesState: NotificacionesState
     @StateObject var homeViewModel : HomeViewModel
     
     init(perfilUsuarioState: PerfilUsuarioState) {
@@ -46,6 +47,12 @@ struct HomeView: View {
         }
         .padding(.bottom, 16)
         .background(Color.blanco)
+        .onAppear {
+            // Refrescar notificaciones cuando aparece la vista (similar a HomeLifecycleObserver en Android)
+            if let email = perfilUsuarioState.usuario?.email {
+                notificacionesState.refrescarNotificaciones(receptor: email)
+            }
+        }
     }
 }
 
@@ -58,6 +65,12 @@ struct FranjaPrincipal: View {
 
     @State private var mostrarDirecciones = false
     @State private var mostrarNotificaciones = false
+    
+    // Calcular notificaciones no leídas a partir del nuevo modelo
+    private var notificacionesNoLeidas: [NotificacionUI] {
+        let notificacionesUI = mapearNotificacionesParaUI(notificaciones: notificacionesState.notificaciones)
+        return notificacionesUI.filter { $0.estado == ESTADO_NO_LEIDO }
+    }
 
     var body: some View {
         HStack {
@@ -95,9 +108,19 @@ struct FranjaPrincipal: View {
                             .frame(width: 24, height: 24)
                             .foregroundColor(.blanco)
                             .overlay(alignment: .topTrailing) {
-                                if !notificacionesState.notificacionesNoLeidas.isEmpty {
-                                    Text("\(notificacionesState.notificacionesNoLeidas.count)")
+                                if !notificacionesNoLeidas.isEmpty {
+                                    Text("\(notificacionesNoLeidas.count)")
                                         .font(.custom("Barlow", size: 12))
+                                        .bold()
+                                        .foregroundColor(.blanco)
+                                        .frame(width: 22, height: 22)
+                                        .background(Color.red)
+                                        .clipShape(Circle())
+                                        .offset(x: 10, y: -8)
+                                }
+                            }
+                    }
+                }
                                         .bold()
                                         .foregroundColor(.blanco)
                                         .frame(width: 22, height: 22)
@@ -159,7 +182,10 @@ struct FranjaPrincipal: View {
                 }
             )
             .onDisappear {
-                notificacionesState.marcarTodasComoLeidas()
+                // Marcar notificaciones como leídas cuando se cierra el sheet
+                if let email = perfilUsuarioState.usuario?.email {
+                    notificacionesState.marcarVisiblesComoLeidas(receptor: email)
+                }
             }
         }
     }

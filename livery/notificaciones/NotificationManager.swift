@@ -4,6 +4,11 @@
 //
 //  Created by Nicolas Matias Garay on 30/12/2025.
 //
+//  ARCHIVO DEPRECADO: Ya no se usa FCM para notificaciones.
+//  Ahora las notificaciones se obtienen consultando directamente al backend.
+//  Ver NotificacionesState.swift para la nueva implementación.
+
+/*
 import Firebase
 import FirebaseMessaging
 import UserNotifications
@@ -56,3 +61,4 @@ class NotificationManager: NSObject, MessagingDelegate, UNUserNotificationCenter
         }
     }
 }
+*/

@@ -21,6 +21,7 @@ struct API {
         static let comercios = "/comercios"
         static let configuraciones = "/configuraciones"
         static let envios = "/envios"
+        static let notificaciones = "/notificaciones"
         static let pedidos = "/pedidos"
         static let premios = "/premios"
         static let productos = "/productos"
@@ -36,6 +37,7 @@ let comentariosURL = API.baseURL + API.Endpoints.comentarios
 let comerciosURL = API.baseURL + API.Endpoints.comercios
 let configuracionesURL = API.baseURL + API.Endpoints.configuraciones
 let enviosURL = API.baseURL + API.Endpoints.envios
+let notificacionesURL = API.baseURL + API.Endpoints.notificaciones
 let pedidosURL = API.baseURL + API.Endpoints.pedidos
 let premiosURL = API.baseURL + API.Endpoints.premios
 let productosURL = API.baseURL + API.Endpoints.productos

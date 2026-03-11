@@ -5,7 +5,6 @@
 //  Created by Nicolas Matias Garay on 02/12/2025.
 //
 import SwiftUI
-import FirebaseMessaging
 
 @main
 struct liveryApp: App {
@@ -15,8 +14,6 @@ struct liveryApp: App {
     @StateObject var perfilUsuarioState = PerfilUsuarioState()
     @StateObject var notificacionesState = NotificacionesState()
     @StateObject var carritoViewModel = CarritoViewModel()
-
-    @State private var notificationManager: NotificationManager?
     
     var body: some Scene {
         WindowGroup {
@@ -27,15 +24,8 @@ struct liveryApp: App {
                 .environmentObject(notificacionesState)
                 .environmentObject(carritoViewModel)
                 .onAppear {
-                    // Inicializamos el manager pasando el estado que ya existe en SwiftUI
-                    let manager = NotificationManager(notificacionesState: notificacionesState)
-                    
-                    // Asignamos delegados
-                    UNUserNotificationCenter.current().delegate = manager
-                    Messaging.messaging().delegate = manager
-                    
-                    // Guardamos la referencia en el @State
-                    self.notificationManager = manager
+                    // Inyectar la referencia de perfilUsuarioState en notificacionesState
+                    notificacionesState.perfilUsuarioState = perfilUsuarioState
                 }
         }
     }

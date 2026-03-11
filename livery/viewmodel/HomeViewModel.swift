@@ -132,7 +132,7 @@ class HomeViewModel: ObservableObject {
             
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             
-            let nuevos = try await comerciosService.buscarPorCategoria(
+            var nuevos = try await comerciosService.buscarPorCategoria(
                 token: accessToken,
                 dispositivoID: dispositivoID,
                 localidad: ciudad,
@@ -144,6 +144,17 @@ class HomeViewModel: ObservableObject {
             if nuevos.isEmpty {
                 noHayMasComercios = true
             } else {
+                // Calcular distancia para cada comercio
+                for i in 0..<nuevos.count {
+                    nuevos[i].distanciaUsuario = calcularDistanciaRedondeada(
+                        p1: perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas,
+                        p2: nuevos[i].direccion.coordenadas
+                    )
+                }
+                
+                // Ordenar por distancia
+                nuevos.sort { $0.distanciaUsuario < $1.distanciaUsuario }
+                
                 comercios += nuevos
                 paginaActualComercios += 1
             }
@@ -171,7 +182,7 @@ class HomeViewModel: ObservableObject {
             
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             
-            let nuevos = try await comerciosService.buscarProductosPorPalabraClave(
+            var nuevos = try await comerciosService.buscarProductosPorPalabraClave(
                 token: accessToken,
                 dispositivoID: dispositivoID,
                 localidad: ciudad,
@@ -183,6 +194,17 @@ class HomeViewModel: ObservableObject {
             if nuevos.isEmpty {
                 noHayMasComerciosProductos = true
             } else {
+                // Calcular distancia para cada comercio con productos
+                for i in 0..<nuevos.count {
+                    nuevos[i].distanciaUsuario = calcularDistanciaRedondeada(
+                        p1: perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas,
+                        p2: nuevos[i].direccion.coordenadas
+                    )
+                }
+                
+                // Ordenar por distancia
+                nuevos.sort { $0.distanciaUsuario < $1.distanciaUsuario }
+                
                 comerciosProductos += nuevos
                 paginaActualComerciosProductos += 1
             }
@@ -249,5 +271,35 @@ class HomeViewModel: ObservableObject {
         } catch {
             print("Error iniciando promoción seleccionada: \(error)")
         }
+    }
+    
+    func recalcularDistanciasComercios() {
+        let direccionUsuario = perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas
+        
+        // Comercios
+        var listaActualizadaComercios = comercios.map { comercio in
+            var comercioActualizado = comercio
+            let nuevaDistancia = calcularDistanciaRedondeada(
+                p1: direccionUsuario,
+                p2: comercio.direccion.coordenadas
+            )
+            comercioActualizado.distanciaUsuario = nuevaDistancia
+            return comercioActualizado
+        }
+        listaActualizadaComercios.sort { $0.distanciaUsuario < $1.distanciaUsuario }
+        comercios = listaActualizadaComercios
+        
+        // Comercios Productos
+        var listaActualizadaComerciosProductos = comerciosProductos.map { comercioProductos in
+            var comercioProductosActualizado = comercioProductos
+            let nuevaDistancia = calcularDistanciaRedondeada(
+                p1: direccionUsuario,
+                p2: comercioProductos.direccion.coordenadas
+            )
+            comercioProductosActualizado.distanciaUsuario = nuevaDistancia
+            return comercioProductosActualizado
+        }
+        listaActualizadaComerciosProductos.sort { $0.distanciaUsuario < $1.distanciaUsuario }
+        comerciosProductos = listaActualizadaComerciosProductos
     }
 }

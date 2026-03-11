@@ -139,6 +139,7 @@ struct FranjaPrincipal: View {
         .background(.verdePrincipal)
         .sheet(isPresented: $mostrarDirecciones) {
             BottomSheetDirecciones(
+                homeViewModel: homeViewModel,
                 onNuevaDireccion: {
                     mostrarDirecciones = false
                     navManager.irADireccion()
@@ -530,6 +531,7 @@ struct ListaComerciosProductos: View {
 }
 
 struct BottomSheetDirecciones: View {
+    @ObservedObject var homeViewModel: HomeViewModel
     let onNuevaDireccion: () -> Void
     let onDireccionSeleccionada: () -> Void
 
@@ -574,6 +576,7 @@ struct BottomSheetDirecciones: View {
                                 await perfilUsuarioState.actualizarDireccionSeleccionada(
                                     idDireccion: direccion.id
                                 )
+                                homeViewModel.recalcularDistanciasComercios()
                                 onDireccionSeleccionada()
                             }
                         } label: {

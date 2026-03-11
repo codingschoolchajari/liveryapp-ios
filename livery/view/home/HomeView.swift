@@ -448,14 +448,14 @@ struct ListaComerciosProductos: View {
                 ForEach(comerciosProductos, id: \.idComercio) { comercioProductos in
                     
                     // 1. Título del Comercio
-                    var comercio = Comercio(
+                    let comercio = Comercio(
                         idInterno: comercioProductos.idComercio,
                         nombre: comercioProductos.nombreComercio,
-                        logoURL: comercioProductos.logoComercioURL
+                        logoURL: comercioProductos.logoComercioURL,
+                        distanciaUsuario: comercioProductos.distanciaUsuario
                     )
-                    comercio.distanciaUsuario = comercioProductos.distanciaUsuario
                     
-                    TituloComercio(comercio: comercio, mostrarBotonAdd: false, mostrarEncabezado: true)
+                    TituloComercio(comercio: comercio, mostrarBotonAdd: false, mostrarSubtituloDistancia: true)
                         .padding(.top, 8)
                         .padding(.bottom, 6)
                     

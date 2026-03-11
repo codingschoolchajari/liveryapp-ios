@@ -20,7 +20,7 @@ struct HomeView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            FranjaPrincipal()
+            FranjaPrincipal(homeViewModel: homeViewModel)
             BusquedaModos(homeViewModel: homeViewModel)
             
             if  ( perfilUsuarioState.ciudadSeleccionada != nil
@@ -51,6 +51,7 @@ struct HomeView: View {
 
 struct FranjaPrincipal: View {
 
+    @ObservedObject var homeViewModel: HomeViewModel
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @EnvironmentObject var notificacionesState: NotificacionesState
     @EnvironmentObject var navManager: NavigationManager

@@ -9,7 +9,6 @@ import SwiftUI
 
 enum EstadoPedido: String, CaseIterable, Codable {
     case pendienteAprobacion = "PENDIENTE_APROBACION"
-    case pendientePago = "PENDIENTE_PAGO"
     case enPreparacion = "EN_PREPARACION"
     case enEsperaRepartidor = "EN_ESPERA_REPARTIDOR"
     case enEsperaCliente = "EN_ESPERA_CLIENTE"
@@ -21,8 +20,6 @@ enum EstadoPedido: String, CaseIterable, Codable {
         switch self {
         case .pendienteAprobacion:
             return "Pendiente de Aprobación"
-        case .pendientePago:
-            return "Pendiente de Pago"
         case .enPreparacion:
             return "En Preparación"
         case .enEsperaRepartidor:
@@ -42,8 +39,6 @@ enum EstadoPedido: String, CaseIterable, Codable {
         switch self {
         case .pendienteAprobacion:
             return "Pedido a la espera de ser aprobado por el comercio."
-        case .pendientePago:
-            return "Se debe realizar el pago del pedido."
         case .enPreparacion:
             return "Su pedido se encuentra en preparación."
         case .enEsperaRepartidor:
@@ -63,7 +58,7 @@ enum EstadoPedido: String, CaseIterable, Codable {
         switch self {
         case .pendienteAprobacion:
             return Color(hex: 0xFFFF9800)
-        case .pendientePago, .cancelado:
+        case .cancelado:
             return Color(hex: 0xFFB3261E)
         case .enPreparacion, .enEsperaRepartidor, .enEsperaCliente:
             return Color(hex: 0xFF006064)

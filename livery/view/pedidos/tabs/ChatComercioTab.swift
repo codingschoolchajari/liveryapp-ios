@@ -52,7 +52,7 @@ struct ChatComercioTab: View {
     private func habilitarChat(estado: EstadoPedido?) -> Bool {
         if(estado == nil) { return false }
         
-        let validos: [EstadoPedido] = [.pendientePago, .enPreparacion, .enEsperaRepartidor, .enCamino, .entregado]
+        let validos: [EstadoPedido] = [.enPreparacion, .enEsperaRepartidor, .enCamino, .entregado]
         return validos.contains(estado!)
     }
 }

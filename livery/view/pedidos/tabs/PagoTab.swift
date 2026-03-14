@@ -225,7 +225,7 @@ struct ComprobanteView: View {
             Spacer().frame(height: 8)
             
             // Botón de Carga
-            if estadoPedido == .pendientePago {
+            if estadoPedido == .pendienteAprobacion {
                 Button(action: { mostrarMenu = true }) {
                     Text(existeComprobante ? "Reemplazar Comprobante" : "Cargar Comprobante")
                         .font(.custom("Barlow", size: 14))

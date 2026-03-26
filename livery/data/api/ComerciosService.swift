@@ -63,15 +63,24 @@ class ComerciosService {
         localidad: String,
         categoria: String,
         skip: Int,
-        limit: Int
+        limit: Int,
+        latitudUsuario: Double? = nil,
+        longitudUsuario: Double? = nil
     ) async throws -> [Comercio] {
 
         guard var components = URLComponents(string: "\(comerciosURL)/buscarPorCategoria/\(categoria)") else { throw URLError(.badURL) }
 
-        components.queryItems = [
+        var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "skip", value: String(skip)),
             URLQueryItem(name: "limit", value: String(limit))
         ]
+        if let lat = latitudUsuario {
+            queryItems.append(URLQueryItem(name: "latitudUsuario", value: String(lat)))
+        }
+        if let lon = longitudUsuario {
+            queryItems.append(URLQueryItem(name: "longitudUsuario", value: String(lon)))
+        }
+        components.queryItems = queryItems
 
         guard let url = components.url else { throw URLError(.badURL) }
 

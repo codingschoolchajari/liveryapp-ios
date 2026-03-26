@@ -26,6 +26,7 @@ struct ItemProducto: Codable, Identifiable {
     var seleccionables: [SeleccionableProducto] = []
     var esPremio: Bool = false
     var idPremio: String? = nil
+    var contieneAlcohol: Bool? = false
     
     var id: String { idInterno }
 }

@@ -57,7 +57,8 @@ class ItemPromocionViewModel: ObservableObject {
             imagenPromocionURL: promocion.imagenURL,
             cantidad: self.cantidad,
             precioUnitario: promocion.precio,
-            precio: promocion.precio * Double(self.cantidad)
+            precio: promocion.precio * Double(self.cantidad),
+            contieneAlcohol: promocion.contieneAlcohol
         )
     }
     

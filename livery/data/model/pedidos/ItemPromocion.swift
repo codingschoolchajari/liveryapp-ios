@@ -15,6 +15,7 @@ struct ItemPromocion: Codable, Identifiable {
     let precioUnitario: Double
     var precio: Double
     var seleccionablesPorProducto: [String: [SeleccionableProducto]] = [:]
+    var contieneAlcohol: Bool? = false
     
     var id: String { idInterno }
 }

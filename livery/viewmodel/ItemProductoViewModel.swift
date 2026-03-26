@@ -60,7 +60,8 @@ class ItemProductoViewModel: ObservableObject {
             precioUnitario: precio,
             precio: precio * Double(self.cantidad),
             esPremio: producto.esPremio ?? false,
-            idPremio: producto.idPremio
+            idPremio: producto.idPremio,
+            contieneAlcohol: producto.contieneAlcohol
         )
     }
     
@@ -137,7 +138,8 @@ class ItemProductoViewModel: ObservableObject {
             precioUnitario: precio,
             precio: precio * Double(self.cantidad),
             esPremio: producto!.esPremio ?? false,
-            idPremio: producto!.idPremio
+            idPremio: producto!.idPremio,
+            contieneAlcohol: producto!.contieneAlcohol
         )
     }
     

@@ -15,6 +15,7 @@ struct Promocion: Codable, Identifiable {
     var imagenURL: String = ""
     var productosNoSeleccionables: [String] = []
     var productosSeleccionables: [String] = []
+    var contieneAlcohol: Bool? = false
     
     var id: String { idInterno }
 }

@@ -6,6 +6,17 @@
 //
 import SwiftUI
 
+struct AdvertenciaProductosConAlcohol: View {
+    var body: some View {
+        Text("Contiene productos con Alcohol, se pedirá identificación")
+            .font(.custom("Barlow", size: 12))
+            .bold()
+            .foregroundColor(.rojoError)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+    }
+}
+
 struct Titulo: View {
     let titulo: String
     var textoColor: Color = Color.negro

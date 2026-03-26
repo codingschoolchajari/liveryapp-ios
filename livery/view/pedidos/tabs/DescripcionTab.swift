@@ -22,6 +22,13 @@ struct DescripcionTab: View {
                         expandidoInicialmente: false,
                         contenido: {
                             Spacer().frame(height: 8)
+
+                            let tieneAlcohol = pedido.itemsProductos.contains { $0.contieneAlcohol == true }
+                                || pedido.itemsPromociones.contains { $0.contieneAlcohol == true }
+
+                            if tieneAlcohol {
+                                AdvertenciaProductosConAlcohol()
+                            }
                             
                             VStack(spacing: 8) {
                                 ItemsProductosView(pedido: pedido)

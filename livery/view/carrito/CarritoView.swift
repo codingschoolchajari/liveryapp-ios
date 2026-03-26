@@ -95,9 +95,16 @@ struct ItemsPedidoView: View {
     @EnvironmentObject var carritoViewModel: CarritoViewModel
 
     var body: some View {
+        let tieneAlcohol = carritoViewModel.itemsProductos.contains { $0.contieneAlcohol == true }
+            || carritoViewModel.itemsPromociones.contains { $0.contieneAlcohol == true }
+
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 8) {
-                
+
+                if tieneAlcohol {
+                    AdvertenciaProductosConAlcohol()
+                }
+
                 // Sección Promociones
                 ForEach(carritoViewModel.itemsPromociones) { item in
                     ItemPromocionRow(itemPromocion: item)

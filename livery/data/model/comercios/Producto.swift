@@ -22,6 +22,7 @@ struct Producto: Codable, Identifiable {
     var alternativas: [ProductoAlternativa] = []
     var esPremio: Bool? = nil
     var idPremio: String? = nil
+    var contieneAlcohol: Bool? = false
     
     var id: String { idInterno }
 }

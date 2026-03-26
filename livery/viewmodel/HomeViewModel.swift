@@ -132,27 +132,25 @@ class HomeViewModel: ObservableObject {
             
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             
+            let coordenadasUsuario = perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas?.coordinates
+            let latitudUsuario = coordenadasUsuario?.first
+            let longitudUsuario = coordenadasUsuario.flatMap { $0.count > 1 ? $0[1] : nil }
+
             var nuevos = try await comerciosService.buscarPorCategoria(
                 token: accessToken,
                 dispositivoID: dispositivoID,
                 localidad: ciudad,
-                categoria: categoria,                
+                categoria: categoria,
                 skip: paginaActualComercios * tamanoPaginaComercios,
-                limit: tamanoPaginaComercios
+                limit: tamanoPaginaComercios,
+                latitudUsuario: latitudUsuario,
+                longitudUsuario: longitudUsuario
             )
 
             if nuevos.isEmpty {
                 noHayMasComercios = true
             } else {
-                // Calcular distancia para cada comercio
-                for i in 0..<nuevos.count {
-                    nuevos[i].distanciaUsuario = calcularDistanciaRedondeada(
-                        p1: perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas,
-                        p2: nuevos[i].direccion.coordenadas
-                    )
-                }
-                
-                // Ordenar por distancia
+                // Ordenar por distancia (calculada por el backend)
                 nuevos.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
                 
                 comercios += nuevos
@@ -274,22 +272,16 @@ class HomeViewModel: ObservableObject {
     }
     
     func recalcularDistanciasComercios() {
-        let direccionUsuario = perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas
-        
-        // Comercios
-        var listaActualizadaComercios = comercios.map { comercio in
-            var comercioActualizado = comercio
-            let nuevaDistancia = calcularDistanciaRedondeada(
-                p1: direccionUsuario,
-                p2: comercio.direccion.coordenadas
-            )
-            comercioActualizado.distanciaUsuario = nuevaDistancia
-            return comercioActualizado
+        // Para comercios por categoría, la distancia la calcula el backend.
+        paginaActualComercios = 0
+        comercios = []
+        noHayMasComercios = false
+        Task {
+            await cargarMasComercios()
         }
-        listaActualizadaComercios.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
-        comercios = listaActualizadaComercios
-        
-        // Comercios Productos
+
+        // Comercios Productos: sigue calculando localmente
+        let direccionUsuario = perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas
         var listaActualizadaComerciosProductos = comerciosProductos.map { comercioProductos in
             var comercioProductosActualizado = comercioProductos
             let nuevaDistancia = calcularDistanciaRedondeada(

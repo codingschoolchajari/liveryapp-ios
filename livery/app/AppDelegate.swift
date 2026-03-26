@@ -6,17 +6,20 @@
 //
 import SwiftUI
 import FirebaseCore
+import FirebaseMessaging
+import UserNotifications
 import GoogleMaps
 import GooglePlaces
 
 class AppDelegate: NSObject, UIApplicationDelegate {
+
+    var perfilUsuarioState: PerfilUsuarioState?
 
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
 
-        // Firebase (solo para autenticación, no para notificaciones)
         FirebaseApp.configure()
 
         // Google Maps
@@ -26,15 +29,31 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             GMSServices.provideAPIKey(apiKey)
             GMSPlacesClient.provideAPIKey(apiKey)
         }
-        
-        // Ya no registramos para notificaciones remotas
-        // application.registerForRemoteNotifications()
+
+        // FCM delegate
+        Messaging.messaging().delegate = NotificationManager.shared
+
+        // Solicitar permiso y registrar para APNs
+        UNUserNotificationCenter.current().delegate = NotificationManager.shared
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+            guard granted else { return }
+            DispatchQueue.main.async {
+                application.registerForRemoteNotifications()
+            }
+        }
 
         return true
     }
-    
-    // Los métodos de notificaciones remotas ya no son necesarios
-    // func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) { }
-    // func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) { }
+
+    // Pasar el token APNs a Firebase para que FCM funcione
+    func application(_ application: UIApplication,
+                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Messaging.messaging().apnsToken = deviceToken
+    }
+
+    func application(_ application: UIApplication,
+                     didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("❌ APNs registration failed: \(error.localizedDescription)")
+    }
 }
 

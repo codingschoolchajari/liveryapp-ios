@@ -26,6 +26,9 @@ struct liveryApp: App {
                 .onAppear {
                     // Inyectar la referencia de perfilUsuarioState en notificacionesState
                     notificacionesState.perfilUsuarioState = perfilUsuarioState
+                    // Inyectar perfilUsuarioState en AppDelegate para renovación del token FCM
+                    delegate.perfilUsuarioState = perfilUsuarioState
+                    NotificationManager.shared.perfilUsuarioState = perfilUsuarioState
                 }
         }
     }

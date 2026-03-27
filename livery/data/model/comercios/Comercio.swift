@@ -26,6 +26,13 @@ struct ComercioEnvios: Codable {
     var envioPropio: Bool = false
     var preciosEnvioPropio: [ComercioPrecioEnvioPropio] = []
     var envioLivery: Bool = false
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        envioPropio = try container.decodeIfPresent(Bool.self, forKey: .envioPropio) ?? false
+        preciosEnvioPropio = try container.decodeIfPresent([ComercioPrecioEnvioPropio].self, forKey: .preciosEnvioPropio) ?? []
+        envioLivery = try container.decodeIfPresent(Bool.self, forKey: .envioLivery) ?? false
+    }
 }
 
 struct ComercioDatosBancarios: Codable {

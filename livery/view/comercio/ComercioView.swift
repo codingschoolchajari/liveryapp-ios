@@ -250,6 +250,7 @@ struct Productos: View {
                             secciones: secciones,
                             seccionSeleccionadaId: seccionSeleccionadaId,
                             onSeccionSeleccionada: { id in
+                                seccionSeleccionadaId = id  // marca inmediatamente
                                 scrollTarget = id
                             }
                         )
@@ -338,10 +339,12 @@ struct Productos: View {
                         }
                     }
                     .onChange(of: scrollTarget) { _, target in
-                        if let target {
-                            withAnimation {
-                                contentProxy.scrollTo(target, anchor: .top)
-                            }
+                        guard let target else { return }
+                        withAnimation {
+                            contentProxy.scrollTo(target, anchor: .top)
+                        }
+                        DispatchQueue.main.async {
+                            scrollTarget = nil
                         }
                     }
                     .sheet(item: $comercioViewModel.promocionSeleccionada) { promocion in

@@ -227,6 +227,7 @@ struct InformacionExtra: View {
 struct Productos: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
     @State private var seccionSeleccionadaId: String = ""
+    @State private var scrollTarget: String? = nil
 
     var body: some View {
         if let comercio = comercioViewModel.comercio {
@@ -251,10 +252,10 @@ struct Productos: View {
                                 seccionSeleccionadaId: seccionSeleccionadaId,
                                 onSeccionSeleccionada: { id in
                                     seccionSeleccionadaId = id
+                                    // Forzamos cambio incluso si se toca la misma sección dos veces
+                                    scrollTarget = nil
                                     DispatchQueue.main.async {
-                                        withAnimation {
-                                            contentProxy.scrollTo(id, anchor: .top)
-                                        }
+                                        scrollTarget = id
                                     }
                                 }
                             )
@@ -341,6 +342,14 @@ struct Productos: View {
                             .filter({ $0.value < threshold })
                             .max(by: { $0.value < $1.value })?.key {
                             seccionSeleccionadaId = activeId
+                        }
+                    }
+                    .onChange(of: scrollTarget) { _, target in
+                        guard let target else { return }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                            withAnimation {
+                                contentProxy.scrollTo(target, anchor: .top)
+                            }
                         }
                     }
                     .sheet(item: $comercioViewModel.promocionSeleccionada) { promocion in

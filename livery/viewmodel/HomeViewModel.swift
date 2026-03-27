@@ -132,7 +132,7 @@ class HomeViewModel: ObservableObject {
             
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             
-            let coordenadasUsuario = perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas?.coordinates
+            let coordenadasUsuario = perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas.coordinates
             let latitudUsuario = coordenadasUsuario?.first
             let longitudUsuario = coordenadasUsuario.flatMap { $0.count > 1 ? $0[1] : nil }
 

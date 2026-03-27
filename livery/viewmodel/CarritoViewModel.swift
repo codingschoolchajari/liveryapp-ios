@@ -335,7 +335,18 @@ class CarritoViewModel: ObservableObject {
             self.envio = 0.0
             
         case .envioPropio:
-            self.envio = comercio?.envios.precioEnvioPropio ?? StringUtils.envioPropioTarifaDefault
+            let precios = comercio?.envios.preciosEnvioPropio ?? []
+            if precios.isEmpty {
+                self.envio = StringUtils.envioPropioTarifaDefault
+            } else {
+                let distanciaMetros = calcularDistanciaRedondeada(
+                    p1: usuarioDireccion?.coordenadas,
+                    p2: comercio?.direccion.coordenadas
+                )
+                let sorted = precios.sorted { $0.hasta < $1.hasta }
+                let tramo = sorted.first { distanciaMetros <= $0.hasta } ?? sorted.last!
+                self.envio = Double(tramo.precio)
+            }
             
         default :
             calcularCostoEnvio(

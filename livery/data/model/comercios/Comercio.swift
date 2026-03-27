@@ -17,11 +17,15 @@ struct ComercioHorario: Codable {
     var intervalos: [ComercioIntervalo] = []
 }
 
+struct ComercioPrecioEnvioPropio: Codable {
+    var hasta: Int = 0
+    var precio: Int = 0
+}
+
 struct ComercioEnvios: Codable {
     var envioPropio: Bool = false
-    var precioEnvioPropio: Double = 0.0
+    var preciosEnvioPropio: [ComercioPrecioEnvioPropio] = []
     var envioLivery: Bool = false
-
 }
 
 struct ComercioDatosBancarios: Codable {

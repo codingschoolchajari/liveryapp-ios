@@ -227,7 +227,6 @@ struct InformacionExtra: View {
 struct Productos: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
     @State private var seccionSeleccionadaId: String = ""
-    @State private var scrollTarget: String? = nil
 
     var body: some View {
         if let comercio = comercioViewModel.comercio {
@@ -243,26 +242,30 @@ struct Productos: View {
                 return result
             }()
 
-            VStack(spacing: 0) {
-                if !secciones.isEmpty {
-                    ScrollViewReader { navProxy in
-                        NavegacionSeccionesComercio(
-                            secciones: secciones,
-                            seccionSeleccionadaId: seccionSeleccionadaId,
-                            onSeccionSeleccionada: { id in
-                                seccionSeleccionadaId = id  // marca inmediatamente
-                                scrollTarget = id
-                            }
-                        )
-                        .onChange(of: seccionSeleccionadaId) { _, newId in
-                            withAnimation {
-                                navProxy.scrollTo(newId, anchor: .center)
+            ScrollViewReader { contentProxy in
+                VStack(spacing: 0) {
+                    if !secciones.isEmpty {
+                        ScrollViewReader { navProxy in
+                            NavegacionSeccionesComercio(
+                                secciones: secciones,
+                                seccionSeleccionadaId: seccionSeleccionadaId,
+                                onSeccionSeleccionada: { id in
+                                    seccionSeleccionadaId = id
+                                    DispatchQueue.main.async {
+                                        withAnimation {
+                                            contentProxy.scrollTo(id, anchor: .top)
+                                        }
+                                    }
+                                }
+                            )
+                            .onChange(of: seccionSeleccionadaId) { _, newId in
+                                withAnimation {
+                                    navProxy.scrollTo(newId, anchor: .center)
+                                }
                             }
                         }
                     }
-                }
 
-                ScrollViewReader { contentProxy in
                     ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 0) {
                             if mostrarPromociones {
@@ -306,7 +309,6 @@ struct Productos: View {
                                                 )
                                             }
                                         )
-                                    .id(sectionId)
 
                                     ForEach(categoria.productos) { producto in
                                         if producto.disponible {
@@ -326,6 +328,7 @@ struct Productos: View {
                                         }
                                     }
                                 }
+                                .id(sectionId)
                             }
 
                             Spacer().frame(height: 400)
@@ -338,17 +341,6 @@ struct Productos: View {
                             .filter({ $0.value < threshold })
                             .max(by: { $0.value < $1.value })?.key {
                             seccionSeleccionadaId = activeId
-                        }
-                    }
-                    .onChange(of: scrollTarget) { _, target in
-                        guard let target else { return }
-                        DispatchQueue.main.async {
-                            withAnimation {
-                                contentProxy.scrollTo(target, anchor: .top)
-                            }
-                        }
-                        DispatchQueue.main.async {
-                            scrollTarget = nil
                         }
                     }
                     .sheet(item: $comercioViewModel.promocionSeleccionada) { promocion in
@@ -379,10 +371,10 @@ struct Productos: View {
                         }
                     }
                 }
-            }
-            .onAppear {
-                if seccionSeleccionadaId.isEmpty {
-                    seccionSeleccionadaId = secciones.first?.id ?? ""
+                .onAppear {
+                    if seccionSeleccionadaId.isEmpty {
+                        seccionSeleccionadaId = secciones.first?.id ?? ""
+                    }
                 }
             }
         }

@@ -1,9 +1,0 @@
-//
-//  errores.txt
-//  livery
-//
-//  Created by Nicolas Matias Garay on 27/03/2026.
-//
-
-Error cargando más comercios: valueNotFound(Swift.Array<Any>, Swift.DecodingError.Context(codingPath: [_CodingKey(stringValue: "Index 0", intValue: 0), CodingKeys(stringValue: "envios", intValue: nil), CodingKeys(stringValue: "preciosEnvioPropio", intValue: nil)], debugDescription: "Cannot get unkeyed decoding container -- found null value instead", underlyingError: nil))
-Error cargando más comercios: valueNotFound(Swift.Array<Any>, Swift.DecodingError.Context(codingPath: [_CodingKey(stringValue: "Index 0", intValue: 0), CodingKeys(stringValue: "envios", intValue: nil), CodingKeys(stringValue: "preciosEnvioPropio", intValue: nil)], debugDescription: "Cannot get unkeyed decoding container -- found null value instead", underlyingError: nil))

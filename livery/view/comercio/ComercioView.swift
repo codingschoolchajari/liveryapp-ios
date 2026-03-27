@@ -294,7 +294,7 @@ struct Productos: View {
                             ForEach(Array(comercio.categorias.enumerated()), id: \.offset) { index, categoria in
                                 let sectionId = "categoria_\(index)"
                                 VStack(spacing: 0) {
-                                    TituloSeccion(titulo: categoria.nombre)
+                                    TituloSeccionComercio(titulo: categoria.nombre)
                                         .background(
                                             GeometryReader { geo in
                                                 Color.clear.preference(
@@ -382,7 +382,7 @@ struct Productos: View {
     }
 }
 
-struct TituloSeccion: View {
+struct TituloSeccionComercio: View {
     let titulo: String
     private let strokeWidth: CGFloat = 3
 
@@ -411,7 +411,7 @@ struct TituloSeccion: View {
 
 struct TituloPromociones: View {
     var body: some View {
-        TituloSeccion(titulo: "Promociones")
+        TituloSeccionComercio(titulo: "Promociones")
     }
 }
 

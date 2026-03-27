@@ -266,6 +266,10 @@ struct Productos: View {
                     ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 0) {
                             if mostrarPromociones {
+                                Color.clear
+                                    .frame(height: 0)
+                                    .id("promociones")
+
                                 TituloPromociones()
                                     .background(
                                         GeometryReader { geo in
@@ -275,7 +279,6 @@ struct Productos: View {
                                             )
                                         }
                                     )
-                                    .id("promociones")
 
                                 ForEach(comercio.promociones) { promocion in
                                     if promocion.disponible {
@@ -295,6 +298,10 @@ struct Productos: View {
                             ForEach(Array(comercio.categorias.enumerated()), id: \.offset) { index, categoria in
                                 let sectionId = "categoria_\(index)"
                                 VStack(spacing: 0) {
+                                    Color.clear
+                                        .frame(height: 0)
+                                        .id(sectionId)
+
                                     TituloSeccionComercio(titulo: categoria.nombre)
                                         .background(
                                             GeometryReader { geo in
@@ -304,7 +311,6 @@ struct Productos: View {
                                                 )
                                             }
                                         )
-                                        .id(sectionId)
 
                                     ForEach(categoria.productos) { producto in
                                         if producto.disponible {
@@ -340,8 +346,10 @@ struct Productos: View {
                     }
                     .onChange(of: scrollTarget) { _, target in
                         guard let target else { return }
-                        withAnimation {
-                            contentProxy.scrollTo(target, anchor: .top)
+                        DispatchQueue.main.async {
+                            withAnimation {
+                                contentProxy.scrollTo(target, anchor: .top)
+                            }
                         }
                         DispatchQueue.main.async {
                             scrollTarget = nil

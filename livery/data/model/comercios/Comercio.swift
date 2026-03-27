@@ -27,6 +27,8 @@ struct ComercioEnvios: Codable {
     var preciosEnvioPropio: [ComercioPrecioEnvioPropio] = []
     var envioLivery: Bool = false
 
+    init() {}
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         envioPropio = try container.decodeIfPresent(Bool.self, forKey: .envioPropio) ?? false

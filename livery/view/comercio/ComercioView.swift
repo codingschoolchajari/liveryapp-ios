@@ -260,7 +260,7 @@ struct Productos: View {
                             )
                             .onChange(of: seccionSeleccionadaId) { _, newId in
                                 withAnimation {
-                                    navProxy.scrollTo(newId, anchor: .center)
+                                    navProxy.scrollTo("nav_\(newId)", anchor: .center)
                                 }
                             }
                         }
@@ -446,7 +446,7 @@ private struct NavegacionSeccionesComercio: View {
                             .background(seleccionada ? Color.verdePrincipal : Color.grisSurface)
                             .clipShape(RoundedRectangle(cornerRadius: 24))
                     }
-                    .id(seccion.id)
+                    .id("nav_\(seccion.id)")
                 }
             }
             .padding(.horizontal, 16)

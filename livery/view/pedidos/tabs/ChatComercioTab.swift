@@ -15,27 +15,15 @@ struct ChatComercioTab: View {
     
     var body: some View {
         let pedidoSeleccionado = pedidosViewModel.pedidoSeleccionado
-        let estadoPedido = EstadoPedido.desdeString(pedidoSeleccionado?.estado?.nombre ?? "")
         let emailUsuario = perfilUsuarioState.usuario?.email ?? ""
         
         VStack {
-            if habilitarChat(estado: estadoPedido) {
-                ChatView(pedidoChatViewModel: pedidoChatViewModel)
-                    .id("comercio_\(pedidoSeleccionado?.idInterno ?? "")")
-                    .onDisappear {
-                        pedidoChatViewModel.limpiarChat()
-                    }
-                    .padding(.horizontal, 16)
-            } else {
-                Text("Esta sección se habilitará cuando el pedido haya sido aprobado por el comercio.")
-                    .font(.custom("Barlow", size: 14))
-                    .bold()
-                    .foregroundColor(.negro)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 16)
-                    .padding(.horizontal, 16)
-                Spacer()
-            }
+            ChatView(pedidoChatViewModel: pedidoChatViewModel)
+                .id("comercio_\(pedidoSeleccionado?.idInterno ?? "")")
+                .onDisappear {
+                    pedidoChatViewModel.limpiarChat()
+                }
+                .padding(.horizontal, 16)
         }
         .task(id: pedidoSeleccionado?.idInterno) {
             if let pedido = pedidoSeleccionado {
@@ -47,12 +35,5 @@ struct ChatComercioTab: View {
                 )
             }
         }
-    }
-    
-    private func habilitarChat(estado: EstadoPedido?) -> Bool {
-        if(estado == nil) { return false }
-        
-        let validos: [EstadoPedido] = [.enPreparacion, .enEsperaRepartidor, .enCamino, .entregado]
-        return validos.contains(estado!)
     }
 }

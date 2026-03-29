@@ -27,7 +27,9 @@ struct ZoomableContainer<Content: View>: UIViewRepresentable {
         let hostedView = UIHostingController(rootView: content)
         hostedView.view.backgroundColor = .clear
         hostedView.view.translatesAutoresizingMaskIntoConstraints = false
-        
+
+        context.coordinator.hostingController = hostedView
+
         scrollView.addSubview(hostedView.view)
         
         NSLayoutConstraint.activate([
@@ -43,9 +45,14 @@ struct ZoomableContainer<Content: View>: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
-    func updateUIView(_ uiView: UIScrollView, context: Context) {}
+
+    func updateUIView(_ uiView: UIScrollView, context: Context) {
+        context.coordinator.hostingController?.rootView = content
+    }
 
     class Coordinator: NSObject, UIScrollViewDelegate {
+        var hostingController: UIHostingController<Content>?
+
         func viewForZooming(in scrollView: UIScrollView) -> UIView? {
             return scrollView.subviews.first
         }

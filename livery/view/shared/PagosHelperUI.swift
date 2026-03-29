@@ -131,7 +131,9 @@ struct ComprobantePagoView: View {
     var botonHabilitado: Bool = true
     let onCargarComprobante: (Comprobante) -> Void
 
-    @State private var existeComprobante = false
+    private var existeComprobante: Bool {
+        comprobanteEnMemoria != nil || urlComprobante != nil
+    }
     @State private var mostrarMenu = false
     @State private var mostrarSelectorFotos = false
     @State private var mostrarSelectorArchivos = false
@@ -200,7 +202,6 @@ struct ComprobantePagoView: View {
             Image(uiImage: image)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .onAppear { existeComprobante = true }
         } else if let urlComprobante,
                   let url = URL(string: urlComprobante) {
             AsyncImage(url: url) { phase in
@@ -209,11 +210,9 @@ struct ComprobantePagoView: View {
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .onAppear { existeComprobante = true }
                 case .failure:
                     Image(systemName: "photo")
                         .foregroundColor(.grisSecundario)
-                        .onAppear { existeComprobante = false }
                 default:
                     ProgressView()
                 }
@@ -221,7 +220,6 @@ struct ComprobantePagoView: View {
         } else {
             Image(systemName: "photo")
                 .foregroundColor(.grisSecundario)
-                .onAppear { existeComprobante = false }
         }
     }
 

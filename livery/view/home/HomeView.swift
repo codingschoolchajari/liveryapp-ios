@@ -456,6 +456,7 @@ struct TarjetaComercio: View {
         }
         .frame(maxWidth: .infinity)
         .cornerRadius(12)
+        .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
     }
 }
 

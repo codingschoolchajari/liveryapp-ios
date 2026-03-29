@@ -10,7 +10,6 @@ struct DescripcionTab: View {
     @ObservedObject var pedidosViewModel: PedidosViewModel
     let pedido: Pedido
     let estadoPedido: EstadoPedido?
-    var onCancel: () -> Void
     
     var body: some View {
         VStack(spacing: 0){
@@ -79,20 +78,6 @@ struct DescripcionTab: View {
                 .padding(.horizontal, 16)
             }
             
-            Spacer()
-            
-            // Botón Cancelar (al final)
-            if estadoPedido == .pendienteAprobacion {
-                CancelacionView(
-                    pedidosViewModel: pedidosViewModel,
-                    pedido: pedido,
-                    onCancel: onCancel
-                )
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
-                .padding(.top, 8)
-                .background(Color.blanco)
-            }
         }
     }
 }
@@ -273,39 +258,6 @@ struct ResumenPedidoView: View {
                 .font(.custom("Barlow", size: 14))
                 .fontWeight(isBoldValue ? .bold : .regular)
                 .foregroundColor(.negro)
-        }
-    }
-}
-
-struct CancelacionView: View {
-    @ObservedObject var pedidosViewModel: PedidosViewModel
-    let pedido: Pedido
-    var onCancel: () -> Void
-    
-    @State private var mostrarDialogo = false
-    
-    var body: some View {
-        Button(action: { mostrarDialogo = true }) {
-            Text("Cancelar Pedido")
-                .font(.custom("Barlow", size: 18))
-                .bold()
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 40)
-                .background(Color.rojoError)
-                .cornerRadius(24)
-        }
-        .padding(.horizontal, 34)
-        .alert("Confirmar Cancelación", isPresented: $mostrarDialogo) {
-            Button("No", role: .cancel) { }
-            Button("Sí", role: .destructive) {
-                Task {
-                    await pedidosViewModel.eliminarPedido(pedido: pedido)
-                    onCancel()
-                }
-            }
-        } message: {
-            Text("¿Estás seguro de que querés cancelar este pedido?")
         }
     }
 }

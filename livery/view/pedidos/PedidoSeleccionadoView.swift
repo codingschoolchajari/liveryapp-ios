@@ -72,8 +72,7 @@ struct BottomSheetPedidoDescripcion: View {
                          case 0: DescripcionTab(
                             pedidosViewModel: pedidosViewModel,
                             pedido: pedidosViewModel.pedidoSeleccionado!,
-                            estadoPedido: estadoPedido,
-                            onCancel: onClose
+                            estadoPedido: estadoPedido
                          )
                          case 1: PagoTab(
                             pedidosViewModel: pedidosViewModel,

@@ -17,10 +17,22 @@ struct ChatRepartidorTab: View {
         let pedidoSeleccionado = pedidosViewModel.pedidoSeleccionado
         let idRepartidor = pedidoSeleccionado?.idRepartidor
         let estadoPedido = EstadoPedido.desdeString(pedidoSeleccionado?.estado?.nombre ?? "")
+        let tipoEntrega = TipoEntrega.desdeString(pedidoSeleccionado?.tipoEntrega ?? "")
         let emailUsuario = perfilUsuarioState.usuario?.email ?? ""
         
         VStack {
-            if habilitarChat(idRepartidor: idRepartidor, estado: estadoPedido) {
+            if tipoEntrega == .retiroEnComercio || tipoEntrega == .envioPropio {
+                Text("Esta funcionalidad no está disponible para Retiro en Comercio o Envío Prioritario")
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.negro)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 16)
+                    .padding(.horizontal, 16)
+                Spacer()
+            } else if let id = idRepartidor, !id.isEmpty,
+                      let estado = estadoPedido,
+                      [.enEsperaRepartidor, .enCamino, .entregado].contains(estado) {
                 ChatView(pedidoChatViewModel: pedidoChatViewModel)
                     .id("repartidor_\(pedidoSeleccionado?.idInterno ?? "")")
                     .onDisappear {
@@ -28,19 +40,19 @@ struct ChatRepartidorTab: View {
                     }
                     .padding(.horizontal, 16)
             } else {
-                Text("Esta sección se habilitará cuando un repartidor haya sido asignado y el pedido se encuentre en camino.")
+                Text("Esta sección se habilitará cuando un repartidor haya sido asignado.")
                     .font(.custom("Barlow", size: 14))
                     .bold()
                     .foregroundColor(.negro)
                     .multilineTextAlignment(.center)
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
-                
                 Spacer()
             }
         }
         .task(id: pedidoSeleccionado?.idInterno) {
-            if let pedido = pedidoSeleccionado {
+            if let pedido = pedidoSeleccionado,
+               let id = pedido.idRepartidor, !id.isEmpty {
                 pedidoChatViewModel.setChatParams(
                     idPedido: pedido.idInterno,
                     emailUsuario: emailUsuario,
@@ -49,12 +61,5 @@ struct ChatRepartidorTab: View {
                 )
             }
         }
-    }
-    
-    private func habilitarChat(idRepartidor: String?, estado: EstadoPedido?) -> Bool {
-        if(estado == nil || idRepartidor == nil || idRepartidor!.isEmpty) { return false }
-        
-        let validos: [EstadoPedido] = [.enCamino, .entregado]
-        return validos.contains(estado!)
     }
 }

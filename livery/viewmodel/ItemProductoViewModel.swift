@@ -15,6 +15,7 @@ class ItemProductoViewModel: ObservableObject {
     
     @Published var seleccionadosUnitarios: [String: Bool] = [:]
     @Published var seleccionadosMultiples: [String: Int] = [:]
+    @Published var opcionesPersonalizablesSeleccionadas: [String: String] = [:]
     
     @Published var alternativaSeleccionada: ProductoAlternativa? = nil
     
@@ -48,6 +49,7 @@ class ItemProductoViewModel: ObservableObject {
         
         inicializarProductoSeleccionable(producto: producto, categoria: categoria)
         inicializarProductoConAlternativas(producto: producto)
+        inicializarPersonalizables(producto: producto)
         
         let precio = obtenerPrecio()
         
@@ -59,6 +61,7 @@ class ItemProductoViewModel: ObservableObject {
             cantidad: self.cantidad,
             precioUnitario: precio,
             precio: precio * Double(self.cantidad),
+            opcionesPersonalizables: buildOpcionesPersonalizables(),
             esPremio: producto.esPremio ?? false,
             idPremio: producto.idPremio,
             contieneAlcohol: producto.contieneAlcohol
@@ -80,6 +83,29 @@ class ItemProductoViewModel: ObservableObject {
         if(producto.alternativas.count > 0) {
             alternativaSeleccionada = producto.alternativas.first
         }
+    }
+
+    func inicializarPersonalizables(producto: Producto) {
+        guard let personalizables = producto.personalizables, !personalizables.isEmpty else {
+            opcionesPersonalizablesSeleccionadas = [:]
+            return
+        }
+
+        opcionesPersonalizablesSeleccionadas = personalizables.reduce(into: [:]) { result, personalizable in
+            guard
+                let opciones = personalizable.opciones,
+                let opcionDisponible = opciones.first(where: { $0.disponible })
+            else {
+                return
+            }
+            result[personalizable.idInterno] = opcionDisponible.idInterno
+        }
+    }
+
+    func seleccionarOpcionPersonalizable(idPersonalizable: String, idOpcion: String) {
+        opcionesPersonalizablesSeleccionadas[idPersonalizable] = idOpcion
+
+        itemProducto?.opcionesPersonalizables = buildOpcionesPersonalizables()
     }
     
     func cambiarSeleccionadoUnitario(
@@ -137,6 +163,7 @@ class ItemProductoViewModel: ObservableObject {
             cantidad: self.cantidad,
             precioUnitario: precio,
             precio: precio * Double(self.cantidad),
+            opcionesPersonalizables: buildOpcionesPersonalizables(),
             esPremio: producto!.esPremio ?? false,
             idPremio: producto!.idPremio,
             contieneAlcohol: producto!.contieneAlcohol
@@ -160,6 +187,29 @@ class ItemProductoViewModel: ObservableObject {
         item.cantidad = self.cantidad
         item.precio = obtenerPrecio() * Double(self.cantidad)
         self.itemProducto = item
+    }
+
+    private func buildOpcionesPersonalizables() -> String? {
+        guard
+            let producto,
+            let personalizables = producto.personalizables,
+            !opcionesPersonalizablesSeleccionadas.isEmpty
+        else {
+            return nil
+        }
+
+        let opciones = personalizables.compactMap { personalizable -> String? in
+            guard
+                let idOpcion = opcionesPersonalizablesSeleccionadas[personalizable.idInterno],
+                let opcion = personalizable.opciones?.first(where: { $0.idInterno == idOpcion })
+            else {
+                return nil
+            }
+
+            return opcion.nombre
+        }
+
+        return opciones.isEmpty ? nil : opciones.joined(separator: " - ")
     }
     
     private func procesosExtras(perfilUsuarioState: PerfilUsuarioState) {
@@ -197,7 +247,7 @@ class ItemProductoViewModel: ObservableObject {
     
     private func obtenerPrecio() -> Double {
         if(producto == nil) { return 0 }
-            
+
         let esPremio: Bool = producto?.esPremio ?? false
         
         if(alternativaSeleccionada != nil && !esPremio){

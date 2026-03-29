@@ -255,6 +255,21 @@ struct BottomSheetSeleccionProducto: View {
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
+                if let personalizables = producto.personalizables, !personalizables.isEmpty {
+                    Spacer().frame(height: 24)
+
+                    PersonalizablesSelector(
+                        personalizables: personalizables,
+                        opcionesSeleccionadas: itemProductoViewModel.opcionesPersonalizablesSeleccionadas,
+                        onSeleccionarOpcion: { idPersonalizable, idOpcion in
+                            itemProductoViewModel.seleccionarOpcionPersonalizable(
+                                idPersonalizable: idPersonalizable,
+                                idOpcion: idOpcion
+                            )
+                        }
+                    )
+                }
+
                 Spacer().frame(height: 12)
                 
                 if let min = producto.cantidadMinimaSeleccionables, min > 0, categoria.seleccionables != nil {

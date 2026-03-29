@@ -320,3 +320,68 @@ struct Alternativas: View {
         }
     }
 }
+
+struct PersonalizablesSelector: View {
+    let personalizables: [ProductoPersonalizables]
+    let opcionesSeleccionadas: [String: String]
+    var onSeleccionarOpcion: (String, String) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            ForEach(personalizables) { personalizable in
+                let opcionesDisponibles = (personalizable.opciones ?? []).filter { $0.disponible }
+
+                if !opcionesDisponibles.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(personalizable.titulo)
+                            .font(.custom("Barlow", size: 15))
+                            .bold()
+                            .foregroundColor(.verdePrincipal)
+
+                        ForEach(opcionesDisponibles) { opcion in
+                            let seleccionada = opcionesSeleccionadas[personalizable.idInterno] == opcion.idInterno
+
+                            HStack(alignment: .center, spacing: 12) {
+                                Text(opcion.nombre)
+                                    .font(.custom("Barlow", size: 14))
+                                    .foregroundColor(.negro)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                RadioButtonCompacto(
+                                    seleccionado: seleccionada,
+                                    color: seleccionada ? .verdePrincipal : .grisTerciario
+                                )
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                onSeleccionarOpcion(personalizable.idInterno, opcion.idInterno)
+                            }
+                            .padding(.bottom, 4)
+                        }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+struct RadioButtonCompacto: View {
+    let seleccionado: Bool
+    let color: Color
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(color, lineWidth: 2)
+                .frame(width: 18, height: 18)
+
+            if seleccionado {
+                Circle()
+                    .fill(color)
+                    .frame(width: 10, height: 10)
+            }
+        }
+        .frame(width: 18, height: 18)
+    }
+}

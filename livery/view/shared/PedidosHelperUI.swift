@@ -38,6 +38,7 @@ struct ItemProductoDescripcion: View {
             }
             
             // Descripción de seleccionables
+            OpcionesPersonalizablesDescripcion(opcionesPersonalizables: itemProducto.opcionesPersonalizables)
             SeleccionablesDescripcion(seleccionables: itemProducto.seleccionables)
             
             AlternativaDescripcion(nombreAlternativaProducto: itemProducto.nombreAlternativaProducto)
@@ -173,6 +174,18 @@ struct AlternativaDescripcion: View {
     var body: some View {
         if(nombreAlternativaProducto != nil && !nombreAlternativaProducto!.isEmpty){
             Text(nombreAlternativaProducto!)
+                .font(.custom("Barlow", size: 14))
+                .foregroundColor(.negro)
+        }
+    }
+}
+
+struct OpcionesPersonalizablesDescripcion: View {
+    let opcionesPersonalizables: String?
+
+    var body: some View {
+        if let opcionesPersonalizables, !opcionesPersonalizables.isEmpty {
+            Text(opcionesPersonalizables)
                 .font(.custom("Barlow", size: 14))
                 .foregroundColor(.negro)
         }

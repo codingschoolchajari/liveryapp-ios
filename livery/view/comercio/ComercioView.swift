@@ -226,163 +226,84 @@ struct InformacionExtra: View {
 
 struct Productos: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
-    @State private var seccionSeleccionadaId: String = ""
-    @State private var scrollTarget: String? = nil
 
     var body: some View {
         if let comercio = comercioViewModel.comercio {
             let mostrarPromociones = !comercio.promociones.isEmpty && comercio.hayPromocionesDisponibles()
-            let secciones: [SeccionComercioNavegacion] = {
-                var result: [SeccionComercioNavegacion] = []
-                if mostrarPromociones {
-                    result.append(SeccionComercioNavegacion(id: "promociones", titulo: "Promociones"))
-                }
-                for (index, categoria) in comercio.categorias.enumerated() {
-                    result.append(SeccionComercioNavegacion(id: "categoria_\(index)", titulo: categoria.nombre))
-                }
-                return result
-            }()
 
-            ScrollViewReader { contentProxy in
-                VStack(spacing: 0) {
-                    if !secciones.isEmpty {
-                        ScrollViewReader { navProxy in
-                            NavegacionSeccionesComercio(
-                                secciones: secciones,
-                                seccionSeleccionadaId: seccionSeleccionadaId,
-                                onSeccionSeleccionada: { id in
-                                    seccionSeleccionadaId = id
-                                    // Forzamos cambio incluso si se toca la misma sección dos veces
-                                    scrollTarget = nil
-                                    DispatchQueue.main.async {
-                                        scrollTarget = id
-                                    }
-                                }
-                            )
-                            .onChange(of: seccionSeleccionadaId) { _, newId in
-                                withAnimation {
-                                    navProxy.scrollTo("nav_\(newId)", anchor: .center)
+            ScrollView(showsIndicators: false) {
+                LazyVStack(spacing: 0) {
+                    if mostrarPromociones {
+                        VStack(spacing: 0) {
+                            TituloPromociones()
+
+                            ForEach(comercio.promociones) { promocion in
+                                if promocion.disponible {
+                                    PromocionTitulo(
+                                        comercioViewModel: comercioViewModel,
+                                        promocion: promocion,
+                                        onSelect: {
+                                            comercioViewModel.seleccionarPromocion(promocion: promocion)
+                                        }
+                                    )
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 4)
                                 }
                             }
                         }
                     }
 
-                    ScrollView(showsIndicators: false) {
-                        LazyVStack(spacing: 0) {
-                            if mostrarPromociones {
-                                VStack(spacing: 0) {
-                                    TituloPromociones()
-                                        .background(
-                                            GeometryReader { geo in
-                                                Color.clear.preference(
-                                                    key: SectionOffsetKey.self,
-                                                    value: ["promociones": geo.frame(in: .named("productosScroll")).minY]
-                                                )
-                                            }
-                                        )
+                    ForEach(Array(comercio.categorias.enumerated()), id: \.offset) { _, categoria in
+                        VStack(spacing: 0) {
+                            TituloSeccionComercio(titulo: categoria.nombre)
 
-                                    ForEach(comercio.promociones) { promocion in
-                                        if promocion.disponible {
-                                            PromocionTitulo(
-                                                comercioViewModel: comercioViewModel,
-                                                promocion: promocion,
-                                                onSelect: {
-                                                    comercioViewModel.seleccionarPromocion(promocion: promocion)
-                                                }
-                                            )
-                                            .padding(.horizontal, 16)
-                                            .padding(.vertical, 4)
-                                        }
-                                    }
-                                }
-                                .id("promociones")
-                            }
-
-                            ForEach(Array(comercio.categorias.enumerated()), id: \.offset) { index, categoria in
-                                let sectionId = "categoria_\(index)"
-                                VStack(spacing: 0) {
-                                    TituloSeccionComercio(titulo: categoria.nombre)
-                                        .background(
-                                            GeometryReader { geo in
-                                                Color.clear.preference(
-                                                    key: SectionOffsetKey.self,
-                                                    value: [sectionId: geo.frame(in: .named("productosScroll")).minY]
-                                                )
-                                            }
-                                        )
-
-                                    ForEach(categoria.productos) { producto in
-                                        if producto.disponible {
-                                            ProductoTitulo(
-                                                comercioViewModel: comercioViewModel,
+                            ForEach(categoria.productos) { producto in
+                                if producto.disponible {
+                                    ProductoTitulo(
+                                        comercioViewModel: comercioViewModel,
+                                        producto: producto,
+                                        categoria: categoria,
+                                        onSelect: {
+                                            comercioViewModel.seleccionarProducto(
                                                 producto: producto,
-                                                categoria: categoria,
-                                                onSelect: {
-                                                    comercioViewModel.seleccionarProducto(
-                                                        producto: producto,
-                                                        categoria: categoria
-                                                    )
-                                                }
+                                                categoria: categoria
                                             )
-                                            .padding(.horizontal, 16)
-                                            .padding(.vertical, 4)
                                         }
-                                    }
+                                    )
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 4)
                                 }
-                                .id(sectionId)
                             }
+                        }
+                    }
 
-                            Spacer().frame(height: 400)
-                        }
+                    Spacer().frame(height: 400)
+                }
+            }
+            .sheet(item: $comercioViewModel.promocionSeleccionada) { promocion in
+                BottomSheetSeleccionPromocion(
+                    promocion: promocion,
+                    comercio: comercio,
+                    onClose: {
+                        comercioViewModel.limpiarSeleccionado()
                     }
-                    .coordinateSpace(name: "productosScroll")
-                    .onPreferenceChange(SectionOffsetKey.self) { offsets in
-                        let threshold: CGFloat = 50
-                        if let activeId = offsets
-                            .filter({ $0.value < threshold })
-                            .max(by: { $0.value < $1.value })?.key {
-                            seccionSeleccionadaId = activeId
-                        }
-                    }
-                    .onChange(of: scrollTarget) { _, target in
-                        guard let target else { return }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                            withAnimation {
-                                contentProxy.scrollTo(target, anchor: .top)
-                            }
-                        }
-                    }
-                    .sheet(item: $comercioViewModel.promocionSeleccionada) { promocion in
-                        BottomSheetSeleccionPromocion(
-                            promocion: promocion,
-                            comercio: comercio,
-                            onClose: {
-                                comercioViewModel.limpiarSeleccionado()
-                            }
-                        )
-                        .onDisappear {
+                )
+                .onDisappear {
+                    comercioViewModel.limpiarSeleccionado()
+                }
+            }
+            .sheet(item: $comercioViewModel.productoSeleccionado) { productoSeleccionado in
+                if (comercioViewModel.categoria != nil){
+                    BottomSheetSeleccionProducto(
+                        producto: productoSeleccionado,
+                        categoria: comercioViewModel.categoria!,
+                        comercio: comercio,
+                        onClose: {
                             comercioViewModel.limpiarSeleccionado()
                         }
-                    }
-                    .sheet(item: $comercioViewModel.productoSeleccionado) { productoSeleccionado in
-                        if (comercioViewModel.categoria != nil){
-                            BottomSheetSeleccionProducto(
-                                producto: productoSeleccionado,
-                                categoria: comercioViewModel.categoria!,
-                                comercio: comercio,
-                                onClose: {
-                                    comercioViewModel.limpiarSeleccionado()
-                                }
-                            )
-                            .onDisappear {
-                                comercioViewModel.limpiarSeleccionado()
-                            }
-                        }
-                    }
-                }
-                .onAppear {
-                    if seccionSeleccionadaId.isEmpty {
-                        seccionSeleccionadaId = secciones.first?.id ?? ""
+                    )
+                    .onDisappear {
+                        comercioViewModel.limpiarSeleccionado()
                     }
                 }
             }
@@ -420,46 +341,5 @@ struct TituloSeccionComercio: View {
 struct TituloPromociones: View {
     var body: some View {
         TituloSeccionComercio(titulo: "Promociones")
-    }
-}
-
-private struct SeccionComercioNavegacion: Identifiable, Equatable {
-    let id: String
-    let titulo: String
-}
-
-private struct SectionOffsetKey: PreferenceKey {
-    static var defaultValue: [String: CGFloat] = [:]
-    static func reduce(value: inout [String: CGFloat], nextValue: () -> [String: CGFloat]) {
-        value.merge(nextValue(), uniquingKeysWith: { $1 })
-    }
-}
-
-private struct NavegacionSeccionesComercio: View {
-    let secciones: [SeccionComercioNavegacion]
-    let seccionSeleccionadaId: String
-    let onSeccionSeleccionada: (String) -> Void
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 4) {
-                ForEach(secciones) { seccion in
-                    let seleccionada = seccion.id == seccionSeleccionadaId
-                    Button(action: { onSeccionSeleccionada(seccion.id) }) {
-                        Text(seccion.titulo)
-                            .font(.custom("Barlow", size: 11))
-                            .bold()
-                            .foregroundColor(seleccionada ? .blanco : .grisSecundario)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(seleccionada ? Color.verdePrincipal : Color.grisSurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                    }
-                    .id("nav_\(seccion.id)")
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-        }
     }
 }

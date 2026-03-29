@@ -24,6 +24,7 @@ struct ItemProducto: Codable, Identifiable {
     var precioUnitario: Double
     var precio: Double
     var seleccionables: [SeleccionableProducto] = []
+    var opcionesPersonalizables: String? = nil
     var esPremio: Bool = false
     var idPremio: String? = nil
     var contieneAlcohol: Bool? = false

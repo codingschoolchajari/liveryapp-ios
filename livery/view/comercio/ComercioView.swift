@@ -277,8 +277,6 @@ struct Productos: View {
                             }
                         }
                     }
-
-                    Spacer().frame(height: 400)
                 }
             }
             .sheet(item: $comercioViewModel.promocionSeleccionada) { promocion in

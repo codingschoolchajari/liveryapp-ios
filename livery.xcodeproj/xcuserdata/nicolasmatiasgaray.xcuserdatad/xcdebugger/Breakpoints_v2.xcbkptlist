@@ -56,7 +56,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "54E6D9B7-874E-43D7-B133-1FFA4A233A6F"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "livery/viewmodel/CarritoViewModel.swift"
@@ -66,6 +66,36 @@
             endingLineNumber = "270"
             landmarkName = "crearPedido(perfilUsuarioState:email:nombreUsuario:direccion:tarifaServicio:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "54E6D9B7-874E-43D7-B133-1FFA4A233A6F - f6e66373f6efcceb"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(5) suspend resume partial function for livery.CarritoViewModel.crearPedido(perfilUsuarioState: livery.PerfilUsuarioState, email: Swift.String, nombreUsuario: Swift.String, direccion: livery.UsuarioDireccion, tarifaServicio: Swift.Double) async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/GitHub/liveryapp-ios/livery/viewmodel/CarritoViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "273"
+                  endingLineNumber = "273">
+               </Location>
+               <Location
+                  uuid = "54E6D9B7-874E-43D7-B133-1FFA4A233A6F - f6e66373f6efcceb"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(5) suspend resume partial function for livery.CarritoViewModel.crearPedido(perfilUsuarioState: livery.PerfilUsuarioState, email: Swift.String, nombreUsuario: Swift.String, direccion: livery.UsuarioDireccion, tarifaServicio: Swift.Double) async -&gt; ()"
+                  moduleName = "livery.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nicolasmatiasgaray/Documents/GitHub/liveryapp-ios/livery/viewmodel/CarritoViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "273"
+                  endingLineNumber = "273">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

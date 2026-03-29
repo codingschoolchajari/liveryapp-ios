@@ -5,6 +5,7 @@
 //  Created by Nicolas Matias Garay on 24/12/2025.
 //
 import SwiftUI
+import UIKit
 
 struct ComercioView: View {
     @StateObject var comercioViewModel : ComercioViewModel
@@ -313,28 +314,52 @@ struct Productos: View {
 
 struct TituloSeccionComercio: View {
     let titulo: String
-    private let strokeWidth: CGFloat = 3
 
     var body: some View {
-        ZStack {
-            // 4 copias en las esquinas forman el contorno
-            ForEach([-strokeWidth, strokeWidth], id: \.self) { x in
-                ForEach([-strokeWidth, strokeWidth], id: \.self) { y in
-                    Text(titulo)
-                        .font(.custom("Barlow", size: 30))
-                        .bold()
-                        .foregroundColor(.grisTerciario)
-                        .offset(x: x, y: y)
-                }
-            }
-            // Texto relleno encima
-            Text(titulo)
-                .font(.custom("Barlow", size: 30))
-                .bold()
-                .foregroundColor(.blanco)
-        }
+        StrokedTextLabel(
+            text: titulo,
+            fontSize: 30,
+            fillColor: UIColor(named: "blanco") ?? .white,
+            strokeColor: UIColor(named: "grisTerciario") ?? .gray,
+            strokeWidth: 3
+        )
+        .fixedSize(horizontal: false, vertical: true)
         .padding(.vertical, 2)
         .frame(maxWidth: .infinity, alignment: .center)
+    }
+}
+
+struct StrokedTextLabel: UIViewRepresentable {
+    let text: String
+    let fontSize: CGFloat
+    let fillColor: UIColor
+    let strokeColor: UIColor
+    let strokeWidth: CGFloat
+
+    func makeUIView(context: Context) -> UILabel {
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        label.backgroundColor = .clear
+        label.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        label.setContentHuggingPriority(.required, for: .vertical)
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
+        updateLabel(label)
+        return label
+    }
+
+    func updateUIView(_ uiView: UILabel, context: Context) {
+        updateLabel(uiView)
+    }
+
+    private func updateLabel(_ label: UILabel) {
+        let font = UIFont(name: "Barlow-Bold", size: fontSize) ?? UIFont.boldSystemFont(ofSize: fontSize)
+        label.attributedText = NSAttributedString(string: text, attributes: [
+            .font: font,
+            .foregroundColor: fillColor,
+            .strokeColor: strokeColor,
+            .strokeWidth: -strokeWidth
+        ])
     }
 }
 

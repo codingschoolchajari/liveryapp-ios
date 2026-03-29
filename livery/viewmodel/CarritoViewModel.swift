@@ -22,6 +22,8 @@ class CarritoViewModel: ObservableObject {
     @Published var enviosLiveryActivo: Bool = false
     @Published var envio: Double = 0.0
     @Published var tiempoRecorridoEstimado: Int = 0
+    @Published var comprobanteSeleccionado: Comprobante? = nil
+    @Published var cargandoComprobante: Bool = false
     @Published var pedidoConfirmado: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
@@ -96,6 +98,7 @@ class CarritoViewModel: ObservableObject {
             itemsProductos = []
             itemsPromociones = []
             comercio = nil
+            comprobanteSeleccionado = nil
             pedidoConfirmado = false
         }
     }
@@ -266,6 +269,16 @@ class CarritoViewModel: ObservableObject {
                 dispositivoID: dispositivoID,
                 pedido: pedido
             )
+
+            if let comprobanteSeleccionado {
+                try await pedidosService.cargarComprobante(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    email: email,
+                    idPedido: pedido.idInterno,
+                    comprobante: comprobanteSeleccionado
+                )
+            }
         } catch {
             print("Error al crear pedido: \(error)")
         }
@@ -364,6 +377,17 @@ class CarritoViewModel: ObservableObject {
         itemsProductos = []
         itemsPromociones = []
         comercio = nil
+        comprobanteSeleccionado = nil
+    }
+
+    func cargarComprobante(comprobante: Comprobante) {
+        cargandoComprobante = true
+        comprobanteSeleccionado = comprobante
+        cargandoComprobante = false
+    }
+
+    func limpiarComprobante() {
+        comprobanteSeleccionado = nil
     }
     
     // Premios

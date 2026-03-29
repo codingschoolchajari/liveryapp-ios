@@ -387,6 +387,7 @@ struct ConfirmacionView: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @EnvironmentObject var navManager: NavigationManager
     
+    @State private var mostrarBottomSheetPago = false
     @State private var mostrarAlerta = false
     @State private var tituloError = ""
     @State private var textoError = ""
@@ -397,7 +398,7 @@ struct ConfirmacionView: View {
                 await procesarConfirmacion()
             }
         } label: {
-            Text("Confirmar Pedido")
+            Text("Ir a Pagar")
                 .font(.custom("Barlow", size: 16))
                 .bold()
                 .foregroundColor(.blanco)
@@ -412,6 +413,23 @@ struct ConfirmacionView: View {
         } message: {
             Text(textoError)
         }
+        .sheet(isPresented: $mostrarBottomSheetPago) {
+            BottomSheetPagoCarrito(
+                tarifaServicio: tarifaServicio
+            ) {
+                Task {
+                    await confirmarPedido()
+                }
+            }
+            .presentationDetents([.fraction(0.95)])
+            .presentationDragIndicator(.hidden)
+        }
+    }
+
+    private var tarifaServicio: Double {
+        carritoViewModel.aplicaTarifaServicio
+        ? (perfilUsuarioState.configuracion?.tarifaServicio ?? StringUtils.tarifaServicioDefault)
+        : 0.0
     }
     
     func procesarConfirmacion() async {
@@ -432,19 +450,123 @@ struct ConfirmacionView: View {
             textoError = StringUtils.textoPedidoPendiente
             mostrarAlerta = true
         } else {
-            let tarifaServicio = carritoViewModel.aplicaTarifaServicio ?
-            (perfilUsuarioState.configuracion?.tarifaServicio ?? StringUtils.tarifaServicioDefault) : 0.0
-            
-            // Lógica de creación exitosa
-            await carritoViewModel.crearPedido(
-                perfilUsuarioState: perfilUsuarioState,
-                email: usuario.email,
-                nombreUsuario: usuario.obtenerNombreCompleto(),
-                direccion: direccion,
-                tarifaServicio: tarifaServicio
-            )
-            carritoViewModel.onPedidoConfirmado()
-            navManager.select(.pedidos) // Navegación en tu NavigationManager
+            mostrarBottomSheetPago = true
         }
+    }
+
+    private func confirmarPedido() async {
+        guard let usuario = perfilUsuarioState.usuario,
+              let direccion = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
+
+        await carritoViewModel.crearPedido(
+            perfilUsuarioState: perfilUsuarioState,
+            email: usuario.email,
+            nombreUsuario: usuario.obtenerNombreCompleto(),
+            direccion: direccion,
+            tarifaServicio: tarifaServicio
+        )
+
+        carritoViewModel.onPedidoConfirmado()
+        carritoViewModel.limpiarComprobante()
+        mostrarBottomSheetPago = false
+        navManager.select(.pedidos)
+    }
+}
+
+struct BottomSheetPagoCarrito: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
+
+    let tarifaServicio: Double
+    let onConfirmarPedido: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    HStack {
+                        Spacer()
+
+                        Button(action: { dismiss() }) {
+                            Image("icono_cerrar")
+                                .resizable()
+                                .frame(width: 32, height: 32)
+                                .foregroundColor(.negro)
+                                .background(Color.blanco)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.negro, lineWidth: 2))
+                        }
+                    }
+                    .padding(.horizontal, 8)
+
+                    MontoAPagarView(
+                        subtotal: obtenerSubtotal(
+                            tipoEntrega: carritoViewModel.tipoEntregaSeleccionada,
+                            precioTotal: carritoViewModel.precioTotal,
+                            tarifaServicio: tarifaServicio
+                        ),
+                        tipoEntrega: carritoViewModel.tipoEntregaSeleccionada
+                    )
+
+                    Spacer().frame(height: 8)
+
+                    SeccionDesplegable(
+                        titulo: "Datos Bancarios",
+                        expandidoInicialmente: false,
+                        backgroundColor: .grisSurface,
+                        contenido: {
+                            DatosBancariosPagoView(
+                                datosBancarios: carritoViewModel.comercio?.datosBancarios
+                            )
+                        }
+                    )
+
+                    Spacer().frame(height: 8)
+
+                    SeccionDesplegable(
+                        titulo: "Comprobante",
+                        expandidoInicialmente: true,
+                        backgroundColor: .grisSurface,
+                        contenido: {
+                            ComprobantePagoView(
+                                estaCargando: carritoViewModel.cargandoComprobante,
+                                comprobanteEnMemoria: carritoViewModel.comprobanteSeleccionado?.contenido,
+                                urlComprobante: nil,
+                                onCargarComprobante: { comprobante in
+                                    carritoViewModel.cargarComprobante(comprobante: comprobante)
+                                }
+                            )
+                        }
+                    )
+                }
+                .frame(maxWidth: .infinity)
+                .padding(12)
+                .background(Color.grisSurface)
+                .cornerRadius(12)
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+            }
+
+            Spacer().frame(height: 12)
+
+            Button(action: {
+                onConfirmarPedido()
+                dismiss()
+            }) {
+                Text("Confirmar Pedido")
+                    .font(.custom("Barlow", size: 16))
+                    .bold()
+                    .foregroundColor(carritoViewModel.comprobanteSeleccionado != nil ? .blanco : .grisSecundario)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 45)
+                    .background(carritoViewModel.comprobanteSeleccionado != nil ? Color.verdePrincipal : .grisSurface)
+                    .cornerRadius(24)
+            }
+            .disabled(carritoViewModel.comprobanteSeleccionado == nil)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.blanco)
     }
 }

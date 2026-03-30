@@ -156,6 +156,27 @@ class CarritoViewModel: ObservableObject {
         }
     }
 
+    func validacionDisponibilidad(
+        perfilUsuarioState: PerfilUsuarioState,
+        email: String
+    ) async -> BooleanResponse {
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+
+            return try await pedidosService.validarDisponibilidad(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email
+            )
+        } catch {
+            print("Error al validar disponibilidad de lanzamiento: \(error)")
+            return BooleanResponse(valor: true, mensaje: "")
+        }
+    }
+
     func agregarItemProducto(
         perfilUsuarioState: PerfilUsuarioState,
         itemProducto: ItemProducto,

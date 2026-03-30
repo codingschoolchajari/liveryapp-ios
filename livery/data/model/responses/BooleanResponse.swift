@@ -8,4 +8,5 @@ import Foundation
 
 struct BooleanResponse: Codable {
     let valor: Bool
+    let mensaje: String?
 }

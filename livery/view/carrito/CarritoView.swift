@@ -435,6 +435,18 @@ struct ConfirmacionView: View {
     func procesarConfirmacion() async {
         guard let usuario = perfilUsuarioState.usuario,
               let direccion = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
+
+        let validacionDisponibilidad = await carritoViewModel.validacionDisponibilidad(
+            perfilUsuarioState: perfilUsuarioState,
+            email: usuario.email
+        )
+
+        if !validacionDisponibilidad.valor {
+            tituloError = StringUtils.tituloAppNoDisponible
+            textoError = validacionDisponibilidad.mensaje ?? ""
+            mostrarAlerta = true
+            return
+        }
         
         if await !carritoViewModel.validacionComercioAbierto(
             perfilUsuarioState: perfilUsuarioState

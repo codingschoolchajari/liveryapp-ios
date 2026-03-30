@@ -22,6 +22,8 @@ struct StringUtils {
 
     static let tituloComercioCerrado = "Comercio Cerrado"
     static let textoComercioCerrado = "El comercio no se encuentra abierto en este momento.\n\n"
+
+    static let tituloAppNoDisponible = "App no disponible"
     
     static func inferMimeType(for fileExtension: String) -> String {
         switch fileExtension.lowercased() {

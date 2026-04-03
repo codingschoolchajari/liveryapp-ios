@@ -86,7 +86,7 @@ struct FranjaPrincipal: View {
             } label: {
                 HStack(spacing: 6) {
                     Text(
-                        perfilUsuarioState.idDireccionSeleccionada?.isEmpty ?? true
+                        perfilUsuarioState.obtenerDireccionSeleccionada().isEmpty
                         ? "Seleccionar dirección"
                         : perfilUsuarioState.obtenerDireccionSeleccionada()
                     )

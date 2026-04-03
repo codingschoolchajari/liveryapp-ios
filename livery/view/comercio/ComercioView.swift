@@ -314,7 +314,7 @@ struct TituloSeccionComercio: View {
 
     var body: some View {
         Text(titulo)
-            .font(.custom("Barlow", size: 30))
+            .font(.custom("Barlow", size: 28))
             .bold()
             .foregroundColor(.grisTerciario)
             .padding(.vertical, 2)

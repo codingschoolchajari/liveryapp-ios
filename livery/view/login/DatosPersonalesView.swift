@@ -100,15 +100,16 @@ struct FormularioDatosPersonalesView: View {
             
             TextField(
                 text: $dni,
-                prompt: Text("DNI")
+                prompt: Text("DNI (opcional)")
                     .foregroundColor(.grisSecundario)
                     .font(.custom("Barlow", size: 16))
             ) {
-                Text("DNI")
+                Text("DNI (opcional)")
             }
             .tint(.verdePrincipal)
             .autocapitalization(.words)
             .disableAutocorrection(true)
+            .keyboardType(.numberPad)
             .font(.custom("Barlow", size: 16))
             .bold()
             .foregroundColor(.negro)
@@ -126,10 +127,11 @@ struct FormularioDatosPersonalesView: View {
             Spacer()
             Button(action: {
                 Task {
+                    let dniNormalizado = dni.trimmingCharacters(in: .whitespaces)
                     await perfilUsuarioState.actualizarDatosPersonales(
                         nombre: nombre,
                         apellido: apellido,
-                        dni: Int(dni) ?? 0
+                        dni: dniNormalizado.isEmpty ? nil : Int(dniNormalizado)
                     )
                     mostrarAlerta = true
                 }
@@ -162,6 +164,6 @@ struct FormularioDatosPersonalesView: View {
         return
             !nombre.trimmingCharacters(in: .whitespaces).isEmpty &&
             !apellido.trimmingCharacters(in: .whitespaces).isEmpty &&
-            !dni.isEmpty
+            (dni.trimmingCharacters(in: .whitespaces).isEmpty || Int(dni.trimmingCharacters(in: .whitespaces)) != nil)
     }
 }

@@ -14,7 +14,7 @@ struct UsuarioPremios: Codable, Equatable {
 struct UsuarioDatosPersonales: Codable, Equatable {
     var nombre: String = ""
     var apellido: String = ""
-    var dni: Int = 0
+    var dni: Int? = nil
 }
 
 struct UsuarioFavorito: Codable, Equatable, Identifiable {
@@ -96,9 +96,8 @@ extension Usuario {
         // 2. Verificamos que los campos esenciales no estén vacíos
         let nombreValido = !datos.nombre.trimmingCharacters(in: .whitespaces).isEmpty
         let apellidoValido = !datos.apellido.trimmingCharacters(in: .whitespaces).isEmpty
-        let dniValido = datos.dni != 0
         
         // Solo si todo es true, el perfil está completo
-        return nombreValido && apellidoValido && dniValido
+        return nombreValido && apellidoValido
     }
 }

@@ -132,7 +132,7 @@ class PerfilUsuarioState: ObservableObject {
         }
     }
     
-    func actualizarDatosPersonales(nombre: String, apellido: String, dni: Int) async {
+    func actualizarDatosPersonales(nombre: String, apellido: String, dni: Int?) async {
         await TokenRepository.repository.validarToken(perfilUsuarioState: self)
         let accessToken = TokenRepository.repository.accessToken ?? ""
         

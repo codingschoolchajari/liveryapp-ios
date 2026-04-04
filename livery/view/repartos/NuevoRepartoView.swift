@@ -8,9 +8,9 @@ struct NuevoRepartoView: View {
     @StateObject private var viewModel: NuevoRepartoViewModel
     @State private var tabSeleccionada = 0
 
-    private var coordenadasDestinoComparable: (Double, Double)? {
+    private var coordenadasDestinoKey: String? {
         guard let coord = viewModel.coordenadasDestino else { return nil }
-        return (coord.latitude, coord.longitude)
+        return "\(coord.latitude),\(coord.longitude)"
     }
 
     init(perfilUsuarioState: PerfilUsuarioState, onRepartoCreado: @escaping () -> Void, onCerrar: @escaping () -> Void) {
@@ -128,7 +128,7 @@ struct NuevoRepartoView: View {
             }
             .padding(8)
             .frame(height: 280)
-            .onChange(of: coordenadasDestinoComparable) { _, _ in
+            .onChange(of: coordenadasDestinoKey) { _, _ in
                 if let nueva = viewModel.coordenadasDestino {
                     viewModel.actualizarDestino(coordenada: nueva)
                 }

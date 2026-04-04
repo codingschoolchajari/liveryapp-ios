@@ -87,6 +87,7 @@ class NavigationManager: ObservableObject {
     
     enum PerfilDestination: Hashable {
         case favoritos
+        case repartos
         case comercio(idComercio: String)
     }
     

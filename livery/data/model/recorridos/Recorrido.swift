@@ -18,10 +18,11 @@ struct RecorridoCoordenada: Codable {
 }
 
 struct Recorrido: Codable {
-    let idPedido: String
-    let emailUsuario: String
-    let idComercio: String
-    let idRepartidor: String
+    let idPedido: String?
+    let idReparto: String?
+    let emailUsuario: String?
+    let idComercio: String?
+    let idRepartidor: String?
     var coordenadas: [RecorridoCoordenada] = []
 
     func coordenadasToCoordinateList() -> [CLLocationCoordinate2D] {

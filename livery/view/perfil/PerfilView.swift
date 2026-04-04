@@ -22,6 +22,8 @@ struct PerfilView: View {
 
             SeccionPerfil(mostrarBottomSheetDirecciones: $mostrarBottomSheetDirecciones)
 
+            SeccionRepartos()
+
             SeccionSesion()
 
             Spacer()
@@ -33,6 +35,20 @@ struct PerfilView: View {
                 mostrarBottomSheetDirecciones = false
             }
             .presentationDetents([.medium])
+        }
+    }
+}
+
+struct SeccionRepartos: View {
+    @EnvironmentObject var navManager: NavigationManager
+
+    var body: some View {
+        VStack(spacing: 16) {
+            TituloSeccion(text: "Repartos")
+
+            FilaPerfil(icon: "icono_pedidos", text: "Repartos") {
+                navManager.perfilPath.append(NavigationManager.PerfilDestination.repartos)
+            }
         }
     }
 }

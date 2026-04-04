@@ -105,6 +105,9 @@ struct SeccionesView: View {
                                 case .favoritos:
                                     FavoritosView()
                                         .navigationBarBackButtonHidden(true)
+                                case .repartos:
+                                    RepartosView(perfilUsuarioState: perfilUsuarioState)
+                                        .navigationBarBackButtonHidden(true)
                                 case .comercio(let idComercio):
                                     ComercioView(
                                         comercioViewModel: ComercioViewModel(

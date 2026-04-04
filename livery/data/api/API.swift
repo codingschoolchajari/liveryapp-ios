@@ -25,9 +25,12 @@ struct API {
         static let pedidos = "/pedidos"
         static let premios = "/premios"
         static let productos = "/productos"
+        static let repartidores = "/repartidores"
+        static let repartos = "/repartos"
         static let recorridos = "/recorridos"
         static let token = "/token"
         static let usuarios = "/usuarios"
+        static let chatsRepartos = "/chatsRepartos"
     }
 }
 
@@ -41,6 +44,9 @@ let notificacionesURL = API.baseURL + API.Endpoints.notificaciones
 let pedidosURL = API.baseURL + API.Endpoints.pedidos
 let premiosURL = API.baseURL + API.Endpoints.premios
 let productosURL = API.baseURL + API.Endpoints.productos
+let repartidoresURL = API.baseURL + API.Endpoints.repartidores
+let repartosURL = API.baseURL + API.Endpoints.repartos
 let recorridosURL = API.baseURL + API.Endpoints.recorridos
 let tokenURL = API.baseURL + API.Endpoints.token
 let usuariosURL = API.baseURL + API.Endpoints.usuarios
+let chatsRepartosURL = API.baseURL + API.Endpoints.chatsRepartos

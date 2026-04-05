@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "logo_reparto_usuario.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

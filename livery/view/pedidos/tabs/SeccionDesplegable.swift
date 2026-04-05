@@ -57,6 +57,7 @@ struct SeccionDesplegable<Content: View>: View {
                 VStack {
                     contenido
                 }
+                .padding(.top, 8)
                 .padding(.horizontal, 16)
             }
         }

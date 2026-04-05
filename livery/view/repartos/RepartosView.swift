@@ -120,21 +120,23 @@ private struct RepartoRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 14) {
-            if reparto.tipo == "REPARTO_SOLICITADO_USUARIO" {
-                Image("logo_reparto_usuario")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 65, height: 65)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-            } else {
-                AsyncImage(url: URL(string: API.baseURL + "/" + (reparto.logoComercioURL ?? ""))) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.gray.opacity(0.3)
+            ZStack {
+                Color.gray.opacity(0.3)
+
+                if reparto.tipo == "REPARTO_SOLICITADO_USUARIO" {
+                    Image("logo_reparto_usuario")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    AsyncImage(url: URL(string: API.baseURL + "/" + (reparto.logoComercioURL ?? ""))) { image in
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Color.clear
+                    }
                 }
-                .frame(width: 65, height: 65)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
+            .frame(width: 65, height: 65)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
 
             VStack(spacing: 2) {
                 HStack {

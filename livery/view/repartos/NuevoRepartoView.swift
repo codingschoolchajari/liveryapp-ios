@@ -8,6 +8,8 @@ struct NuevoRepartoView: View {
     @StateObject private var viewModel: NuevoRepartoViewModel
     @State private var tabSeleccionada = 0
     @State private var mostrarDireccionesUsuario = false
+    @State private var mostrarDialogoValidacion = false
+    @State private var faltantesValidacion: [String] = []
     private let seccionContenidoHeight: CGFloat = 390
 
     private var coordenadasDestinoKey: String? {
@@ -78,8 +80,14 @@ struct NuevoRepartoView: View {
                 .foregroundColor(demanda == "baja" ? .verdePrincipal : (demanda == "alta" ? .rojoError : .orange))
 
             Button {
-                Task {
-                    await viewModel.crearReparto()
+                let faltantes = validarFormulario()
+                if !faltantes.isEmpty {
+                    faltantesValidacion = faltantes
+                    mostrarDialogoValidacion = true
+                } else {
+                    Task {
+                        await viewModel.crearReparto()
+                    }
                 }
             } label: {
                 Text(viewModel.creandoReparto ? "Confirmando..." : "Confirmar Reparto")
@@ -91,11 +99,16 @@ struct NuevoRepartoView: View {
                     .background(Color.verdePrincipal)
                     .cornerRadius(24)
             }
-            .disabled(!viewModel.formularioCompleto() || viewModel.creandoReparto)
+            .disabled(viewModel.creandoReparto)
             .padding(.horizontal, 70)
             .padding(.bottom, 24)
         }
         .background(Color.blanco)
+        .alert("Faltan datos para continuar", isPresented: $mostrarDialogoValidacion) {
+            Button("Entendido") { }
+        } message: {
+            Text("Completa los siguientes campos:\n\n" + faltantesValidacion.map { "- \($0)" }.joined(separator: "\n"))
+        }
         .onChange(of: viewModel.repartoCreado) { _, creado in
             if creado {
                 onRepartoCreado()
@@ -394,5 +407,22 @@ struct NuevoRepartoView: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    private func validarFormulario() -> [String] {
+        var faltantes: [String] = []
+        let comercioCompleto = !viewModel.nombreComercio.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !viewModel.calle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !viewModel.numero.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let usuarioCompleto = viewModel.idDireccionUsuarioSeleccionada != nil
+        let comprobanteCompleto = viewModel.comprobanteSeleccionado != nil
+        let descripcionCompleta = !viewModel.descripcionEnvio.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
+        if !comercioCompleto { faltantes.append("Dirección y nombre del comercio") }
+        if !usuarioCompleto { faltantes.append("Dirección del usuario") }
+        if !comprobanteCompleto { faltantes.append("Comprobante de pago") }
+        if !descripcionCompleta { faltantes.append("Descripción (Productos a retirar)") }
+
+        return faltantes
     }
 }

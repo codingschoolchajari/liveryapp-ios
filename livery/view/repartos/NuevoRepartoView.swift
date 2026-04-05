@@ -315,7 +315,7 @@ struct NuevoRepartoView: View {
     }
 
     private var comprobanteTab: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             Text("Repartos habilitados para productos ya abonados.\nSubir aquí el comprobante del pago al comercio.")
                 .font(.custom("Barlow", size: 12))
                 .bold()
@@ -323,6 +323,7 @@ struct NuevoRepartoView: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity)
+                .padding(.top, 16)
 
             ComprobantePagoView(
                 estaCargando: false,

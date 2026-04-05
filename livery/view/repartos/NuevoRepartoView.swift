@@ -8,7 +8,7 @@ struct NuevoRepartoView: View {
     @StateObject private var viewModel: NuevoRepartoViewModel
     @State private var tabSeleccionada = 0
     @State private var mostrarDireccionesUsuario = false
-    private let seccionContenidoHeight: CGFloat = 380
+    private let seccionContenidoHeight: CGFloat = 390
 
     private var coordenadasDestinoKey: String? {
         guard let coord = viewModel.coordenadasDestino else { return nil }
@@ -251,6 +251,7 @@ struct NuevoRepartoView: View {
                     HStack(spacing: 8) {
                         Text(direccionSeleccionadaTexto)
                             .font(.custom("Barlow", size: 14))
+                            .bold()
                             .foregroundColor(.negro)
                             .lineLimit(1)
 
@@ -279,6 +280,7 @@ struct NuevoRepartoView: View {
                             } label: {
                                 Text(StringUtils.formatearDireccion(direccion.calle, direccion.numero, direccion.departamento))
                                     .font(.custom("Barlow", size: 14))
+                                    .bold()
                                     .foregroundColor(.negro)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, 12)

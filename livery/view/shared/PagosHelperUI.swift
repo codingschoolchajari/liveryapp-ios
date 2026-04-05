@@ -155,7 +155,9 @@ struct ComprobantePagoView: View {
             .frame(width: 250, height: altoImagen)
             .background(backgroundImagen)
             .cornerRadius(12)
-            .padding(12)
+            .padding(.horizontal, 12)
+            .padding(.top, 12)
+            .padding(.bottom, 2)
 
             Spacer().frame(height: 8)
 

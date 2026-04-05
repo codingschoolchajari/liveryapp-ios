@@ -11,6 +11,8 @@ struct PlacesSearchBar: View {
     @State private var searchText = ""
     @StateObject private var autocompleteManager = PlaceAutocompleteManager()
     var coordenadasInicialesGPS: CLLocationCoordinate2D?
+    var soloDirecciones: Bool = true
+    var placeholder: String = "Buscar dirección"
     var onPlaceSelected: (GMSPlace) -> Void
 
     var body: some View {
@@ -22,11 +24,11 @@ struct PlacesSearchBar: View {
                 
                 TextField(
                     text: $searchText,
-                    prompt: Text("Buscar dirección")
+                    prompt: Text(placeholder)
                         .foregroundColor(.grisSecundario)
                         .font(.custom("Barlow", size: 16))
                 ) {
-                    Text("Buscar dirección")
+                    Text(placeholder)
                 }
                 .tint(.verdePrincipal)
                 .autocapitalization(.words)
@@ -38,7 +40,8 @@ struct PlacesSearchBar: View {
                 .onChange(of: searchText) { oldValue, newValue in
                     autocompleteManager.buscarLugares(
                         text: newValue,
-                        cercaDe: coordenadasInicialesGPS
+                        cercaDe: coordenadasInicialesGPS,
+                        soloDirecciones: soloDirecciones
                     )
                 }
                 

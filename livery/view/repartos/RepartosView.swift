@@ -41,7 +41,7 @@ struct RepartosView: View {
                             .clipShape(Circle())
                     }
                     .padding(.trailing, 20)
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 16)
                 }
             }
         }

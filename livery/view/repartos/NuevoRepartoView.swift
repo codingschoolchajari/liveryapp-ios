@@ -7,6 +7,8 @@ struct NuevoRepartoView: View {
 
     @StateObject private var viewModel: NuevoRepartoViewModel
     @State private var tabSeleccionada = 0
+    @State private var mostrarDireccionesUsuario = false
+    private let seccionContenidoHeight: CGFloat = 420
 
     private var coordenadasDestinoKey: String? {
         guard let coord = viewModel.coordenadasDestino else { return nil }
@@ -31,23 +33,37 @@ struct NuevoRepartoView: View {
                 }
                 .padding(.horizontal, 12)
 
-                if tabSeleccionada == 0 {
-                    comercioTab
-                } else if tabSeleccionada == 1 {
-                    usuarioTab
-                } else {
-                    comprobanteTab
+                ZStack(alignment: .top) {
+                    if tabSeleccionada == 0 {
+                        comercioTab
+                    } else if tabSeleccionada == 1 {
+                        usuarioTab
+                    } else {
+                        comprobanteTab
+                    }
                 }
+                .frame(height: seccionContenidoHeight)
 
-                TextEditor(text: $viewModel.descripcionEnvio)
-                    .frame(minHeight: 80, maxHeight: 80)
-                    .padding(8)
-                    .background(Color.blanco)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-                    .padding(.horizontal, 12)
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $viewModel.descripcionEnvio)
+                        .frame(minHeight: 80, maxHeight: 80)
+                        .padding(8)
+                        .background(Color.blanco)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.grisSecundario, lineWidth: 1)
+                        )
+
+                    if viewModel.descripcionEnvio.isEmpty {
+                        Text("Descripción (Productos a retirar)")
+                            .font(.custom("Barlow", size: 14))
+                            .foregroundColor(.grisSecundario)
+                            .padding(.leading, 14)
+                            .padding(.top, 16)
+                            .allowsHitTesting(false)
+                    }
+                }
+                .padding(.horizontal, 12)
 
                 Text("El envio se abona directamente al repartidor.")
                     .font(.custom("Barlow", size: 14))
@@ -124,6 +140,20 @@ struct NuevoRepartoView: View {
                 Image("icono_ubicacion_mapa")
                     .resizable()
                     .frame(width: 52, height: 52)
+
+                VStack {
+                    PlacesSearchBar(
+                        coordenadasInicialesGPS: viewModel.coordenadasDestino,
+                        soloDirecciones: false,
+                        placeholder: "Buscar dirección / comercio"
+                    ) { place in
+                        viewModel.actualizarDesdePlace(place)
+                    }
+                    .padding(.horizontal, 52)
+                    .padding(.top, 12)
+
+                    Spacer()
+                }
             }
             .padding(8)
             .frame(height: 280)
@@ -158,13 +188,22 @@ struct NuevoRepartoView: View {
                             .stroke(Color.grisSecundario, lineWidth: 1)
                     )
             }
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.horizontal, 12)
     }
 
     private var usuarioTab: some View {
         VStack(spacing: 8) {
             let direcciones = viewModel.direccionesUsuario
+
+            Text("Dirección de Entrega")
+                .font(.custom("Barlow", size: 14))
+                .bold()
+                .foregroundColor(.negro)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
             if direcciones.isEmpty {
                 Text("No tenes direcciones guardadas")
                     .font(.custom("Barlow", size: 14))
@@ -172,37 +211,89 @@ struct NuevoRepartoView: View {
                     .foregroundColor(.negro)
                     .padding(.top, 16)
             } else {
-                Picker("Direccion", selection: Binding(
-                    get: { viewModel.idDireccionUsuarioSeleccionada ?? "" },
-                    set: { viewModel.onDireccionUsuarioSeleccionadaChange(idDireccion: $0) }
-                )) {
-                    ForEach(direcciones, id: \.id) { direccion in
-                        Text(StringUtils.formatearDireccion(direccion.calle, direccion.numero, direccion.departamento))
-                            .tag(direccion.id)
+                let direccionSeleccionada = direcciones.first(where: { $0.id == viewModel.idDireccionUsuarioSeleccionada })
+                let direccionSeleccionadaTexto = direccionSeleccionada.map {
+                    StringUtils.formatearDireccion($0.calle, $0.numero, $0.departamento)
+                } ?? "Seleccionar dirección"
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        mostrarDireccionesUsuario.toggle()
                     }
+                } label: {
+                    HStack(spacing: 8) {
+                        Text(direccionSeleccionadaTexto)
+                            .font(.custom("Barlow", size: 14))
+                            .foregroundColor(.negro)
+                            .lineLimit(1)
+
+                        Spacer()
+
+                        Image(systemName: mostrarDireccionesUsuario ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.negro)
+                    }
+                    .padding(.horizontal, 12)
+                    .frame(height: 42)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.grisSecundario)
+                    .cornerRadius(10)
                 }
-                .pickerStyle(.menu)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(12)
-                .background(Color.grisSurface)
-                .cornerRadius(10)
+                .buttonStyle(.plain)
+
+                if mostrarDireccionesUsuario {
+                    VStack(spacing: 0) {
+                        ForEach(direcciones, id: \.id) { direccion in
+                            Button {
+                                viewModel.onDireccionUsuarioSeleccionadaChange(idDireccion: direccion.id)
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    mostrarDireccionesUsuario = false
+                                }
+                            } label: {
+                                Text(StringUtils.formatearDireccion(direccion.calle, direccion.numero, direccion.departamento))
+                                    .font(.custom("Barlow", size: 14))
+                                    .foregroundColor(.negro)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 10)
+                                    .background(Color.grisTerciario)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .background(Color.grisTerciario)
+                    .cornerRadius(10)
+                }
             }
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.horizontal, 12)
     }
 
     private var comprobanteTab: some View {
         VStack(spacing: 8) {
+            Text("Repartos habilitados para productos ya abonados.\nSubir aquí el comprobante del pago al comercio.")
+                .font(.custom("Barlow", size: 12))
+                .bold()
+                .foregroundColor(.grisTerciario)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+
             ComprobantePagoView(
                 estaCargando: false,
                 comprobanteEnMemoria: viewModel.comprobanteSeleccionado?.contenido,
                 urlComprobante: nil,
                 botonHabilitado: true,
+                backgroundImagen: Color.grisTerciario,
                 onCargarComprobante: { comprobante in
                     viewModel.cargarComprobante(comprobante)
                 }
             )
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.horizontal, 12)
     }
 
@@ -233,21 +324,25 @@ struct NuevoRepartoView: View {
     }
 
     private func resumenItem(label: String, value: String) -> some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 6) {
             Text(label)
                 .font(.custom("Barlow", size: 12))
                 .bold()
-                .foregroundColor(.grisSecundario)
+                .foregroundColor(.negro)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
             Text(value)
                 .font(.custom("Barlow", size: 14))
                 .bold()
                 .foregroundColor(.negro)
                 .lineLimit(1)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 34)
+                .padding(.horizontal, 8)
+                .background(Color.grisSecundario)
+                .cornerRadius(10)
         }
         .frame(maxWidth: .infinity)
-        .padding(8)
-        .background(Color.grisSurface)
-        .cornerRadius(10)
     }
 
     private func tabItem(titulo: String, index: Int) -> some View {

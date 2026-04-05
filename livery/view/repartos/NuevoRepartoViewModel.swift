@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import GooglePlaces
 
 @MainActor
 class NuevoRepartoViewModel: ObservableObject {
@@ -63,6 +64,25 @@ class NuevoRepartoViewModel: ObservableObject {
     func actualizarDestino(coordenada: CLLocationCoordinate2D) {
         coordenadasDestino = coordenada
         calcularCostoEnvioDebounced()
+    }
+
+    func actualizarDesdePlace(_ place: GMSPlace) {
+        if nombreComercio.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            nombreComercio = place.name ?? ""
+        }
+
+        if let components = place.addressComponents {
+            for component in components {
+                if component.types.contains("route") {
+                    calle = component.name
+                }
+                if component.types.contains("street_number") {
+                    numero = component.name
+                }
+            }
+        }
+
+        actualizarDestino(coordenada: place.coordinate)
     }
 
     private func calcularCostoEnvioDebounced() {

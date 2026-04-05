@@ -15,14 +15,20 @@ class PlaceAutocompleteManager: ObservableObject {
     private let client = GMSPlacesClient.shared()
     private let sessionToken = GMSAutocompleteSessionToken()
 
-    func buscarLugares(text: String, cercaDe coordenadas: CLLocationCoordinate2D?) {
+    func buscarLugares(
+        text: String,
+        cercaDe coordenadas: CLLocationCoordinate2D?,
+        soloDirecciones: Bool = true
+    ) {
         guard text.count >= 2 else {
             results = []
             return
         }
 
         let filter = GMSAutocompleteFilter()
-        filter.types = ["address"]
+        if soloDirecciones {
+            filter.types = ["address"]
+        }
         filter.countries = ["AR"]
         
         if let coords = coordenadas {

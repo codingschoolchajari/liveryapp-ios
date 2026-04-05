@@ -24,12 +24,11 @@ struct NuevoRepartoView: View {
             VStack(spacing: 12) {
                 header
 
-                Picker("Seccion", selection: $tabSeleccionada) {
-                    Text("Comercio").tag(0)
-                    Text("Usuario").tag(1)
-                    Text("Comprobante").tag(2)
+                HStack(spacing: 0) {
+                    tabItem(titulo: "Comercio", index: 0)
+                    tabItem(titulo: "Usuario", index: 1)
+                    tabItem(titulo: "Comprobante", index: 2)
                 }
-                .pickerStyle(.segmented)
                 .padding(.horizontal, 12)
 
                 if tabSeleccionada == 0 {
@@ -249,5 +248,25 @@ struct NuevoRepartoView: View {
         .padding(8)
         .background(Color.grisSurface)
         .cornerRadius(10)
+    }
+
+    private func tabItem(titulo: String, index: Int) -> some View {
+        Button {
+            tabSeleccionada = index
+        } label: {
+            VStack(spacing: 6) {
+                Text(titulo)
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(tabSeleccionada == index ? .verdePrincipal : .grisSecundario)
+                    .frame(maxWidth: .infinity)
+
+                Rectangle()
+                    .fill(tabSeleccionada == index ? Color.verdePrincipal : Color.clear)
+                    .frame(height: 2)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .buttonStyle(.plain)
     }
 }

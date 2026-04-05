@@ -308,6 +308,7 @@ struct NuevoRepartoView: View {
                 .bold()
                 .foregroundColor(.grisTerciario)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity)
 
             ComprobantePagoView(

@@ -130,6 +130,7 @@ struct ComprobantePagoView: View {
     let urlComprobante: String?
     var botonHabilitado: Bool = true
     var backgroundImagen: Color = .blanco
+    var altoImagen: CGFloat = 380
     let onCargarComprobante: (Comprobante) -> Void
 
     private var existeComprobante: Bool {
@@ -151,7 +152,7 @@ struct ComprobantePagoView: View {
                     }
                 }
             }
-            .frame(width: 250, height: 380)
+            .frame(width: 250, height: altoImagen)
             .background(backgroundImagen)
             .cornerRadius(12)
             .padding(12)

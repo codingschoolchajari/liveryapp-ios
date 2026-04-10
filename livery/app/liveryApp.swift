@@ -60,8 +60,12 @@ struct RootContainerView: View {
         guard let formularioHabilitado = formularioDatosPersonalesHabilitado else {
             // Fallback para no quedar trabados en splash si la configuración falla o demora.
             if navManager.currentPhase == .loading {
-                navManager.replaceRoot(with: .main)
-                navManager.select(.home)
+                if user.tienePerfilCompleto {
+                    navManager.replaceRoot(with: .main)
+                    navManager.select(.home)
+                } else {
+                    navManager.replaceRoot(with: .registration)
+                }
             }
             return
         }

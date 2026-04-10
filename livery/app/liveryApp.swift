@@ -43,7 +43,7 @@ struct RootContainerView: View {
         perfilUsuarioState
             .configuracion?
             .configuracionIOS
-            .formularioDatosPersonalesHabilitado ?? true
+            .formularioDatosPersonalesHabilitado ?? false
     }
 
     private func navegarSegunEstadoActual() {

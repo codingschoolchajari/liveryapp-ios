@@ -39,11 +39,11 @@ struct RootContainerView: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @AppStorage("logueado") var logueado: Bool = false
 
-    private var formularioDatosPersonalesHabilitado: Bool {
+    private var formularioDatosPersonalesHabilitado: Bool? {
         perfilUsuarioState
             .configuracion?
             .configuracionIOS
-            .formularioDatosPersonalesHabilitado ?? false
+            .formularioDatosPersonalesHabilitado
     }
 
     private func navegarSegunEstadoActual() {
@@ -56,7 +56,12 @@ struct RootContainerView: View {
             return
         }
 
-        if !formularioDatosPersonalesHabilitado {
+        // Esperamos a tener la configuración real antes de decidir entre registro o home.
+        guard let formularioHabilitado = formularioDatosPersonalesHabilitado else {
+            return
+        }
+
+        if !formularioHabilitado {
             if navManager.currentPhase != .main {
                 navManager.replaceRoot(with: .main)
             }

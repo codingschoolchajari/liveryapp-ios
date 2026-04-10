@@ -70,9 +70,9 @@ class LoginViewModel: ObservableObject {
                     let formularioHabilitado = perfilUsuarioState
                         .configuracion?
                         .configuracionIOS
-                        .formularioDatosPersonalesHabilitado ?? false
+                        .formularioDatosPersonalesHabilitado
 
-                    if !formularioHabilitado {
+                    if formularioHabilitado == false {
                         await self.cargarDatosPersonalesDesdeAppleSiCorresponde(
                             perfilUsuarioState: perfilUsuarioState,
                             nombreApple: nombreApple,

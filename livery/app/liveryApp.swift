@@ -46,6 +46,34 @@ struct RootContainerView: View {
             .formularioDatosPersonalesHabilitado ?? true
     }
 
+    private func navegarSegunEstadoActual() {
+        guard logueado else {
+            navManager.replaceRoot(with: .auth)
+            return
+        }
+
+        guard let user = perfilUsuarioState.usuario else {
+            return
+        }
+
+        if !formularioDatosPersonalesHabilitado {
+            if navManager.currentPhase != .main {
+                navManager.replaceRoot(with: .main)
+            }
+            navManager.select(.home)
+            return
+        }
+
+        if user.tienePerfilCompleto {
+            if navManager.currentPhase != .main {
+                navManager.replaceRoot(with: .main)
+            }
+            navManager.select(.home)
+        } else if navManager.currentPhase != .registration {
+            navManager.replaceRoot(with: .registration)
+        }
+    }
+
     var body: some View {
         Group {
             switch navManager.currentPhase {
@@ -60,42 +88,13 @@ struct RootContainerView: View {
             }
         }
         .onChange(of: perfilUsuarioState.usuario) { oldUser, newUser in
-            // Solo navegamos si el usuario realmente cambió y estamos logueados
-            guard logueado, let user = newUser else {
-                if !logueado { navManager.replaceRoot(with: .auth) }
-                return
-            }
-            
-            if !formularioDatosPersonalesHabilitado {
-                navManager.replaceRoot(with: .main)
-                navManager.select(.home)
-                return
-            }
-
-            // Decidimos la fase final (Navegación real)
-            if navManager.currentPhase != .main {
-                if user.tienePerfilCompleto {
-                    navManager.replaceRoot(with: .main)
-                    navManager.select(.home)
-                } else if navManager.currentPhase != .registration {
-                    // Evitamos loops si ya estamos en registro
-                    navManager.replaceRoot(with: .registration)
-                }
-            }
+            navegarSegunEstadoActual()
         }
         .onChange(of: logueado) { oldVal, newVal in
-            if newVal == true && perfilUsuarioState.usuario != nil {
-                // Caso donde ya teníamos el usuario pero apenas nos enteramos que estamos logueados
-                if !formularioDatosPersonalesHabilitado {
-                    navManager.replaceRoot(with: .main)
-                    navManager.select(.home)
-                } else if perfilUsuarioState.usuario!.tienePerfilCompleto {
-                    navManager.replaceRoot(with: .main)
-                    navManager.select(.home)
-                } else {
-                    navManager.replaceRoot(with: .registration)
-                }
-            }
+            navegarSegunEstadoActual()
+        }
+        .onChange(of: perfilUsuarioState.configuracion) { _, _ in
+            navegarSegunEstadoActual()
         }
     }
 }

@@ -93,7 +93,7 @@ struct RootContainerView: View {
         .onChange(of: logueado) { oldVal, newVal in
             navegarSegunEstadoActual()
         }
-        .onChange(of: perfilUsuarioState.configuracion) { _, _ in
+        .onReceive(perfilUsuarioState.$configuracion) { _ in
             navegarSegunEstadoActual()
         }
     }

@@ -22,6 +22,7 @@ class DireccionViewModel: ObservableObject {
     @Published var numero: String = ""
     @Published var departamento: String = ""
     @Published var indicaciones: String = ""
+    @Published var mostrarPopupAdvertencia: Bool = false
     
     private var yaFijoUbicacionInicial = false
     @Published var coordenadasInicialesGPS: CLLocationCoordinate2D?
@@ -82,42 +83,137 @@ class DireccionViewModel: ObservableObject {
         }
     
     func guardarDireccion(
-        perfilUsuarioState: PerfilUsuarioState,
-        email: String,
-        idDireccion: String
-    ) async -> Bool {
+        perfilUsuarioState: PerfilUsuarioState
+    ) async -> String? {
         await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
         let accessToken = TokenRepository.repository.accessToken ?? ""
+
+        guard let email = perfilUsuarioState.usuario?.email else {
+            print("Error: No existe email del usuario")
+            return nil
+        }
         
         guard let coords = self.coordenadas else {
             print("Error: El objeto coordenadas es nulo")
-            return false
+            return nil
         }
         
         do {
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
-            
-            let usuarioDireccion = UsuarioDireccion(
-                id: idDireccion,
+
+            let coincide = await validarDireccion(
+                token: accessToken,
+                dispositivoID: dispositivoID,
                 calle: self.calle,
                 numero: self.numero,
-                departamento: self.departamento,
-                indicaciones: self.indicaciones,
-                coordenadas: Point(coordinates: [coords.latitude, coords.longitude])
+                latitud: coords.latitude,
+                longitud: coords.longitude
             )
 
-            try await usuariosService.guardarDireccion(
+            if !coincide {
+                mostrarPopupAdvertencia = true
+                return nil
+            }
+
+            let idDireccion = UUID().uuidString.lowercased()
+
+            return try await guardarDireccionInterno(
                 token: accessToken,
                 dispositivoID: dispositivoID,
                 email: email,
-                usuarioDireccion: usuarioDireccion
+                idDireccion: idDireccion,
+                coords: coords
             )
-            
-            return true
         } catch {
             print("Error al guardar direccion: \(error.localizedDescription)")
-            return false
+            return nil
         }
+    }
+
+    func confirmarGuardar(perfilUsuarioState: PerfilUsuarioState) async -> String? {
+        mostrarPopupAdvertencia = false
+
+        guard let email = perfilUsuarioState.usuario?.email else {
+            print("Error: No existe email del usuario")
+            return nil
+        }
+
+        guard let coords = self.coordenadas else {
+            print("Error: El objeto coordenadas es nulo")
+            return nil
+        }
+
+        await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+        let accessToken = TokenRepository.repository.accessToken ?? ""
+        let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+        let idDireccion = UUID().uuidString.lowercased()
+
+        do {
+            return try await guardarDireccionInterno(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email,
+                idDireccion: idDireccion,
+                coords: coords
+            )
+        } catch {
+            print("Error al confirmar guardado de direccion: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    func ocultarPopupAdvertencia() {
+        mostrarPopupAdvertencia = false
+    }
+
+    private func validarDireccion(
+        token: String,
+        dispositivoID: String,
+        calle: String,
+        numero: String,
+        latitud: Double,
+        longitud: Double
+    ) async -> Bool {
+        do {
+            let respuesta = try await usuariosService.validarDireccion(
+                token: token,
+                dispositivoID: dispositivoID,
+                calle: calle,
+                numero: numero,
+                latitud: latitud,
+                longitud: longitud
+            )
+            return respuesta.valor
+        } catch {
+            // Si falla la validación remota, no bloqueamos el guardado.
+            return true
+        }
+    }
+
+    private func guardarDireccionInterno(
+        token: String,
+        dispositivoID: String,
+        email: String,
+        idDireccion: String,
+        coords: CLLocationCoordinate2D
+    ) async throws -> String {
+        let usuarioDireccion = UsuarioDireccion(
+            id: idDireccion,
+            calle: self.calle,
+            numero: self.numero,
+            departamento: self.departamento,
+            indicaciones: self.indicaciones,
+            coordenadas: Point(coordinates: [coords.latitude, coords.longitude])
+        )
+
+        try await usuariosService.guardarDireccion(
+            token: token,
+            dispositivoID: dispositivoID,
+            email: email,
+            usuarioDireccion: usuarioDireccion
+        )
+
+        return idDireccion
     }
     
     func actualizarDesdePlace(_ place: GMSPlace) {

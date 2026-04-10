@@ -78,26 +78,46 @@ struct FranjaPrincipal: View {
         return notificacionesUI.filter { $0.estado == ESTADO_NO_LEIDO }
     }
 
+    private var sinDireccionSeleccionada: Bool {
+        perfilUsuarioState.obtenerDireccionSeleccionada().isEmpty
+    }
+
     var body: some View {
         HStack {
 
-            Button {
-                mostrarDirecciones = true
-            } label: {
-                HStack(spacing: 6) {
-                    Text(
-                        perfilUsuarioState.obtenerDireccionSeleccionada().isEmpty
-                        ? "Seleccionar dirección"
-                        : perfilUsuarioState.obtenerDireccionSeleccionada()
-                    )
-                    .font(.custom("Barlow", size: 16))
-                    .bold()
-                    .foregroundColor(.blanco)
+            ZStack(alignment: .topLeading) {
+                Button {
+                    mostrarDirecciones = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(
+                            sinDireccionSeleccionada
+                            ? "Seleccionar dirección"
+                            : perfilUsuarioState.obtenerDireccionSeleccionada()
+                        )
+                        .font(.custom("Barlow", size: 16))
+                        .bold()
+                        .foregroundColor(.blanco)
 
-                    Image("icono_flecha_abajo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
+                        Image("icono_flecha_abajo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if sinDireccionSeleccionada {
+                    LottieView(
+                        animationName: "touch",
+                        endFrame: 85,
+                        loopMode: .loop,
+                        backgroundColor: .clear,
+                        contentMode: .scaleAspectFit
+                    )
+                        .frame(width: 54, height: 122)
+                        .offset(x: 58, y: -14)
+                        .allowsHitTesting(false)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

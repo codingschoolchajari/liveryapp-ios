@@ -39,6 +39,13 @@ struct RootContainerView: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @AppStorage("logueado") var logueado: Bool = false
 
+    private var formularioDatosPersonalesHabilitado: Bool {
+        perfilUsuarioState
+            .configuracion?
+            .configuracionIOS
+            .formularioDatosPersonalesHabilitado ?? true
+    }
+
     var body: some View {
         Group {
             switch navManager.currentPhase {
@@ -59,6 +66,12 @@ struct RootContainerView: View {
                 return
             }
             
+            if !formularioDatosPersonalesHabilitado {
+                navManager.replaceRoot(with: .main)
+                navManager.select(.home)
+                return
+            }
+
             // Decidimos la fase final (Navegación real)
             if navManager.currentPhase != .main {
                 if user.tienePerfilCompleto {
@@ -73,7 +86,10 @@ struct RootContainerView: View {
         .onChange(of: logueado) { oldVal, newVal in
             if newVal == true && perfilUsuarioState.usuario != nil {
                 // Caso donde ya teníamos el usuario pero apenas nos enteramos que estamos logueados
-                if perfilUsuarioState.usuario!.tienePerfilCompleto {
+                if !formularioDatosPersonalesHabilitado {
+                    navManager.replaceRoot(with: .main)
+                    navManager.select(.home)
+                } else if perfilUsuarioState.usuario!.tienePerfilCompleto {
                     navManager.replaceRoot(with: .main)
                     navManager.select(.home)
                 } else {

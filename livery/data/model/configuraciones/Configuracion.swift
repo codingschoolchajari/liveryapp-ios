@@ -6,6 +6,10 @@
 //
 import Foundation
 
+struct ConfiguracionIOS: Codable {
+    let formularioDatosPersonalesHabilitado: Bool
+}
+
 struct ConfiguracionIntervalosTiempo: Codable {
     let intervaloBuscarRecorrido: Int64
     let intervaloBuscarMensajeChat: Int64
@@ -23,4 +27,5 @@ struct Configuracion: Codable {
     let intervalosTiempo: ConfiguracionIntervalosTiempo
     var palabrasClave: [String] = []
     let tarifaServicio: Double
+    let configuracionIOS: ConfiguracionIOS
 }

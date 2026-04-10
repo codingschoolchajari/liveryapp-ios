@@ -94,6 +94,40 @@ class UsuariosService {
         }
     }
 
+    func validarDireccion(
+        token: String,
+        dispositivoID: String,
+        calle: String,
+        numero: String,
+        latitud: Double,
+        longitud: Double
+    ) async throws -> BooleanResponse {
+        var components = URLComponents(string: "\(usuariosURL)/validarDireccion")
+        components?.queryItems = [
+            URLQueryItem(name: "calle", value: calle),
+            URLQueryItem(name: "numero", value: numero),
+            URLQueryItem(name: "latitud", value: String(latitud)),
+            URLQueryItem(name: "longitud", value: String(longitud))
+        ]
+
+        guard let url = components?.url else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        return try JSONDecoder().decode(BooleanResponse.self, from: data)
+    }
+
     func eliminarDireccion(
         token: String,
         dispositivoID: String,

@@ -20,6 +20,10 @@ class LoginViewModel: ObservableObject {
         _ currentNonce: String?
     ) {
         if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            let nombreApple = (appleIDCredential.fullName?.givenName ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let apellidoApple = (appleIDCredential.fullName?.familyName ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
 
             guard let nonce = currentNonce else {
                 fatalError("Invalid state: A login callback was received, but no login request was sent.")
@@ -62,9 +66,56 @@ class LoginViewModel: ObservableObject {
                     // 3. Buscamos el usuario en el backend.
                     // Al asignarse self.usuario dentro de esta función, el RootContainer reaccionará.
                     await perfilUsuarioState.buscarUsuario()
+
+                    let formularioHabilitado = perfilUsuarioState
+                        .configuracion?
+                        .configuracionIOS
+                        .formularioDatosPersonalesHabilitado ?? true
+
+                    if !formularioHabilitado {
+                        await self.cargarDatosPersonalesDesdeAppleSiCorresponde(
+                            perfilUsuarioState: perfilUsuarioState,
+                            nombreApple: nombreApple,
+                            apellidoApple: apellidoApple
+                        )
+                    }
                 }
             }
         }
+    }
+
+    private func cargarDatosPersonalesDesdeAppleSiCorresponde(
+        perfilUsuarioState: PerfilUsuarioState,
+        nombreApple: String,
+        apellidoApple: String
+    ) async {
+        let nombreActual = perfilUsuarioState.usuario?
+            .datosPersonales?
+            .nombre
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let apellidoActual = perfilUsuarioState.usuario?
+            .datosPersonales?
+            .apellido
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        let nombreFinal = nombreActual.isEmpty ? nombreApple : nombreActual
+        let apellidoFinal = apellidoActual.isEmpty ? apellidoApple : apellidoActual
+
+        guard !nombreFinal.isEmpty, !apellidoFinal.isEmpty else {
+            return
+        }
+
+        if nombreFinal == nombreActual, apellidoFinal == apellidoActual {
+            return
+        }
+
+        await perfilUsuarioState.actualizarDatosPersonales(
+            nombre: nombreFinal,
+            apellido: apellidoFinal,
+            dni: perfilUsuarioState.usuario?.datosPersonales?.dni
+        )
+
+        await perfilUsuarioState.buscarUsuario()
     }
     
     // Método para desloguearse

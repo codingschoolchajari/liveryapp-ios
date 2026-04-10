@@ -206,6 +206,21 @@ struct FormularioDireccionView: View {
                     }
                 }
             }
+            .alert("Advertencia", isPresented: $direccionViewModel.mostrarPopupAdvertencia) {
+                Button("Cancelar", role: .cancel) {
+                    direccionViewModel.ocultarPopupAdvertencia()
+                }
+
+                Button("Guardar Igualmente") {
+                    guardarDireccionConfirmada(
+                        navManager: navManager,
+                        perfilUsuarioState: perfilUsuarioState,
+                        direccionViewModel: direccionViewModel
+                    )
+                }
+            } message: {
+                Text("La calle y número indicados no coinciden con la posición marcada en el mapa.\n\nAconsejamos utilizar el buscador que se encuentra en la parte superior del mapa.")
+            }
         }
     }
     
@@ -265,18 +280,27 @@ struct FormularioDireccionView: View {
         perfilUsuarioState: PerfilUsuarioState,
         direccionViewModel: DireccionViewModel
     ) {
-        if let email = perfilUsuarioState.usuario?.email {
-            Task {
-                let idDireccion = UUID().uuidString.lowercased()
-                
-                let direccionGuardada = await direccionViewModel.guardarDireccion(
-                    perfilUsuarioState: perfilUsuarioState,
-                    email: email,
-                    idDireccion: idDireccion
-                )
-                if (direccionGuardada) {
-                    await perfilUsuarioState.actualizarDireccionSeleccionada(idDireccion: idDireccion)
-                }
+        Task {
+            if let idDireccion = await direccionViewModel.guardarDireccion(
+                perfilUsuarioState: perfilUsuarioState
+            ) {
+                await perfilUsuarioState.actualizarDireccionSeleccionada(idDireccion: idDireccion)
+                await perfilUsuarioState.buscarUsuario()
+                navManager.select(.home)
+            }
+        }
+    }
+
+    private func guardarDireccionConfirmada(
+        navManager: NavigationManager,
+        perfilUsuarioState: PerfilUsuarioState,
+        direccionViewModel: DireccionViewModel
+    ) {
+        Task {
+            if let idDireccion = await direccionViewModel.confirmarGuardar(
+                perfilUsuarioState: perfilUsuarioState
+            ) {
+                await perfilUsuarioState.actualizarDireccionSeleccionada(idDireccion: idDireccion)
                 await perfilUsuarioState.buscarUsuario()
                 navManager.select(.home)
             }

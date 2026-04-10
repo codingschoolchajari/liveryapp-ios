@@ -18,6 +18,7 @@ class PerfilUsuarioState: ObservableObject {
     @Published var currentUser: FirebaseAuth.User?
     @Published var usuario: Usuario? = nil
     @Published var configuracion: Configuracion?
+    @Published var configuracionCargada: Bool = false
     
     @Published var idDireccionSeleccionada: String? = nil
     @Published var ciudadSeleccionada: String? = nil
@@ -176,6 +177,7 @@ class PerfilUsuarioState: ObservableObject {
     
     // Configuracion
     func buscarConfiguracion() async {
+        self.configuracionCargada = false
         await TokenRepository.repository.validarToken(perfilUsuarioState: self)
         let accessToken = TokenRepository.repository.accessToken ?? ""
         
@@ -186,8 +188,11 @@ class PerfilUsuarioState: ObservableObject {
                 token: accessToken,
                 dispositivoID: dispositivoID
             )
+            self.configuracionCargada = true
         } catch {
+            self.configuracion = nil
             print("Error al buscar configuracion: \(error)")
+            self.configuracionCargada = false
         }
     }
     

@@ -56,17 +56,12 @@ struct RootContainerView: View {
             return
         }
 
-        // Esperamos a tener la configuración real antes de decidir entre registro o home.
+        // Evitamos decisiones intermedias hasta terminar la carga de configuración.
+        guard perfilUsuarioState.configuracionCargada else {
+            return
+        }
+
         guard let formularioHabilitado = formularioDatosPersonalesHabilitado else {
-            // Fallback para no quedar trabados en splash si la configuración falla o demora.
-            if navManager.currentPhase == .loading {
-                if user.tienePerfilCompleto {
-                    navManager.replaceRoot(with: .main)
-                    navManager.select(.home)
-                } else {
-                    navManager.replaceRoot(with: .registration)
-                }
-            }
             return
         }
 
@@ -108,6 +103,9 @@ struct RootContainerView: View {
             navegarSegunEstadoActual()
         }
         .onReceive(perfilUsuarioState.$configuracion) { _ in
+            navegarSegunEstadoActual()
+        }
+        .onChange(of: perfilUsuarioState.configuracionCargada) { _, _ in
             navegarSegunEstadoActual()
         }
         .onAppear {

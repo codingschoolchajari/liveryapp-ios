@@ -229,12 +229,31 @@ class DireccionViewModel: ObservableObject {
             }
         }
 
-        self.calle = calle
-        self.numero = numero
+        onCalleChange(calle)
+        onNumeroChange(numero)
         
         if let coords = place.coordinate.latitude != 0 ? place.coordinate : nil {
             self.coordenadas = coords
         }
+    }
+
+    func onCalleChange(_ texto: String) {
+        self.calle = normalizarPalabras(texto)
+    }
+
+    func onNumeroChange(_ texto: String) {
+        self.numero = normalizarPalabras(texto)
+    }
+
+    private func normalizarPalabras(_ texto: String) -> String {
+        texto
+            .split(separator: " ")
+            .map { palabra in
+                let minuscula = palabra.lowercased()
+                guard let primera = minuscula.first else { return "" }
+                return String(primera).uppercased() + String(minuscula.dropFirst())
+            }
+            .joined(separator: " ")
     }
 }
 

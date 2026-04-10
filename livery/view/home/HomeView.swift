@@ -18,31 +18,50 @@ struct HomeView: View {
         )
     }
 
+    private var sinDireccionSeleccionada: Bool {
+        perfilUsuarioState.obtenerDireccionSeleccionada().isEmpty
+    }
+
     var body: some View {
-        VStack(spacing: 0) {
-            
-            FranjaPrincipal(homeViewModel: homeViewModel)
-            BusquedaModos(homeViewModel: homeViewModel)
-            
-            if  ( perfilUsuarioState.ciudadSeleccionada != nil
-                  && perfilUsuarioState.ciudadSeleccionada == StringUtils.sinCobertura
-                ) || (
-                    perfilUsuarioState.usuario != nil
-                    && perfilUsuarioState.usuario!.direcciones?.isEmpty ?? true
-                ) || (
-                    perfilUsuarioState.idDireccionSeleccionada == nil
-                )
-            {
-                DireccionFueraDeCobertura()
-            } else {
-                if homeViewModel.modoComercioSeleccionado {
-                    SelectorCategorias(homeViewModel: homeViewModel)
-                    Spacer().frame(height: 8)
-                    ListaComercios(homeViewModel: homeViewModel)
+        ZStack(alignment: .topLeading) {
+            VStack(spacing: 0) {
+                
+                FranjaPrincipal(homeViewModel: homeViewModel)
+                BusquedaModos(homeViewModel: homeViewModel)
+                
+                if  ( perfilUsuarioState.ciudadSeleccionada != nil
+                      && perfilUsuarioState.ciudadSeleccionada == StringUtils.sinCobertura
+                    ) || (
+                        perfilUsuarioState.usuario != nil
+                        && perfilUsuarioState.usuario!.direcciones?.isEmpty ?? true
+                    ) || (
+                        perfilUsuarioState.idDireccionSeleccionada == nil
+                    )
+                {
+                    DireccionFueraDeCobertura()
                 } else {
-                    FranjaBusqueda(homeViewModel: homeViewModel)
-                    ListaComerciosProductos(homeViewModel: homeViewModel)
+                    if homeViewModel.modoComercioSeleccionado {
+                        SelectorCategorias(homeViewModel: homeViewModel)
+                        Spacer().frame(height: 8)
+                        ListaComercios(homeViewModel: homeViewModel)
+                    } else {
+                        FranjaBusqueda(homeViewModel: homeViewModel)
+                        ListaComerciosProductos(homeViewModel: homeViewModel)
+                    }
                 }
+            }
+
+            if sinDireccionSeleccionada {
+                LottieView(
+                    animationName: "touch",
+                    endFrame: 85,
+                    loopMode: .loop,
+                    backgroundColor: .clear,
+                    contentMode: .scaleAspectFit
+                )
+                .frame(width: 54, height: 122)
+                .offset(x: 72, y: -10)
+                .allowsHitTesting(false)
             }
         }
         .padding(.bottom, 16)
@@ -78,46 +97,25 @@ struct FranjaPrincipal: View {
         return notificacionesUI.filter { $0.estado == ESTADO_NO_LEIDO }
     }
 
-    private var sinDireccionSeleccionada: Bool {
-        perfilUsuarioState.obtenerDireccionSeleccionada().isEmpty
-    }
-
     var body: some View {
         HStack {
-
-            ZStack(alignment: .topLeading) {
-                Button {
-                    mostrarDirecciones = true
-                } label: {
-                    HStack(spacing: 6) {
-                        Text(
-                            sinDireccionSeleccionada
-                            ? "Seleccionar dirección"
-                            : perfilUsuarioState.obtenerDireccionSeleccionada()
-                        )
-                        .font(.custom("Barlow", size: 16))
-                        .bold()
-                        .foregroundColor(.blanco)
-
-                        Image("icono_flecha_abajo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                if sinDireccionSeleccionada {
-                    LottieView(
-                        animationName: "touch",
-                        endFrame: 85,
-                        loopMode: .loop,
-                        backgroundColor: .clear,
-                        contentMode: .scaleAspectFit
+            Button {
+                mostrarDirecciones = true
+            } label: {
+                HStack(spacing: 6) {
+                    Text(
+                        perfilUsuarioState.obtenerDireccionSeleccionada().isEmpty
+                        ? "Seleccionar dirección"
+                        : perfilUsuarioState.obtenerDireccionSeleccionada()
                     )
-                        .frame(width: 54, height: 122)
-                        .offset(x: 58, y: -14)
-                        .allowsHitTesting(false)
+                    .font(.custom("Barlow", size: 16))
+                    .bold()
+                    .foregroundColor(.blanco)
+
+                    Image("icono_flecha_abajo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

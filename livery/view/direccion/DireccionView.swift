@@ -77,7 +77,10 @@ struct FormularioDireccionView: View {
                     MapaView(direccionViewModel: direccionViewModel)
                     
                     TextField(
-                        text: $direccionViewModel.calle,
+                        text: Binding(
+                            get: { direccionViewModel.calle },
+                            set: { direccionViewModel.onCalleChange($0) }
+                        ),
                         prompt: Text("Calle")
                             .foregroundColor(.grisSecundario)
                             .font(.custom("Barlow", size: 16))
@@ -101,7 +104,10 @@ struct FormularioDireccionView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     
                     TextField(
-                        text: $direccionViewModel.numero,
+                        text: Binding(
+                            get: { direccionViewModel.numero },
+                            set: { direccionViewModel.onNumeroChange($0) }
+                        ),
                         prompt: Text("Número")
                             .foregroundColor(.grisSecundario)
                             .font(.custom("Barlow", size: 16))
@@ -125,7 +131,7 @@ struct FormularioDireccionView: View {
                     
                     TextField(
                         text: $direccionViewModel.departamento,
-                        prompt: Text("Departamento")
+                        prompt: Text("Dpto (solo para edificios)")
                             .foregroundColor(.grisSecundario)
                             .font(.custom("Barlow", size: 16))
                     ) {

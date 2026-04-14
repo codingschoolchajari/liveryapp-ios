@@ -450,7 +450,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = livery/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Livery;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Necesitamos tu ubicación para guardar la dirección";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos tu ubicacion mientras usas la app para autocompletar la direccion de entrega y mostrar comercios cercanos. Por ejemplo, al crear un pedido podemos sugerirte tu direccion actual en Chajari.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -493,7 +493,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = livery/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Livery;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Necesitamos tu ubicación para guardar la dirección";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos tu ubicacion mientras usas la app para autocompletar la direccion de entrega y mostrar comercios cercanos. Por ejemplo, al crear un pedido podemos sugerirte tu direccion actual en Chajari.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

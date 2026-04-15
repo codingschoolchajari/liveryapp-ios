@@ -19,6 +19,7 @@ class PerfilUsuarioState: ObservableObject {
     @Published var usuario: Usuario? = nil
     @Published var configuracion: Configuracion?
     @Published var configuracionCargada: Bool = false
+    @Published var mensajeErrorEliminacionUsuario: String? = nil
     
     @Published var idDireccionSeleccionada: String? = nil
     @Published var ciudadSeleccionada: String? = nil
@@ -418,13 +419,16 @@ class PerfilUsuarioState: ObservableObject {
     }
     
     // Eliminación de usuario
-    func eliminarUsuario() async {
+    func eliminarUsuario() async -> Bool {
+        self.mensajeErrorEliminacionUsuario = nil
+
         await TokenRepository.repository.validarToken(perfilUsuarioState: self)
         let accessToken = TokenRepository.repository.accessToken ?? ""
         
         guard let email = currentUser?.email, !email.isEmpty else {
             print("No hay sesión de usuario activa")
-            return
+            self.mensajeErrorEliminacionUsuario = "No hay sesión de usuario activa"
+            return false
         }
         
         do {
@@ -447,9 +451,13 @@ class PerfilUsuarioState: ObservableObject {
             
             // Cerrar sesión en Firebase
             try? Auth.auth().signOut()
+            return true
             
         } catch {
-            print("❌ Error al eliminar el usuario: \(error.localizedDescription)")
+            let errorMessage = error.localizedDescription.isEmpty ? "No se pudo eliminar el usuario" : error.localizedDescription
+            self.mensajeErrorEliminacionUsuario = errorMessage
+            print("❌ Error al eliminar el usuario: \(errorMessage)")
+            return false
         }
     }
 }

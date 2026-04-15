@@ -10,7 +10,6 @@ struct PerfilView: View {
 
     @State private var mostrarBottomSheetDirecciones = false
     @State private var mostrarAlertEliminarCuenta = false
-    @State private var mostrarAlertErrorEliminarUsuario = false
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     //@EnvironmentObject var carritoViewModel: CarritoViewModel
@@ -46,20 +45,13 @@ struct PerfilView: View {
                 message: Text("¿Está seguro que desea eliminar su cuenta? Esta opción no se puede deshacer."),
                 primaryButton: .destructive(Text("Sí")) {
                     Task {
-                        let eliminado = await perfilUsuarioState.eliminarUsuario()
-                        if !eliminado {
-                            mostrarAlertErrorEliminarUsuario = true
-                        }
+                        await perfilUsuarioState.eliminarUsuario()
                     }
                 },
                 secondaryButton: .cancel(Text("No"))
             )
         }
-        .alert("No se pudo eliminar el usuario", isPresented: $mostrarAlertErrorEliminarUsuario) {
-            Button("Aceptar", role: .cancel) {}
-        } message: {
-            Text(perfilUsuarioState.mensajeErrorEliminacionUsuario ?? "Intente nuevamente.")
-        }
+
     }
 }
 

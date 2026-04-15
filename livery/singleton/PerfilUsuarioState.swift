@@ -19,7 +19,6 @@ class PerfilUsuarioState: ObservableObject {
     @Published var usuario: Usuario? = nil
     @Published var configuracion: Configuracion?
     @Published var configuracionCargada: Bool = false
-    @Published var mensajeErrorEliminacionUsuario: String? = nil
     
     @Published var idDireccionSeleccionada: String? = nil
     @Published var ciudadSeleccionada: String? = nil
@@ -419,16 +418,12 @@ class PerfilUsuarioState: ObservableObject {
     }
     
     // Eliminación de usuario
-    func eliminarUsuario() async -> Bool {
-        self.mensajeErrorEliminacionUsuario = nil
-
+    func eliminarUsuario() async {
         await TokenRepository.repository.validarToken(perfilUsuarioState: self)
         let accessToken = TokenRepository.repository.accessToken ?? ""
         
         guard let email = currentUser?.email, !email.isEmpty else {
-            print("No hay sesión de usuario activa")
-            self.mensajeErrorEliminacionUsuario = "No hay sesión de usuario activa"
-            return false
+            return
         }
         
         do {
@@ -440,8 +435,6 @@ class PerfilUsuarioState: ObservableObject {
                 email: email
             )
             
-            print("✅ Usuario eliminado correctamente")
-            
             // Forzar flujo de app a autenticación en RootContainerView
             UserDefaults.standard.set(false, forKey: "logueado")
             
@@ -451,13 +444,9 @@ class PerfilUsuarioState: ObservableObject {
             
             // Cerrar sesión en Firebase
             try? Auth.auth().signOut()
-            return true
             
         } catch {
-            let errorMessage = error.localizedDescription.isEmpty ? "No se pudo eliminar el usuario" : error.localizedDescription
-            self.mensajeErrorEliminacionUsuario = errorMessage
-            print("❌ Error al eliminar el usuario: \(errorMessage)")
-            return false
+            print("❌ Error al eliminar el usuario: \(error.localizedDescription)")
         }
     }
 }

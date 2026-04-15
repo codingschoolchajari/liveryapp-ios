@@ -26,10 +26,10 @@ struct PerfilView: View {
             SeccionRepartos()
 
             SeccionSesion()
-            
-            SeccionEliminarUsuario(mostrarAlertEliminarCuenta: $mostrarAlertEliminarCuenta)
 
             Spacer()
+            
+            SeccionEliminarUsuario(mostrarAlertEliminarCuenta: $mostrarAlertEliminarCuenta)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.blanco)
@@ -257,9 +257,9 @@ struct SeccionEliminarUsuario: View {
                     .padding(.vertical, 12)
                     .foregroundColor(.blanco)
                     .background(Color.rojoError)
-                    .cornerRadius(8)
+                    .cornerRadius(16)
             }
-            .padding(.horizontal, 32)
+            .padding(.horizontal, 64)
         }
     }
 }

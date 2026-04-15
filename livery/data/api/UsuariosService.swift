@@ -234,13 +234,31 @@ class UsuariosService {
         guard let url = URL(string: "\(usuariosURL)/eliminarUsuario/\(email)") else {
             throw URLError(.badURL)
         }
+
+        #if DEBUG
+        print("[UsuariosService.eliminarUsuario] URL: \(url.absoluteString)")
+        print("[UsuariosService.eliminarUsuario] email: \(email)")
+        print("[UsuariosService.eliminarUsuario] dispositivoID: \(dispositivoID)")
+        print("[UsuariosService.eliminarUsuario] token vacío: \(token.isEmpty)")
+        #endif
         
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
 
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        #if DEBUG
+        if let httpResponse = response as? HTTPURLResponse {
+            print("[UsuariosService.eliminarUsuario] status: \(httpResponse.statusCode)")
+        } else {
+            print("[UsuariosService.eliminarUsuario] respuesta no HTTP")
+        }
+        if let responseText = String(data: data, encoding: .utf8), !responseText.isEmpty {
+            print("[UsuariosService.eliminarUsuario] body: \(responseText)")
+        }
+        #endif
         
         guard let httpResponse = response as? HTTPURLResponse,
               200...299 ~= httpResponse.statusCode else {

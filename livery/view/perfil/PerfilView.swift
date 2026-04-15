@@ -9,6 +9,7 @@ import SwiftUI
 struct PerfilView: View {
 
     @State private var mostrarBottomSheetDirecciones = false
+    @State private var mostrarAlertEliminarCuenta = false
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     //@EnvironmentObject var carritoViewModel: CarritoViewModel
@@ -25,6 +26,8 @@ struct PerfilView: View {
             SeccionRepartos()
 
             SeccionSesion()
+            
+            SeccionEliminarUsuario(mostrarAlertEliminarCuenta: $mostrarAlertEliminarCuenta)
 
             Spacer()
         }
@@ -35,6 +38,18 @@ struct PerfilView: View {
                 mostrarBottomSheetDirecciones = false
             }
             .presentationDetents([.medium])
+        }
+        .alert(isPresented: $mostrarAlertEliminarCuenta) {
+            Alert(
+                title: Text("Confirmar Eliminación"),
+                message: Text("¿Está seguro que desea eliminar su cuenta? Esta opción no se puede deshacer."),
+                primaryButton: .destructive(Text("Sí")) {
+                    Task {
+                        await perfilUsuarioState.eliminarUsuario()
+                    }
+                },
+                secondaryButton: .cancel(Text("No"))
+            )
         }
     }
 }
@@ -224,5 +239,27 @@ struct BottomSheetDireccionesView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.blanco)
+    }
+}
+
+struct SeccionEliminarUsuario: View {
+    @Binding var mostrarAlertEliminarCuenta: Bool
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            Button {
+                mostrarAlertEliminarCuenta = true
+            } label: {
+                Text("Eliminar Usuario")
+                    .font(.custom("Barlow", size: 16))
+                    .bold()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .foregroundColor(.blanco)
+                    .background(Color.rojoError)
+                    .cornerRadius(8)
+            }
+            .padding(.horizontal, 32)
+        }
     }
 }

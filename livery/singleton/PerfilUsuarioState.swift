@@ -416,5 +416,38 @@ class PerfilUsuarioState: ObservableObject {
             self.usuario = u
         }
     }
+    
+    // Eliminación de usuario
+    func eliminarUsuario() async {
+        await TokenRepository.repository.validarToken(perfilUsuarioState: self)
+        let accessToken = TokenRepository.repository.accessToken ?? ""
+        
+        guard let email = currentUser?.email, !email.isEmpty else {
+            print("No hay sesión de usuario activa")
+            return
+        }
+        
+        do {
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            try await usuariosService.eliminarUsuario(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email
+            )
+            
+            print("✅ Usuario eliminado correctamente")
+            
+            // Limpiar datos locales
+            self.usuario = nil
+            self.currentUser = nil
+            
+            // Cerrar sesión en Firebase
+            try? Auth.auth().signOut()
+            
+        } catch {
+            print("❌ Error al eliminar el usuario: \(error.localizedDescription)")
+        }
+    }
 }
 

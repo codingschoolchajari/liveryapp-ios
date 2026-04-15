@@ -438,6 +438,9 @@ class PerfilUsuarioState: ObservableObject {
             
             print("✅ Usuario eliminado correctamente")
             
+            // Forzar flujo de app a autenticación en RootContainerView
+            UserDefaults.standard.set(false, forKey: "logueado")
+            
             // Limpiar datos locales
             self.usuario = nil
             self.currentUser = nil

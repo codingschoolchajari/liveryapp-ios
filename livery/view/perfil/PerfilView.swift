@@ -30,6 +30,8 @@ struct PerfilView: View {
             Spacer()
             
             SeccionEliminarUsuario(mostrarAlertEliminarCuenta: $mostrarAlertEliminarCuenta)
+
+            Spacer().frame(height: 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.blanco)
@@ -254,10 +256,10 @@ struct SeccionEliminarUsuario: View {
                     .font(.custom("Barlow", size: 16))
                     .bold()
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 8)
                     .foregroundColor(.blanco)
                     .background(Color.rojoError)
-                    .cornerRadius(16)
+                    .cornerRadius(24)
             }
             .padding(.horizontal, 64)
         }

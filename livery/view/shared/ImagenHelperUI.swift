@@ -58,3 +58,30 @@ struct ZoomableContainer<Content: View>: UIViewRepresentable {
         }
     }
 }
+
+struct RemoteImage: View {
+    let url: URL?
+
+    @State private var uiImage: UIImage? = nil
+
+    var body: some View {
+        Group {
+            if let uiImage {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                Color.gray.opacity(0.2)
+            }
+        }
+        .task(id: url) {
+            uiImage = nil
+            guard let url else { return }
+            var request = URLRequest(url: url)
+            request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+            guard let (data, _) = try? await URLSession.shared.data(for: request),
+                  let loaded = UIImage(data: data) else { return }
+            uiImage = loaded
+        }
+    }
+}

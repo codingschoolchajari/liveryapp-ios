@@ -64,10 +64,9 @@ struct FormularioDireccionView: View {
     @ObservedObject var direccionViewModel: DireccionViewModel
     
     @FocusState private var campoEnFoco: Campos?
-    @State private var mapaCargado = false
 
     private var camposDireccionHabilitados: Bool {
-        direccionViewModel.coordenadas != nil && mapaCargado
+        direccionViewModel.coordenadas != nil
     }
 
     enum Campos {
@@ -79,7 +78,7 @@ struct FormularioDireccionView: View {
             ScrollView {
                 VStack(spacing: 8) {
                     
-                    MapaView(direccionViewModel: direccionViewModel, onMapLoaded: { mapaCargado = true })
+                    MapaView(direccionViewModel: direccionViewModel)
                     
                     TextField(
                         text: Binding(
@@ -101,7 +100,7 @@ struct FormularioDireccionView: View {
                     .bold()
                     .foregroundColor(.negro)
                     .padding(12)
-                    .background(Color.blanco)
+                    .background(camposDireccionHabilitados ? Color.blanco : Color.grisSurface)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.grisSecundario, lineWidth: 1)
@@ -128,7 +127,7 @@ struct FormularioDireccionView: View {
                     .font(.custom("Barlow", size: 16))
                     .bold()
                     .foregroundColor(.negro)
-                    .background(Color.blanco)
+                    .background(camposDireccionHabilitados ? Color.blanco : Color.grisSurface)
                     .padding(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
@@ -239,13 +238,12 @@ struct FormularioDireccionView: View {
     
     private struct MapaView: View {
         @ObservedObject var direccionViewModel: DireccionViewModel
-        var onMapLoaded: (() -> Void)?
         
         var body: some View {
             ZStack {
                 // 🗺️ MAPA (fondo)
                 if direccionViewModel.coordenadas != nil {
-                    GoogleMapView(coordenadas: $direccionViewModel.coordenadas, onMapLoaded: onMapLoaded)
+                    GoogleMapView(coordenadas: $direccionViewModel.coordenadas)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)

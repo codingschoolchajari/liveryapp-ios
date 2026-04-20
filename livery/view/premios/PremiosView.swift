@@ -310,11 +310,7 @@ struct ListaPremios: View {
                 ForEach(listaFiltrada, id: \.idInterno) { premio in
                     HStack(alignment: .top) {
                         // Imagen Logo (con URL base)
-                        AsyncImage(url: URL(string: API.baseURL + "/" + premio.logoComercioURL)) { img in
-                            img.resizable().aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Color.gray.opacity(0.2)
-                        }
+                        RemoteImage(url: URL(string: API.baseURL + "/" + premio.logoComercioURL))
                         .frame(width: 65, height: 65)
                         .cornerRadius(12)
                         .clipped()
@@ -461,13 +457,9 @@ struct DialogoResultadoGirarRuleta: View {
                                 .multilineTextAlignment(.center)
 
                             // Imagen del Producto
-                            AsyncImage(url: URL(string: API.baseURL + "/" + (resultado?.imagenProductoURL ?? ""))) { image in
-                                image.resizable()
-                                     .aspectRatio(contentMode: .fit)
-                            } placeholder: {
-                                Color.gray.opacity(0.3)
-                            }
+                            RemoteImage(url: URL(string: API.baseURL + "/" + (resultado?.imagenProductoURL ?? "")))
                             .frame(width: 100, height: 100)
+                            .aspectRatio(contentMode: .fit)
                             .cornerRadius(12)
                             .clipped()
 
@@ -559,8 +551,6 @@ struct TabsPremios: View {
             }
             .padding(.top, 8)
 
-            Divider()
-
             Spacer().frame(height: 16)
 
             switch tabSeleccionado {
@@ -602,11 +592,7 @@ struct ListaPremiosRepartidos: View {
             LazyVStack(spacing: 12) {
                 ForEach(premiosViewModel.premiosAsignados) { premio in
                     HStack(alignment: .center, spacing: 12) {
-                        AsyncImage(url: URL(string: API.baseURL + "/" + (premio.logoComercioURL))) { img in
-                            img.resizable().aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Color.gray.opacity(0.2)
-                        }
+                        RemoteImage(url: URL(string: API.baseURL + "/" + (premio.logoComercioURL)))
                         .frame(width: 65, height: 65)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .clipped()
@@ -655,11 +641,7 @@ struct ListaPremiosPendientes: View {
             LazyVStack(spacing: 12) {
                 ForEach(premiosViewModel.premiosDisponibles) { premio in
                     HStack(alignment: .center, spacing: 12) {
-                        AsyncImage(url: URL(string: API.baseURL + "/" + (premio.logoComercioURL ?? ""))) { img in
-                            img.resizable().aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Color.gray.opacity(0.2)
-                        }
+                        RemoteImage(url: URL(string: API.baseURL + "/" + (premio.logoComercioURL ?? "")))
                         .frame(width: 65, height: 65)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .clipped()

@@ -118,11 +118,11 @@ struct SeccionesView: View {
                                     .navigationBackButtonHiddenWithSwipe()
                                 }
                             }
+                    }
                 case .mandados:
                     NavigationStack(path: $navManager.mandadosPath) {
                         RepartosView(perfilUsuarioState: perfilUsuarioState)
                             .navigationBackButtonHiddenWithSwipe()
-                    }
                     }
                 }
             }

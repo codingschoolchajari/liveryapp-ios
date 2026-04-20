@@ -170,6 +170,16 @@ struct FranjaPrincipal: View {
                             }
                     }
                 }
+
+                Button {
+                    navManager.select(.perfil)
+                } label: {
+                    Image("icono_perfil")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.blanco)
+                }
             }
         }
         .padding(.horizontal, 16)

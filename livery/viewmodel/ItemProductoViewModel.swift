@@ -64,7 +64,8 @@ class ItemProductoViewModel: ObservableObject {
             opcionesPersonalizables: buildOpcionesPersonalizables(),
             esPremio: producto.esPremio ?? false,
             idPremio: producto.idPremio,
-            contieneAlcohol: producto.contieneAlcohol
+            contieneAlcohol: producto.contieneAlcohol,
+            disponibleParaDelivery: buildDisponibleParaDelivery()
         )
     }
     
@@ -166,7 +167,8 @@ class ItemProductoViewModel: ObservableObject {
             opcionesPersonalizables: buildOpcionesPersonalizables(),
             esPremio: producto!.esPremio ?? false,
             idPremio: producto!.idPremio,
-            contieneAlcohol: producto!.contieneAlcohol
+            contieneAlcohol: producto!.contieneAlcohol,
+            disponibleParaDelivery: buildDisponibleParaDelivery()
         )
     }
     
@@ -255,5 +257,9 @@ class ItemProductoViewModel: ObservableObject {
         } else {
             return producto!.precio
         }
+    }
+
+    private func buildDisponibleParaDelivery() -> Bool? {
+        return alternativaSeleccionada?.disponibleParaDelivery == false ? false : nil
     }
 }

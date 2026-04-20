@@ -14,6 +14,7 @@ struct ProductoAlternativa: Codable, Identifiable {
     var precioSinDescuento: Double?
     var descuento: Int?
     var disponible: Bool = true
+    var disponibleParaDelivery: Bool? = nil
     
     var id: String { idInterno }
 }

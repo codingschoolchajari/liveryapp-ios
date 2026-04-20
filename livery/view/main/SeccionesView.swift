@@ -12,7 +12,7 @@ struct SeccionesView: View {
     @EnvironmentObject var navManager: NavigationManager
     
     enum Section {
-        case home, descuentos, carrito, pedidos, perfil
+        case home, descuentos, carrito, pedidos, perfil, mandados
     }
     
     var body: some View {
@@ -27,7 +27,7 @@ struct SeccionesView: View {
                                 switch destination {
                                 case .direccion:
                                     DireccionView()
-                                        .navigationBarBackButtonHidden(true)
+                                        .navigationBackButtonHiddenWithSwipe()
                                     
                                 case .comercio(let idComercio):
                                     ComercioView(
@@ -36,12 +36,12 @@ struct SeccionesView: View {
                                             idComercio: idComercio
                                         )
                                     )
-                                        .navigationBarBackButtonHidden(true)
+                                        .navigationBackButtonHiddenWithSwipe()
                                 case .premios:
                                     PremiosView(
                                         perfilUsuarioState: perfilUsuarioState
                                     )
-                                        .navigationBarBackButtonHidden(true)
+                                        .navigationBackButtonHiddenWithSwipe()
                                 }
                             }
                     }
@@ -61,7 +61,7 @@ struct SeccionesView: View {
                                             idComercio: idComercio
                                         )
                                     )
-                                    .navigationBarBackButtonHidden(true)
+                                    .navigationBackButtonHiddenWithSwipe()
                                 }
                             }
                     }
@@ -77,7 +77,7 @@ struct SeccionesView: View {
                                             idComercio: idComercio
                                         )
                                     )
-                                    .navigationBarBackButtonHidden(true)
+                                    .navigationBackButtonHiddenWithSwipe()
                                 }
                             }
                     }
@@ -97,17 +97,17 @@ struct SeccionesView: View {
                         PerfilView()
                             .navigationDestination(for: String.self) { view in
                                 FavoritosView()
-                                    .navigationBarBackButtonHidden(true)
+                                    .navigationBackButtonHiddenWithSwipe()
                             }
                         
                             .navigationDestination(for: NavigationManager.PerfilDestination.self) { destination in
                                 switch destination {
                                 case .favoritos:
                                     FavoritosView()
-                                        .navigationBarBackButtonHidden(true)
+                                        .navigationBackButtonHiddenWithSwipe()
                                 case .repartos:
                                     RepartosView(perfilUsuarioState: perfilUsuarioState)
-                                        .navigationBarBackButtonHidden(true)
+                                        .navigationBackButtonHiddenWithSwipe()
                                 case .comercio(let idComercio):
                                     ComercioView(
                                         comercioViewModel: ComercioViewModel(
@@ -115,9 +115,14 @@ struct SeccionesView: View {
                                             idComercio: idComercio
                                         )
                                     )
-                                    .navigationBarBackButtonHidden(true)
+                                    .navigationBackButtonHiddenWithSwipe()
                                 }
                             }
+                case .mandados:
+                    NavigationStack(path: $navManager.mandadosPath) {
+                        RepartosView(perfilUsuarioState: perfilUsuarioState)
+                            .navigationBackButtonHiddenWithSwipe()
+                    }
                     }
                 }
             }
@@ -187,18 +192,18 @@ struct SeccionesView: View {
                             navManager.select(.pedidos)
                         }
                         
-                        // Botón Perfil
+                        // Botón Mandados
                         BotonNavPersonalizado(
-                            titulo: "Perfil",
-                            icono: "icono_perfil",
+                            titulo: "Mandados",
+                            icono: "icono_repartos",
                             ancho: anchoItem,
                             altoIcono: 28,
-                            anchoIcono: 32,
-                            seccion: .perfil,
+                            anchoIcono: 28,
+                            seccion: .mandados,
                             selectedSection: navManager.selectedSection,
                             badgeCount: 0
                         ) {
-                            navManager.select(.perfil)
+                            navManager.select(.mandados)
                         }
                     }
                 }

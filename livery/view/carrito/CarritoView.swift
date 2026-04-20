@@ -152,7 +152,17 @@ struct ItemProductoRow: View {
     @EnvironmentObject var carritoViewModel: CarritoViewModel
     
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        VStack(spacing: 0) {
+            if itemProducto.disponibleParaDelivery == false {
+                Text("No disponible para delivery")
+                    .font(.custom("Barlow", size: 12))
+                    .bold()
+                    .foregroundColor(.rojoError)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.bottom, 4)
+            }
+
+            HStack(alignment: .top, spacing: 12) {
             AsyncImage(url: URL(string: API.baseURL + "/" + itemProducto.imagenProductoURL)) { image in
                 image.resizable().aspectRatio(contentMode: .fill)
             } placeholder: {
@@ -177,6 +187,7 @@ struct ItemProductoRow: View {
                         lineWidth: 2
                     )
         )
+        }
     }
 }
 
@@ -216,13 +227,17 @@ struct TipoEntregaView: View {
     @EnvironmentObject var carritoViewModel: CarritoViewModel
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
 
+    var hayNoDisponiblesParaDelivery: Bool {
+        carritoViewModel.itemsProductos.contains { $0.disponibleParaDelivery == false }
+    }
+
     var opciones: [TipoEntrega] {
         var result: [TipoEntrega] = []
 
-        if carritoViewModel.comercio?.envios.envioPropio == true {
+        if !hayNoDisponiblesParaDelivery && carritoViewModel.comercio?.envios.envioPropio == true {
             result.append(.envioPropio)
         }
-        if carritoViewModel.enviosLiveryActivo {
+        if !hayNoDisponiblesParaDelivery && carritoViewModel.enviosLiveryActivo {
             result.append(.envioLivery)
         }
         result.append(.retiroEnComercio)
@@ -263,6 +278,17 @@ struct TipoEntregaView: View {
                 .padding(.horizontal, 16)
                 .lineLimit(1)
                 .frame(minHeight: 26)
+
+            // MARK: Advertencia no disponible para delivery
+            if hayNoDisponiblesParaDelivery {
+                Text("Contiene uno o más productos no disponibles para delivery")
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.rojoError)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+                    .lineLimit(2)
+            }
         }
         .onChange(of: opciones) { _, nuevasOpciones in
             if !nuevasOpciones.contains(carritoViewModel.tipoEntregaSeleccionada) {

@@ -25,6 +25,7 @@ class NavigationManager: ObservableObject {
     @Published var carritoPath = NavigationPath()
     @Published var pedidosPath = NavigationPath()
     @Published var perfilPath = NavigationPath()
+    @Published var mandadosPath = NavigationPath()
     
     // Función para cambiar de fase (Equivalente a cambiar el Root en Android)
     func replaceRoot(with phase: AppPhase) {
@@ -54,6 +55,7 @@ class NavigationManager: ObservableObject {
         carritoPath = NavigationPath()
         pedidosPath = NavigationPath()
         perfilPath = NavigationPath()
+        mandadosPath = NavigationPath()
     }
     
     private func resetPath(for section: SeccionesView.Section) {
@@ -63,6 +65,7 @@ class NavigationManager: ObservableObject {
             case .carrito: carritoPath = NavigationPath()
             case .pedidos: pedidosPath = NavigationPath()
             case .perfil: perfilPath = NavigationPath()
+            case .mandados: mandadosPath = NavigationPath()
         }
     }
     

@@ -64,6 +64,11 @@ struct FormularioDireccionView: View {
     @ObservedObject var direccionViewModel: DireccionViewModel
     
     @FocusState private var campoEnFoco: Campos?
+    @State private var mapaCargado = false
+
+    private var camposDireccionHabilitados: Bool {
+        direccionViewModel.coordenadas != nil && mapaCargado
+    }
 
     enum Campos {
         case calle, numero, departamento, indicaciones
@@ -74,7 +79,7 @@ struct FormularioDireccionView: View {
             ScrollView {
                 VStack(spacing: 8) {
                     
-                    MapaView(direccionViewModel: direccionViewModel)
+                    MapaView(direccionViewModel: direccionViewModel, onMapLoaded: { mapaCargado = true })
                     
                     TextField(
                         text: Binding(
@@ -102,6 +107,7 @@ struct FormularioDireccionView: View {
                             .stroke(Color.grisSecundario, lineWidth: 1)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .disabled(!camposDireccionHabilitados)
                     
                     TextField(
                         text: Binding(
@@ -128,6 +134,7 @@ struct FormularioDireccionView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.grisSecundario, lineWidth: 1)
                     )
+                    .disabled(!camposDireccionHabilitados)
                     
                     TextField(
                         text: $direccionViewModel.departamento,
@@ -232,12 +239,13 @@ struct FormularioDireccionView: View {
     
     private struct MapaView: View {
         @ObservedObject var direccionViewModel: DireccionViewModel
+        var onMapLoaded: (() -> Void)?
         
         var body: some View {
             ZStack {
                 // 🗺️ MAPA (fondo)
                 if direccionViewModel.coordenadas != nil {
-                    GoogleMapView(coordenadas: $direccionViewModel.coordenadas)
+                    GoogleMapView(coordenadas: $direccionViewModel.coordenadas, onMapLoaded: onMapLoaded)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)

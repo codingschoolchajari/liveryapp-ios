@@ -19,6 +19,7 @@ struct Premio: Codable, Equatable, Identifiable {
     var fechaAsignacion: String
     var fechaUtilizacion: String? = nil
     var estado: String = ""
+    var nombreUsuario: String? = nil
     
     var id: String {
         idInterno

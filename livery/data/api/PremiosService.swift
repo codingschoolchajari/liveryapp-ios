@@ -31,4 +31,58 @@ class PremiosService {
 
         return try JSONDecoder().decode(Premio?.self, from: data)
     }
+
+    func obtenerPremiosAsignados(
+        token: String,
+        dispositivoID: String,
+        skip: Int
+    ) async throws -> [Premio] {
+        var components = URLComponents(string: "\(premiosURL)/premiosAsignados")!
+        components.queryItems = [
+            URLQueryItem(name: "skip", value: "\(skip)"),
+            URLQueryItem(name: "limit", value: "10")
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        return try JSONDecoder().decode([Premio].self, from: data)
+    }
+
+    func obtenerPremiosDisponibles(
+        token: String,
+        dispositivoID: String,
+        localidad: String,
+        skip: Int
+    ) async throws -> [PremioDisponible] {
+        var components = URLComponents(string: "\(premiosURL)/premiosDisponibles")!
+        components.queryItems = [
+            URLQueryItem(name: "skip", value: "\(skip)"),
+            URLQueryItem(name: "limit", value: "10")
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+        request.setValue(localidad, forHTTPHeaderField: "localidad")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        return try JSONDecoder().decode([PremioDisponible].self, from: data)
+    }
 }

@@ -10,6 +10,7 @@ import GoogleMaps
 struct GoogleMapView: UIViewRepresentable {
 
     @Binding var coordenadas: CLLocationCoordinate2D?
+    var onMapLoaded: (() -> Void)? = nil
 
     func makeUIView(context: Context) -> GMSMapView {
         let map = GMSMapView(options: GMSMapViewOptions())
@@ -25,6 +26,7 @@ struct GoogleMapView: UIViewRepresentable {
     }
 
     func updateUIView(_ mapView: GMSMapView, context: Context) {
+        context.coordinator.parent = self
         guard let coord = coordenadas else { return }
 
         let camera = GMSCameraPosition(latitude: coord.latitude,
@@ -38,7 +40,7 @@ struct GoogleMapView: UIViewRepresentable {
     }
 
     final class Coordinator: NSObject, GMSMapViewDelegate {
-        let parent: GoogleMapView
+        var parent: GoogleMapView
 
         init(_ parent: GoogleMapView) {
             self.parent = parent
@@ -46,6 +48,10 @@ struct GoogleMapView: UIViewRepresentable {
 
         func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
             parent.coordenadas = position.target
+        }
+
+        func mapViewSnapshotReady(_ mapView: GMSMapView) {
+            parent.onMapLoaded?()
         }
     }
 }

@@ -23,8 +23,6 @@ struct PerfilView: View {
 
             SeccionPerfil(mostrarBottomSheetDirecciones: $mostrarBottomSheetDirecciones)
 
-            SeccionRepartos()
-
             SeccionSesion()
 
             Spacer()

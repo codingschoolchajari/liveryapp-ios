@@ -81,10 +81,8 @@ struct PremiosView: View {
                     
                     Spacer().frame(height: 16)
                     Divider()
-                    Spacer().frame(height: 16)
-                    
-                    ListaPremios(premiosViewModel: premiosViewModel)
-                        .padding(.bottom, 20)
+
+                    TabsPremios(premiosViewModel: premiosViewModel)
                 }
             }
             .padding(.horizontal, 16)
@@ -126,7 +124,8 @@ struct PremiosView: View {
 
 struct FranjaSuperior: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    
+    @State private var mostrarInfoRuleta = false
+
     var body: some View {
         HStack(alignment: .top) {
             // Círculo con el número de giros restantes
@@ -143,11 +142,22 @@ struct FranjaSuperior: View {
                     Circle()
                         .stroke(Color.naranjaIntentosRestantes, lineWidth: 3)
                 )
-            
+
             Spacer()
+
+            Button(action: { mostrarInfoRuleta = true }) {
+                Image(systemName: "info.circle.fill")
+                    .resizable()
+                    .frame(width: 28, height: 28)
+                    .foregroundColor(.verdePrincipal)
+            }
         }
         .padding(.horizontal)
         .frame(maxWidth: .infinity)
+        .sheet(isPresented: $mostrarInfoRuleta) {
+            DialogoInformacionRuleta()
+                .presentationDetents([.medium])
+        }
     }
 }
 
@@ -476,6 +486,207 @@ struct DialogoResultadoGirarRuleta: View {
             .background(Color.blanco)
             .cornerRadius(16)
             .shadow(radius: 10)
+        }
+    }
+}
+
+struct DialogoInformacionRuleta: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .center, spacing: 16) {
+            Text("Información de Ruleta de Premios")
+                .font(.custom("Barlow", size: 18))
+                .bold()
+                .foregroundColor(.verdePrincipal)
+                .multilineTextAlignment(.center)
+                .padding(.top, 24)
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("A)  Un intento por día para cada usuario.")
+                    .font(.custom("Barlow", size: 15))
+                    .foregroundColor(.negro)
+
+                Text("B)  Tres intentos más si realizás un pedido a través de la aplicación.")
+                    .font(.custom("Barlow", size: 15))
+                    .foregroundColor(.negro)
+
+                Text("C)  Dos intentos más si dejás un comentario luego de recibir tu pedido.")
+                    .font(.custom("Barlow", size: 15))
+                    .foregroundColor(.negro)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 20)
+
+            Text("Los intentos no utilizados se pierden al finalizar el día.")
+                .font(.custom("Barlow", size: 15))
+                .bold()
+                .foregroundColor(.grisSecundario)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color.blanco)
+    }
+}
+
+struct TabsPremios: View {
+    @ObservedObject var premiosViewModel: PremiosViewModel
+    @State private var tabSeleccionado = 0
+
+    private let tabs = ["Ganados", "Repartidos", "Pendientes"]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Tab bar personalizado
+            HStack(spacing: 0) {
+                ForEach(tabs.indices, id: \.self) { index in
+                    Button(action: { tabSeleccionado = index }) {
+                        VStack(spacing: 4) {
+                            Text(tabs[index])
+                                .font(.custom("Barlow", size: 14))
+                                .bold()
+                                .foregroundColor(tabSeleccionado == index ? .verdePrincipal : .grisSecundario)
+                            Rectangle()
+                                .frame(height: 2)
+                                .foregroundColor(tabSeleccionado == index ? .verdePrincipal : .clear)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .padding(.top, 8)
+
+            Divider()
+
+            Spacer().frame(height: 16)
+
+            switch tabSeleccionado {
+            case 0:
+                ListaPremios(premiosViewModel: premiosViewModel)
+                    .padding(.bottom, 20)
+            case 1:
+                ListaPremiosRepartidos(premiosViewModel: premiosViewModel)
+                    .padding(.bottom, 20)
+            case 2:
+                ListaPremiosPendientes(premiosViewModel: premiosViewModel)
+                    .padding(.bottom, 20)
+            default:
+                EmptyView()
+            }
+        }
+        .onChange(of: tabSeleccionado) { _, nuevo in
+            Task {
+                switch nuevo {
+                case 1:
+                    premiosViewModel.resetPremiosAsignados()
+                    await premiosViewModel.cargarPremiosAsignados()
+                case 2:
+                    premiosViewModel.resetPremiosDisponibles()
+                    await premiosViewModel.cargarPremiosDisponibles()
+                default:
+                    break
+                }
+            }
+        }
+    }
+}
+
+struct ListaPremiosRepartidos: View {
+    @ObservedObject var premiosViewModel: PremiosViewModel
+
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(premiosViewModel.premiosAsignados) { premio in
+                    HStack(alignment: .center, spacing: 12) {
+                        AsyncImage(url: URL(string: API.baseURL + "/" + (premio.logoComercioURL))) { img in
+                            img.resizable().aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Color.gray.opacity(0.2)
+                        }
+                        .frame(width: 65, height: 65)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipped()
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            if let nombre = premio.nombreUsuario, !nombre.isEmpty {
+                                Text(nombre)
+                                    .font(.custom("Barlow", size: 15))
+                                    .bold()
+                                    .foregroundColor(.negro)
+                            }
+                            Text(premio.nombreProducto)
+                                .font(.custom("Barlow", size: 14))
+                                .foregroundColor(.grisSecundario)
+                            Text(premio.fechaAsignacion)
+                                .font(.custom("Barlow", size: 14))
+                                .foregroundColor(.grisSecundario)
+                        }
+                        Spacer()
+                    }
+                    .padding(12)
+                    .background(Color.grisSurface)
+                    .cornerRadius(12)
+                    .onAppear {
+                        // Paginación: cargar más al llegar al último
+                        if premio.id == premiosViewModel.premiosAsignados.last?.id {
+                            Task { await premiosViewModel.cargarPremiosAsignados() }
+                        }
+                    }
+                }
+
+                if premiosViewModel.cargandoPremiosAsignados {
+                    ProgressView()
+                        .padding()
+                }
+            }
+        }
+    }
+}
+
+struct ListaPremiosPendientes: View {
+    @ObservedObject var premiosViewModel: PremiosViewModel
+
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(premiosViewModel.premiosDisponibles) { premio in
+                    HStack(alignment: .center, spacing: 12) {
+                        AsyncImage(url: URL(string: API.baseURL + "/" + (premio.logoComercioURL ?? ""))) { img in
+                            img.resizable().aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Color.gray.opacity(0.2)
+                        }
+                        .frame(width: 65, height: 65)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipped()
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(premio.nombreProducto ?? "")
+                                .font(.custom("Barlow", size: 15))
+                                .bold()
+                                .foregroundColor(.negro)
+                        }
+                        Spacer()
+                    }
+                    .padding(12)
+                    .background(Color.grisSurface)
+                    .cornerRadius(12)
+                    .onAppear {
+                        if premio.id == premiosViewModel.premiosDisponibles.last?.id {
+                            Task { await premiosViewModel.cargarPremiosDisponibles() }
+                        }
+                    }
+                }
+
+                if premiosViewModel.cargandoPremiosDisponibles {
+                    ProgressView()
+                        .padding()
+                }
+            }
         }
     }
 }

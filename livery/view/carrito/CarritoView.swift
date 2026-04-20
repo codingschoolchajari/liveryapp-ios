@@ -149,6 +149,14 @@ struct ItemProductoRow: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            if itemProducto.disponibleParaDelivery == false {
+                Text("No disponible para delivery")
+                    .font(.custom("Barlow", size: 12))
+                    .bold()
+                    .foregroundColor(.rojoError)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 8)
+            }
             HStack(alignment: .top, spacing: 12) {
             RemoteImage(url: URL(string: API.baseURL + "/" + itemProducto.imagenProductoURL))
             .frame(width: 65, height: 65)
@@ -160,16 +168,6 @@ struct ItemProductoRow: View {
             )
         }
         .padding(12)
-        .padding(.bottom, itemProducto.disponibleParaDelivery == false ? 0 : 0)
-
-            if itemProducto.disponibleParaDelivery == false {
-                Text("No disponible para delivery")
-                    .font(.custom("Barlow", size: 12))
-                    .bold()
-                    .foregroundColor(.rojoError)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.bottom, 8)
-            }
         }
         .background(Color.grisSurface)
         .cornerRadius(12)

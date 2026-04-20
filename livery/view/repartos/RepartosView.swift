@@ -128,11 +128,7 @@ private struct RepartoRow: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 } else {
-                    AsyncImage(url: URL(string: API.baseURL + "/" + (reparto.logoComercioURL ?? ""))) { image in
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Color.clear
-                    }
+                    RemoteImage(url: URL(string: API.baseURL + "/" + (reparto.logoComercioURL ?? "")))
                 }
             }
             .frame(width: 65, height: 65)

@@ -461,16 +461,7 @@ struct TarjetaComercio: View {
     var body: some View {
         VStack(spacing: 0) {
             // Mitad Superior: Imagen
-            AsyncImage(url: URL(string: API.baseURL + "/" + comercio.imagenURL)) { phase in
-                if let image = phase.image {
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } else {
-                    // Fondo vacío o color base mientras carga/falla
-                    Color.grisSurface
-                }
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + comercio.imagenURL))
             .frame(height: 90)
             .frame(maxWidth: .infinity)
             .clipped()

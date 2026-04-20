@@ -105,11 +105,7 @@ struct FavoritoItemCard: View {
         VStack {
             ZStack(alignment: .topTrailing) {
                 // Imagen del Producto/Promo
-                AsyncImage(url: URL(string: API.baseURL + "/" + (favorito.imagenURL ?? ""))) { img in
-                    img.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.grisSurface
-                }
+                RemoteImage(url: URL(string: API.baseURL + "/" + (favorito.imagenURL ?? "")))
                 .frame(width: 120, height: 120)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .onTapGesture {

@@ -105,11 +105,7 @@ private struct PortadaRepartoView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 } else {
-                    AsyncImage(url: URL(string: API.baseURL + "/" + (reparto.logoComercioURL ?? ""))) { img in
-                        img.resizable().aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Color.clear
-                    }
+                    RemoteImage(url: URL(string: API.baseURL + "/" + (reparto.logoComercioURL ?? "")))
                 }
             }
             .frame(width: 65, height: 65)

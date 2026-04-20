@@ -13,15 +13,7 @@ struct PromocionMiniatura: View {
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             ZStack {
-                AsyncImage(url: URL(string: API.baseURL + "/" + promocion.imagenURL)) { phase in
-                    if let image = phase.image {
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } else {
-                        Color.grisSurface // Placeholder
-                    }
-                }
+                RemoteImage(url: URL(string: API.baseURL + "/" + promocion.imagenURL))
                 .frame(width: 100, height: 100)
                 .background(Color.blanco)
                 .clipShape(RoundedRectangle(cornerRadius: 12))

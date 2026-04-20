@@ -176,11 +176,7 @@ struct PortadaPedido: View {
             Spacer()
             
             // Logo Comercio
-            AsyncImage(url: URL(string: API.baseURL + "/" + pedido.logoComercioURL)) { img in
-                img.resizable().aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Color.gray.opacity(0.3)
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + pedido.logoComercioURL))
             .frame(width: 65, height: 65)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             

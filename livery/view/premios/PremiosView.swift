@@ -146,10 +146,11 @@ struct FranjaSuperior: View {
             Spacer()
 
             Button(action: { mostrarInfoRuleta = true }) {
-                Image(systemName: "info.circle.fill")
+                Image("icono_informacion")
                     .resizable()
-                    .frame(width: 28, height: 28)
+                    .renderingMode(.template)
                     .foregroundColor(.verdePrincipal)
+                    .frame(width: 40, height: 40)
             }
         }
         .padding(.horizontal)

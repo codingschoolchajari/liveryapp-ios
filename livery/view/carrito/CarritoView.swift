@@ -127,11 +127,7 @@ struct ItemPromocionRow: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            AsyncImage(url: URL(string: API.baseURL + "/" + itemPromocion.imagenPromocionURL)) { image in
-                image.resizable().aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Color.grisSurface
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + itemPromocion.imagenPromocionURL))
             .frame(width: 65, height: 65)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
@@ -153,21 +149,8 @@ struct ItemProductoRow: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            if itemProducto.disponibleParaDelivery == false {
-                Text("No disponible para delivery")
-                    .font(.custom("Barlow", size: 12))
-                    .bold()
-                    .foregroundColor(.rojoError)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.bottom, 4)
-            }
-
             HStack(alignment: .top, spacing: 12) {
-            AsyncImage(url: URL(string: API.baseURL + "/" + itemProducto.imagenProductoURL)) { image in
-                image.resizable().aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Color.grisSurface
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + itemProducto.imagenProductoURL))
             .frame(width: 65, height: 65)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
@@ -177,6 +160,17 @@ struct ItemProductoRow: View {
             )
         }
         .padding(12)
+        .padding(.bottom, itemProducto.disponibleParaDelivery == false ? 0 : 0)
+
+            if itemProducto.disponibleParaDelivery == false {
+                Text("No disponible para delivery")
+                    .font(.custom("Barlow", size: 12))
+                    .bold()
+                    .foregroundColor(.rojoError)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.bottom, 8)
+            }
+        }
         .background(Color.grisSurface)
         .cornerRadius(12)
         .overlay(
@@ -187,7 +181,6 @@ struct ItemProductoRow: View {
                         lineWidth: 2
                     )
         )
-        }
     }
 }
 

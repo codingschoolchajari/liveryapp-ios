@@ -100,12 +100,7 @@ struct FilaProducto: View {
     var body: some View {
         HStack(alignment: .top) {
             // Imagen
-            AsyncImage(url: URL(string: API.baseURL + "/" + itemProducto.imagenProductoURL)) { image in
-                image.resizable()
-                    .aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Color.gray.opacity(0.2)
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + itemProducto.imagenProductoURL))
             .frame(width: 65, height: 65)
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
@@ -145,12 +140,7 @@ struct FilaPromocion: View {
     
     var body: some View {
         HStack(alignment: .top) {
-            AsyncImage(url: URL(string: API.baseURL + "/" + itemPromocion.imagenPromocionURL)) { image in
-                image.resizable()
-                    .aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Color.gray.opacity(0.2)
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + itemPromocion.imagenPromocionURL))
             .frame(width: 65, height: 65)
             .clipShape(RoundedRectangle(cornerRadius: 12))
 

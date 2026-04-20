@@ -28,15 +28,7 @@ struct PromocionTitulo: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
                 ZStack(alignment: .topTrailing) {
-                    AsyncImage(url: URL(string: API.baseURL + "/" + promocion.imagenURL)) { phase in
-                        if let image = phase.image {
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } else {
-                            Color.grisSurface
-                        }
-                    }
+                    RemoteImage(url: URL(string: API.baseURL + "/" + promocion.imagenURL))
                     .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     
@@ -251,15 +243,7 @@ struct PortadaPromocion: View {
         let altoDeseado = UIScreen.main.bounds.height * (1/3)
         
         ZStack(alignment: .topTrailing) {
-            AsyncImage(url: URL(string: API.baseURL + "/" + promocion.imagenURL)) { phase in
-                if let image = phase.image {
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill) // Rellena el frame
-                } else {
-                    Color.blanco
-                }
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + promocion.imagenURL))
             .frame(maxWidth: .infinity)
             .frame(height: altoDeseado)
             .clipped()

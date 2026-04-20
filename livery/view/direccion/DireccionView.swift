@@ -261,7 +261,7 @@ struct FormularioDireccionView: View {
                     PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in
                         direccionViewModel.actualizarDesdePlace(place)
                     }
-                    .padding(.horizontal, 60)
+                    .padding(.horizontal, 16)
                     .padding(.top, 12)
 
                     Spacer()

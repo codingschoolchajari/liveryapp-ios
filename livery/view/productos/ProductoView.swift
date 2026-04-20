@@ -33,13 +33,7 @@ struct ProductoTitulo: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
                 ZStack(alignment: .center) {
-                    AsyncImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? ""))) { phase in
-                        if let image = phase.image {
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } else {
-                            Color.grisSurface
-                        }
-                    }
+                    RemoteImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")))
                     .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     
@@ -447,15 +441,7 @@ struct PortadaProducto: View {
         let altoDeseado = UIScreen.main.bounds.height * (1/3)
         
         ZStack(alignment: .topTrailing) {
-            AsyncImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? ""))) { phase in
-                if let image = phase.image {
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } else {
-                    Color.blanco
-                }
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")))
             .frame(maxWidth: .infinity)
             .frame(height: altoDeseado)
             .clipped()

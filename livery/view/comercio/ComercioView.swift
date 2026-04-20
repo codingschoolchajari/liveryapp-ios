@@ -36,15 +36,7 @@ struct Portada: View {
     var body: some View {
         ZStack(alignment: .top) {
             VStack {
-                AsyncImage(url: URL(string: API.baseURL + "/" + comercio.imagenURL)) { phase in
-                    if let image = phase.image {
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } else {
-                        Color.blanco
-                    }
-                }
+                RemoteImage(url: URL(string: API.baseURL + "/" + comercio.imagenURL))
             }
             .frame(width: UIScreen.main.bounds.width, height: 180)
             .clipShape(RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight]))
@@ -117,15 +109,7 @@ struct ComercioTitulo: View {
                 // Grupo Izquierdo: Logo + Nombre/Categorías
                 HStack(spacing: 14) {
                     // Box equivalente: AsyncImage con clip
-                    AsyncImage(url: URL(string: API.baseURL + "/" + comercio.logoURL)) { phase in
-                        if let image = phase.image {
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } else {
-                            Color.grisSurface
-                        }
-                    }
+                    RemoteImage(url: URL(string: API.baseURL + "/" + comercio.logoURL))
                     .frame(width: 50, height: 50)
                     .cornerRadius(12)
                     .clipped()

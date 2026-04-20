@@ -113,11 +113,7 @@ struct PedidoRow: View {
     var body: some View {
         HStack(alignment: .center, spacing: 14) {
             
-            AsyncImage(url: URL(string: API.baseURL + "/" + (pedido.logoComercioURL))) { image in
-                image.resizable().aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Color.gray.opacity(0.3)
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + (pedido.logoComercioURL)))
             .frame(width: 65, height: 65)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             

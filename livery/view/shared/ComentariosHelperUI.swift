@@ -119,11 +119,7 @@ struct PedidoItemsView: View {
     @ViewBuilder
     private func itemRow(nombre: String, url: String) -> some View {
         HStack(spacing: 8) {
-            AsyncImage(url: URL(string: API.baseURL + "/" + url)) { image in
-                image.resizable().aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Color.gray.opacity(0.2)
-            }
+            RemoteImage(url: URL(string: API.baseURL + "/" + url))
             .frame(width: 60, height: 60)
             .cornerRadius(12)
             

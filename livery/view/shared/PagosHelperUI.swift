@@ -208,19 +208,7 @@ struct ComprobantePagoView: View {
                 .aspectRatio(contentMode: .fit)
         } else if let urlComprobante,
                   let url = URL(string: urlComprobante) {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                case .failure:
-                    Image(systemName: "photo")
-                        .foregroundColor(.grisSecundario)
-                default:
-                    ProgressView()
-                }
-            }
+            RemoteImage(url: url)
         } else {
             Image(systemName: "photo")
                 .foregroundColor(.grisSecundario)

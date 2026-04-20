@@ -68,16 +68,16 @@ struct RootContainerView: View {
         if !formularioHabilitado {
             if navManager.currentPhase != .main {
                 navManager.replaceRoot(with: .main)
+                navManager.select(.home)
             }
-            navManager.select(.home)
             return
         }
 
         if user.tienePerfilCompleto {
             if navManager.currentPhase != .main {
                 navManager.replaceRoot(with: .main)
+                navManager.select(.home)
             }
-            navManager.select(.home)
         } else if navManager.currentPhase != .registration {
             navManager.replaceRoot(with: .registration)
         }

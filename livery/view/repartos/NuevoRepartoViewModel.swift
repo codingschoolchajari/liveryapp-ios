@@ -419,34 +419,6 @@ class NuevoRepartoViewModel: ObservableObject {
     }
 }
 
-    private let perfilUsuarioState: PerfilUsuarioState
-    private let repartosService = RepartosService()
-    private let enviosService = EnviosService()
-    private let repartidoresService = RepartidoresService()
-
-    @Published var coordenadasDestino: CLLocationCoordinate2D? = nil
-    @Published var direccionesUsuario: [UsuarioDireccion] = []
-    @Published var idDireccionUsuarioSeleccionada: String? = nil
-
-    @Published var calle: String = ""
-    @Published var numero: String = ""
-    @Published var nombreComercio: String = ""
-    @Published var descripcionEnvio: String = ""
-
-    @Published var calculandoCostoEnvio: Bool = false
-    @Published var tarifaServicio: Double = 0
-    @Published var costoEnvio: Int? = nil
-    @Published var distanciaEnvio: Int? = nil
-
-    @Published var tiempoEspera: Int? = nil
-    @Published var demandaRepartidores: String? = nil
-
-    @Published var creandoReparto: Bool = false
-    @Published var repartoCreado: Bool = false
-
-    @Published var comprobanteSeleccionado: Comprobante? = nil
-
-    private var costoEnvioDebounceTask: Task<Void, Never>? = nil
 
     init(perfilUsuarioState: PerfilUsuarioState) {
         self.perfilUsuarioState = perfilUsuarioState

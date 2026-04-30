@@ -267,7 +267,7 @@ class PerfilUsuarioState: ObservableObject {
     /// Configura un perfil ficticio con dirección en Chajarí para permitir navegar sin login.
     func configurarUsuarioInvitado() {
         let idDireccionDefault = "_invitado_default_"
-        let coordenadasChajari = Point(coordinates: [-30.7518, -57.9767])
+        let coordenadasChajari = Point(coordinates: [-30.758463452217256, -57.98012148325772])
         let direccionDefault = UsuarioDireccion(
             id: idDireccionDefault,
             calle: "Sarmiento",

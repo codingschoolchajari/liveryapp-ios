@@ -10,7 +10,9 @@ struct SeccionesView: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @EnvironmentObject var carritoViewModel: CarritoViewModel
     @EnvironmentObject var navManager: NavigationManager
-    
+
+    @State private var mostrarLoginRequerido = false
+
     enum Section {
         case home, descuentos, carrito, pedidos, perfil, mandados
     }
@@ -126,6 +128,12 @@ struct SeccionesView: View {
                     }
                 }
             }
+            .sheet(isPresented: $mostrarLoginRequerido) {
+                LoginRequiridoView {
+                    mostrarLoginRequerido = false
+                }
+                .presentationDetents([.fraction(0.75)])
+            }
             
             // Barra de navegación personalizada
             VStack(spacing: 0) {
@@ -189,7 +197,11 @@ struct SeccionesView: View {
                             selectedSection: navManager.selectedSection,
                             badgeCount: 0
                         ) {
-                            navManager.select(.pedidos)
+                            if !perfilUsuarioState.esInvitado {
+                                navManager.select(.pedidos)
+                            } else {
+                                mostrarLoginRequerido = true
+                            }
                         }
                         
                         // Botón Mandados
@@ -203,7 +215,11 @@ struct SeccionesView: View {
                             selectedSection: navManager.selectedSection,
                             badgeCount: 0
                         ) {
-                            navManager.select(.mandados)
+                            if !perfilUsuarioState.esInvitado {
+                                navManager.select(.mandados)
+                            } else {
+                                mostrarLoginRequerido = true
+                            }
                         }
                     }
                 }

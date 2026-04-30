@@ -28,8 +28,10 @@ struct SplashScreenView: View {
                         navManager.replaceRoot(with: .auth)
                     }
                 } else {
-                    // No está logueado, vamos a Auth
-                    navManager.replaceRoot(with: .auth)
+                    // No hay sesión → configurar perfil invitado y mostrar home
+                    perfilUsuarioState.configurarUsuarioInvitado()
+                    navManager.replaceRoot(with: .main)
+                    navManager.select(.home)
                 }
             }
         }

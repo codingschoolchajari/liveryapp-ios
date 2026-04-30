@@ -225,6 +225,7 @@ struct BottomSheetSeleccionProducto: View {
     
     @State private var mostrarDialogoConflicto = false
     @State private var mensajeToast: String? = nil
+    @State private var mostrarLoginRequerido = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -364,6 +365,12 @@ struct BottomSheetSeleccionProducto: View {
         .onAppear {
             itemProductoViewModel.inicializar(producto: producto, categoria: categoria, comercio: comercio)
         }
+        .sheet(isPresented: $mostrarLoginRequerido) {
+            LoginRequiridoView {
+                mostrarLoginRequerido = false
+            }
+            .presentationDetents([.fraction(0.75)])
+        }
         .overlay(ToastView(mensaje: $mensajeToast))
     }
     
@@ -395,6 +402,11 @@ struct BottomSheetSeleccionProducto: View {
     ) {
         if(itemProductoViewModel.itemProducto == nil) { return }
         
+        guard !perfilUsuarioState.esInvitado else {
+            mostrarLoginRequerido = true
+            return
+        }
+        
         let direccion = perfilUsuarioState.obtenerUsuarioDireccion()
         let ciudad = perfilUsuarioState.ciudadSeleccionada
         
@@ -417,6 +429,10 @@ struct BottomSheetSeleccionProducto: View {
     private func limpiarYAgregarItemProducto(
         onClose: () -> Void
     ) {
+        guard !perfilUsuarioState.esInvitado else {
+            mostrarLoginRequerido = true
+            return
+        }
         if(itemProductoViewModel.itemProducto == nil
            || perfilUsuarioState.obtenerUsuarioDireccion() == nil) { return }
 

@@ -22,7 +22,10 @@ class PerfilUsuarioState: ObservableObject {
     
     @Published var idDireccionSeleccionada: String? = nil
     @Published var ciudadSeleccionada: String? = nil
-    
+
+    /// `true` cuando el usuario no tiene sesión de Firebase activa (modo invitado con datos ficticios).
+    var esInvitado: Bool { currentUser == nil }
+
     var categoriaSeleccionadaHome: String? = nil
     
     private let configuracionesService = ConfiguracionesService()
@@ -229,6 +232,8 @@ class PerfilUsuarioState: ObservableObject {
     }
 
     func obtenerCiudadSeleccionada() async {
+        // El usuario invitado ya tiene la ciudad hardcodeada; no llamar a la API sin token.
+        guard !esInvitado else { return }
         await TokenRepository.repository.validarToken(perfilUsuarioState: self)
         let accessToken = TokenRepository.repository.accessToken ?? ""
         
@@ -257,6 +262,29 @@ class PerfilUsuarioState: ObservableObject {
         }
     }
     
+    // MARK: - Usuario Invitado (modo sin sesión)
+
+    /// Configura un perfil ficticio con dirección en Chajarí para permitir navegar sin login.
+    func configurarUsuarioInvitado() {
+        let idDireccionDefault = "_invitado_default_"
+        let coordenadasChajari = Point(coordinates: [-30.7518, -57.9767])
+        let direccionDefault = UsuarioDireccion(
+            id: idDireccionDefault,
+            calle: "Sarmiento",
+            numero: "2710",
+            departamento: "",
+            indicaciones: "Dirección por defecto",
+            coordenadas: coordenadasChajari
+        )
+        self.usuario = Usuario(
+            email: "",
+            nombre: "Invitado",
+            direcciones: [direccionDefault]
+        )
+        self.idDireccionSeleccionada = idDireccionDefault
+        self.ciudadSeleccionada = "Chajarí"
+    }
+
     func eliminarDireccion(idDireccion: String) async {
         await TokenRepository.repository.validarToken(perfilUsuarioState: self)
         let accessToken = TokenRepository.repository.accessToken ?? ""

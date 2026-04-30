@@ -90,6 +90,7 @@ struct FranjaPrincipal: View {
 
     @State private var mostrarDirecciones = false
     @State private var mostrarNotificaciones = false
+    @State private var mostrarLoginRequerido = false
     
     // Calcular notificaciones no leídas a partir del nuevo modelo
     private var notificacionesNoLeidas: [NotificacionUI] {
@@ -100,7 +101,11 @@ struct FranjaPrincipal: View {
     var body: some View {
         HStack {
             Button {
-                mostrarDirecciones = true
+                if !perfilUsuarioState.esInvitado {
+                    mostrarDirecciones = true
+                } else {
+                    mostrarLoginRequerido = true
+                }
             } label: {
                 HStack(spacing: 6) {
                     Text(
@@ -172,7 +177,11 @@ struct FranjaPrincipal: View {
                 }
 
                 Button {
-                    navManager.select(.perfil)
+                    if !perfilUsuarioState.esInvitado {
+                        navManager.select(.perfil)
+                    } else {
+                        mostrarLoginRequerido = true
+                    }
                 } label: {
                     Image("icono_perfil")
                         .resizable()
@@ -185,6 +194,12 @@ struct FranjaPrincipal: View {
         .padding(.horizontal, 16)
         .padding(.top, 8)
         .background(.verdePrincipal)
+        .sheet(isPresented: $mostrarLoginRequerido) {
+            LoginRequiridoView {
+                mostrarLoginRequerido = false
+            }
+            .presentationDetents([.fraction(0.75)])
+        }
         .sheet(isPresented: $mostrarDirecciones) {
             BottomSheetDirecciones(
                 homeViewModel: homeViewModel,

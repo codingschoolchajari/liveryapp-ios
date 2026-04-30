@@ -58,7 +58,11 @@ struct RootContainerView: View {
         }
 
         guard logueado else {
-            navManager.replaceRoot(with: .auth)
+            // Usuario no logueado → modo invitado, mostrar home sin forzar login
+            if navManager.currentPhase != .main {
+                navManager.replaceRoot(with: .main)
+                navManager.select(.home)
+            }
             return
         }
 

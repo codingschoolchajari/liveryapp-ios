@@ -47,6 +47,16 @@ struct RootContainerView: View {
     }
 
     private func navegarSegunEstadoActual() {
+        // Primero verificar si hay nueva versión obligatoria (independiente del estado de login)
+        if let config = perfilUsuarioState.configuracion {
+            let versionRequerida = config.plataformas.versionIOS
+            let versionApp = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+            if !versionRequerida.isEmpty && hayNuevaVersionDisponible(versionApp: versionApp, versionRequerida: versionRequerida) {
+                navManager.replaceRoot(with: .versionNueva)
+                return
+            }
+        }
+
         guard logueado else {
             navManager.replaceRoot(with: .auth)
             return
@@ -94,6 +104,8 @@ struct RootContainerView: View {
                 DatosPersonalesView()
             case .main:
                 SeccionesView()
+            case .versionNueva:
+                VersionNuevaView()
             }
         }
         .onChange(of: perfilUsuarioState.usuario) { oldUser, newUser in

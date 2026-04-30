@@ -27,8 +27,7 @@ struct ProductoTitulo: View {
             HStack(spacing: 8) {
                 ProductoDescripcion(
                     producto: producto,
-                    productoAlternativa: producto.alternativas.first
-                
+                    productoAlternativa: !producto.alternativas.isEmpty && (producto.cantidadMinimaAlternativasSeleccionables ?? 1) <= 1 ? producto.alternativas.first : nil
                 )
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
@@ -233,7 +232,7 @@ struct BottomSheetSeleccionProducto: View {
             // 1. Portada (Ocupa 3/4 del ancho de pantalla)
             PortadaProducto(
                 producto: producto,
-                productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaSeleccionada
+                productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaParaDescripcion
             )
             
             // 2. Bloque Central (Descripción + Seleccionables) - NO Scrolleable externamente
@@ -242,7 +241,7 @@ struct BottomSheetSeleccionProducto: View {
                 
                 ProductoDescripcion(
                     producto: producto,
-                    productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaSeleccionada,
+                    productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaParaDescripcion,
                     fontSizeNombre: 20,
                     fontSizePrecio: 22,
                     fontSizeDescripcion: 16
@@ -304,31 +303,31 @@ struct BottomSheetSeleccionProducto: View {
                             limpiarYAgregarItemProducto(onClose: onClose)
                         }
                     )
-                } else if (producto.alternativas.count > 0 && itemProductoViewModel.alternativaSeleccionada != nil){
-                    
-                    if(!esPremio){
-                        Alternativas(
-                            producto: producto,
-                            alternativaSeleccionada: itemProductoViewModel.alternativaSeleccionada!,
-                            onCambiarAlternativaSeleccionada: { alternativa in
-                                itemProductoViewModel.cambiarAlternativaSeleccionada(productoAlternativa: alternativa)
-                            }
-                        )
-                    }
+                } else if !producto.alternativas.isEmpty && !esPremio {
+                    Alternativas(
+                        producto: producto,
+                        alternativasSeleccionadas: itemProductoViewModel.alternativasSeleccionadas,
+                        onCambiarAlternativaSeleccionada: { alternativa in
+                            itemProductoViewModel.cambiarAlternativaSeleccionada(productoAlternativa: alternativa)
+                        }
+                    )
                     
                     Spacer()
                     let item = itemProductoViewModel.itemProducto
-                    
+
+                    let esMultiSelect = (producto.cantidadMaximaAlternativasSeleccionables ?? 1) > 1
                     CantidadUnidadesYPrecio(
-                        cambioUnidadesHabilitado: esPremio ? false : true,
+                        cambioUnidadesHabilitado: esMultiSelect ? false : true,
                         cantidad: itemProductoViewModel.cantidad,
                         precio: item?.precio,
                         onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
                         onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
                     )
                     Spacer().frame(height: 4)
+                    let minAlt = producto.cantidadMinimaAlternativasSeleccionables ?? 0
+                    let enabledAlt = !esMultiSelect || itemProductoViewModel.alternativasSeleccionadas.count >= minAlt
                     AgregarCarrito(
-                        enabled: true,
+                        enabled: enabledAlt,
                         mostrarDialogoConflicto: $mostrarDialogoConflicto,
                         onConfirmar: {
                             agregarItemProducto(onClose: onClose)

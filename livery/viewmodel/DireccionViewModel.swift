@@ -23,7 +23,11 @@ class DireccionViewModel: ObservableObject {
     @Published var departamento: String = ""
     @Published var indicaciones: String = ""
     @Published var mostrarPopupAdvertencia: Bool = false
-    
+    @Published var celularPais: String = "+54"
+    @Published var celularNumero: String = ""
+    @Published var modoManual: Bool = false
+    @Published var mostrarAdvertencia: Bool = false
+
     private var yaFijoUbicacionInicial = false
     @Published var coordenadasInicialesGPS: CLLocationCoordinate2D?
 
@@ -166,6 +170,24 @@ class DireccionViewModel: ObservableObject {
         mostrarPopupAdvertencia = false
     }
 
+    func seleccionarModo(manual: Bool) {
+        if manual == modoManual { return }
+        modoManual = manual
+        calle = ""
+        numero = ""
+        if manual {
+            mostrarAdvertencia = true
+        }
+    }
+
+    func onCelularPaisChange(_ codigo: String) {
+        celularPais = codigo
+    }
+
+    func onCelularNumeroChange(_ texto: String) {
+        celularNumero = String(texto.filter { $0.isNumber }.prefix(10))
+    }
+
     private func validarDireccion(
         token: String,
         dispositivoID: String,
@@ -197,11 +219,13 @@ class DireccionViewModel: ObservableObject {
         idDireccion: String,
         coords: CLLocationCoordinate2D
     ) async throws -> String {
+        let celular: String? = celularNumero.isEmpty ? nil : "\(celularPais)\(celularNumero.trimmingCharacters(in: .whitespaces))"
         let usuarioDireccion = UsuarioDireccion(
             id: idDireccion,
             calle: self.calle,
             numero: self.numero,
             departamento: self.departamento,
+            celular: celular,
             indicaciones: self.indicaciones,
             coordenadas: Point(coordinates: [coords.latitude, coords.longitude])
         )

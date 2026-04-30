@@ -133,7 +133,7 @@ class PerfilUsuarioState: ObservableObject {
         }
     }
     
-    func actualizarDatosPersonales(nombre: String, apellido: String, dni: Int?) async {
+    func actualizarDatosPersonales(nombre: String, apellido: String) async {
         await TokenRepository.repository.validarToken(perfilUsuarioState: self)
         let accessToken = TokenRepository.repository.accessToken ?? ""
         
@@ -142,8 +142,7 @@ class PerfilUsuarioState: ObservableObject {
             
             let datosPersonales = UsuarioDatosPersonales(
                 nombre: nombre,
-                apellido: apellido,
-                dni: dni
+                apellido: apellido
             )
 
             guard let email = currentUser?.email else {

@@ -50,8 +50,8 @@ struct PedidosView: View {
             }
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
-            if newPhase == .active {
-                // Al volver de background
+            if newPhase == .active && !pedidosViewModel.mostrarBottomSheet {
+                // Al volver de background, solo refrescar si el bottom sheet no está abierto
                 pedidosViewModel.refrescarPedidos()
             }
         }

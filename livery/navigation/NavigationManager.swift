@@ -13,6 +13,7 @@ class NavigationManager: ObservableObject {
         case auth        // Pantalla de Login
         case registration // Datos Personales
         case main        // El TabView (SeccionesView)
+        case versionNueva // Actualización obligatoria
     }
     
     @Published var currentPhase: AppPhase = .loading

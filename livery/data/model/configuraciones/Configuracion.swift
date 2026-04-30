@@ -10,6 +10,13 @@ struct ConfiguracionIOS: Codable {
     let formularioDatosPersonalesHabilitado: Bool
 }
 
+struct ConfiguracionPlataformas: Codable {
+    let versionIOS: String
+    let versionAndroid: String
+    let linkGooglePlay: String
+    let linkAppStore: String
+}
+
 struct ConfiguracionIntervalosTiempo: Codable {
     let intervaloBuscarRecorrido: Int64
     let intervaloBuscarMensajeChat: Int64
@@ -27,5 +34,7 @@ struct Configuracion: Codable {
     let intervalosTiempo: ConfiguracionIntervalosTiempo
     var palabrasClave: [String] = []
     let tarifaServicio: Double
+    let limitePagoEfectivo: Double
     let configuracionIOS: ConfiguracionIOS
+    let plataformas: ConfiguracionPlataformas
 }

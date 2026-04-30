@@ -111,8 +111,7 @@ class LoginViewModel: ObservableObject {
 
         await perfilUsuarioState.actualizarDatosPersonales(
             nombre: nombreFinal,
-            apellido: apellidoFinal,
-            dni: perfilUsuarioState.usuario?.datosPersonales?.dni
+            apellido: apellidoFinal
         )
 
         await perfilUsuarioState.buscarUsuario()

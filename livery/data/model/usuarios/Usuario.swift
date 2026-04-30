@@ -14,7 +14,6 @@ struct UsuarioPremios: Codable, Equatable {
 struct UsuarioDatosPersonales: Codable, Equatable {
     var nombre: String = ""
     var apellido: String = ""
-    var dni: Int? = nil
 }
 
 struct UsuarioFavorito: Codable, Equatable, Identifiable {
@@ -33,6 +32,7 @@ struct UsuarioDireccion: Codable, Identifiable, Equatable {
     var calle: String = ""
     var numero: String = ""
     var departamento: String = ""
+    var celular: String? = nil
     var indicaciones: String = ""
     var coordenadas: Point = Point()
 }

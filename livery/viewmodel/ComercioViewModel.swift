@@ -15,15 +15,17 @@ class ComercioViewModel: ObservableObject {
     var categoria: Categoria? = nil
     
     private let comerciosService = ComerciosService()
+    private let perfilUsuarioState: PerfilUsuarioState
+    private let idComercio: String
+    private var _initialized = false
     
     init(perfilUsuarioState: PerfilUsuarioState, idComercio: String) {
-        cargarComercio(perfilUsuarioState: perfilUsuarioState, idComercio: idComercio)
+        self.perfilUsuarioState = perfilUsuarioState
+        self.idComercio = idComercio
+        cargarComercio()
     }
     
-    private func cargarComercio(
-        perfilUsuarioState: PerfilUsuarioState,
-        idComercio: String
-    ) {
+    private func cargarComercio() {
         Task {
             do {
                 await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
@@ -36,8 +38,32 @@ class ComercioViewModel: ObservableObject {
                     dispositivoID: dispositivoID,
                     idInterno: idComercio
                 )
+                self._initialized = true
             } catch {
                 print("Error al cargar el comercio: \(error)")
+            }
+        }
+    }
+    
+    func refreshCategoriasYPromociones() {
+        guard _initialized else { return }
+        Task {
+            do {
+                await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+                let accessToken = TokenRepository.repository.accessToken ?? ""
+                let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+                
+                if let fresco = try await comerciosService.buscarComercio(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    idInterno: idComercio
+                ) {
+                    self.comercio?.categorias = fresco.categorias
+                    self.comercio?.promociones = fresco.promociones
+                    self.comercio?.aviso = fresco.aviso
+                }
+            } catch {
+                print("Error al refrescar categorias y promociones: \(error)")
             }
         }
     }

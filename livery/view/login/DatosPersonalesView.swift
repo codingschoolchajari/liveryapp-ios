@@ -51,7 +51,6 @@ struct FormularioDatosPersonalesView: View {
 
     @State private var nombre: String = ""
     @State private var apellido: String = ""
-    @State private var dni: String = ""
     @State private var mostrarAlerta = false
 
     var body: some View {
@@ -97,28 +96,6 @@ struct FormularioDatosPersonalesView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.negro, lineWidth: 1)
             )
-            
-            TextField(
-                text: $dni,
-                prompt: Text("DNI (opcional)")
-                    .foregroundColor(.grisSecundario)
-                    .font(.custom("Barlow", size: 16))
-            ) {
-                Text("DNI (opcional)")
-            }
-            .tint(.verdePrincipal)
-            .autocapitalization(.words)
-            .disableAutocorrection(true)
-            .keyboardType(.numberPad)
-            .font(.custom("Barlow", size: 16))
-            .bold()
-            .foregroundColor(.negro)
-            .background(Color.blanco)
-            .padding(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.negro, lineWidth: 1)
-            )
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 16)
@@ -127,11 +104,9 @@ struct FormularioDatosPersonalesView: View {
             Spacer()
             Button(action: {
                 Task {
-                    let dniNormalizado = dni.trimmingCharacters(in: .whitespaces)
                     await perfilUsuarioState.actualizarDatosPersonales(
                         nombre: nombre,
-                        apellido: apellido,
-                        dni: dniNormalizado.isEmpty ? nil : Int(dniNormalizado)
+                        apellido: apellido
                     )
                     mostrarAlerta = true
                 }
@@ -163,7 +138,6 @@ struct FormularioDatosPersonalesView: View {
     private func esFormularioValido() -> Bool {
         return
             !nombre.trimmingCharacters(in: .whitespaces).isEmpty &&
-            !apellido.trimmingCharacters(in: .whitespaces).isEmpty &&
-            (dni.trimmingCharacters(in: .whitespaces).isEmpty || Int(dni.trimmingCharacters(in: .whitespaces)) != nil)
+            !apellido.trimmingCharacters(in: .whitespaces).isEmpty
     }
 }

@@ -271,7 +271,7 @@ struct FilaSeleccionable: View {
 
 struct Alternativas: View {
     let producto: Producto
-    let alternativaSeleccionada: ProductoAlternativa
+    let alternativasSeleccionadas: [ProductoAlternativa]
     var onCambiarAlternativaSeleccionada: (ProductoAlternativa) -> Void
     
     var body: some View {
@@ -282,7 +282,7 @@ struct Alternativas: View {
             VStack(spacing: 4) {
                 ForEach(alternativas, id: \.idInterno) { alternativa in
                     
-                    let seleccionada = alternativa.idInterno == alternativaSeleccionada.idInterno
+                    let seleccionada = alternativasSeleccionadas.contains { $0.idInterno == alternativa.idInterno }
                     VStack(spacing: 0) {
                         HStack {
                             Text(alternativa.nombre)

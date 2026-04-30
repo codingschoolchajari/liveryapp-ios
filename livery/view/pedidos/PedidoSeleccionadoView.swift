@@ -11,6 +11,7 @@ struct BottomSheetPedidoDescripcion: View {
     
     @ObservedObject var pedidosViewModel: PedidosViewModel
     @StateObject var pedidoChatViewModel : PedidoChatViewModel
+    @Environment(\.scenePhase) var scenePhase
     
     init(perfilUsuarioState: PerfilUsuarioState,
          pedidosViewModel: PedidosViewModel,
@@ -107,6 +108,11 @@ struct BottomSheetPedidoDescripcion: View {
             
             let isRecorridoTab = (newValue == 2)
             pedidosViewModel.setRecorridoTabActive(active: isRecorridoTab)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                pedidosViewModel.actualizarEstadoPedidoSeleccionado()
+            }
         }
     }
 }

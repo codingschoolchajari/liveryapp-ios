@@ -74,118 +74,185 @@ struct FormularioDireccionView: View {
     }
     
     var body: some View {
-        ScrollViewReader { proxy in // Permite mover el scroll por código
+        ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 8) {
-                    
+
                     MapaView(direccionViewModel: direccionViewModel)
-                    
-                    TextField(
-                        text: Binding(
-                            get: { direccionViewModel.calle },
-                            set: { direccionViewModel.onCalleChange($0) }
-                        ),
-                        prompt: Text("Calle")
-                            .foregroundColor(.grisSecundario)
-                            .font(.custom("Barlow", size: 16))
-                    ) {
-                        Text("Calle")
-                    }
-                    .focused($campoEnFoco, equals: .calle)
-                    .id(Campos.calle)
-                    .tint(.verdePrincipal)
-                    .autocapitalization(.words)
-                    .disableAutocorrection(true)
-                    .font(.custom("Barlow", size: 16))
-                    .bold()
-                    .foregroundColor(.negro)
-                    .padding(12)
-                    .background(camposDireccionHabilitados ? Color.blanco : Color.grisSurface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .disabled(!camposDireccionHabilitados)
-                    
-                    TextField(
-                        text: Binding(
-                            get: { direccionViewModel.numero },
-                            set: { direccionViewModel.onNumeroChange($0) }
-                        ),
-                        prompt: Text("Número")
-                            .foregroundColor(.grisSecundario)
-                            .font(.custom("Barlow", size: 16))
-                    ) {
-                        Text("Número")
-                    }
-                    .focused($campoEnFoco, equals: .numero)
-                    .id(Campos.numero)
-                    .tint(.verdePrincipal)
-                    .autocapitalization(.words)
-                    .disableAutocorrection(true)
-                    .font(.custom("Barlow", size: 16))
-                    .bold()
-                    .foregroundColor(.negro)
-                    .background(camposDireccionHabilitados ? Color.blanco : Color.grisSurface)
-                    .padding(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-                    .disabled(!camposDireccionHabilitados)
-                    
-                    TextField(
-                        text: $direccionViewModel.departamento,
-                        prompt: Text("Dpto (solo para edificios)")
-                            .foregroundColor(.grisSecundario)
-                            .font(.custom("Barlow", size: 16))
-                    ) {
-                        Text("Departamento")
-                    }
-                    .focused($campoEnFoco, equals: .departamento)
-                    .id(Campos.departamento)
-                    .tint(.verdePrincipal)
-                    .autocapitalization(.words)
-                    .disableAutocorrection(true)
-                    .font(.custom("Barlow", size: 16))
-                    .bold()
-                    .foregroundColor(.negro)
-                    .background(Color.blanco)
-                    .padding(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-                    
-                    Text("Indicaciones de Entrega")
-                        .foregroundColor(.grisSecundario)
-                        .font(.custom("Barlow", size: 16))
-                        .bold()
-                        .padding(.top, 4)
-                        .padding(.leading, 6)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    TextEditor(text: $direccionViewModel.indicaciones)
-                        .focused($campoEnFoco, equals: .indicaciones)
-                        .id(Campos.indicaciones)
-                        .scrollContentBackground(.hidden)
-                        .background(Color.blanco)
-                        .tint(.verdePrincipal)
-                        .font(.custom("Barlow", size: 16))
-                        .bold()
-                        .foregroundColor(.negro)
-                        .frame(minHeight: 70, maxHeight: 70) // ≈ 3 líneas
-                        .padding(8)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.grisSecundario, lineWidth: 1)
-                        )
-                        .onChange(of: direccionViewModel.indicaciones) { oldValue, newValue in
-                            if newValue.count > 100 {
-                                direccionViewModel.indicaciones = String(newValue.prefix(100))
-                            }
+
+                    // Toggle: Buscar Dirección / Cargar Manualmente
+                    HStack(spacing: 0) {
+                        Button {
+                            direccionViewModel.seleccionarModo(manual: false)
+                        } label: {
+                            Text("Buscar Dirección")
+                                .font(.custom("Barlow", size: 14))
+                                .bold()
+                                .foregroundColor(.blanco)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(!direccionViewModel.modoManual ? Color.verdePrincipal : Color.grisSecundario)
                         }
+                        Button {
+                            direccionViewModel.seleccionarModo(manual: true)
+                        } label: {
+                            Text("Cargar Manualmente")
+                                .font(.custom("Barlow", size: 14))
+                                .bold()
+                                .foregroundColor(.blanco)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(direccionViewModel.modoManual ? Color.verdePrincipal : Color.grisSecundario)
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                    // Buscador (solo en modo Buscar Dirección)
+                    if !direccionViewModel.modoManual {
+                        PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in
+                            direccionViewModel.actualizarDesdePlace(place)
+                        }
+                    }
+
+                    // Calle | Número | Dpto (proporciones 2:1:1)
+                    GeometryReader { geo in
+                        let unit = (geo.size.width - 16) / 4.0
+                        HStack(alignment: .top, spacing: 8) {
+
+                            // Calle
+                            let calleHabilitado = direccionViewModel.modoManual ? camposDireccionHabilitados : false
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Calle")
+                                    .font(.custom("Barlow", size: 12))
+                                    .bold()
+                                    .foregroundColor(.negro)
+                                TextField(
+                                    text: Binding(
+                                        get: { direccionViewModel.calle },
+                                        set: { direccionViewModel.onCalleChange($0) }
+                                    ),
+                                    prompt: Text("").foregroundColor(.grisSecundario)
+                                ) {}
+                                .focused($campoEnFoco, equals: .calle)
+                                .id(Campos.calle)
+                                .tint(.verdePrincipal)
+                                .autocapitalization(.words)
+                                .disableAutocorrection(true)
+                                .font(.custom("Barlow", size: 16))
+                                .bold()
+                                .foregroundColor(.negro)
+                                .padding(12)
+                                .background(calleHabilitado ? Color.blanco : Color.grisSurface)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.grisSecundario, lineWidth: 1))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .disabled(!calleHabilitado)
+                            }
+                            .frame(width: unit * 2)
+
+                            // Número
+                            let numHabilitado = direccionViewModel.modoManual ? camposDireccionHabilitados : !direccionViewModel.calle.isEmpty
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Número")
+                                    .font(.custom("Barlow", size: 12))
+                                    .bold()
+                                    .foregroundColor(.negro)
+                                TextField(
+                                    text: Binding(
+                                        get: { direccionViewModel.numero },
+                                        set: { direccionViewModel.onNumeroChange($0) }
+                                    ),
+                                    prompt: Text("").foregroundColor(.grisSecundario)
+                                ) {}
+                                .focused($campoEnFoco, equals: .numero)
+                                .id(Campos.numero)
+                                .tint(.verdePrincipal)
+                                .autocapitalization(.words)
+                                .disableAutocorrection(true)
+                                .font(.custom("Barlow", size: 16))
+                                .bold()
+                                .foregroundColor(.negro)
+                                .padding(12)
+                                .background(numHabilitado ? Color.blanco : Color.grisSurface)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.grisSecundario, lineWidth: 1))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .disabled(!numHabilitado)
+                            }
+                            .frame(width: unit)
+
+                            // Dpto
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Dpto (edificios)")
+                                    .font(.custom("Barlow", size: 12))
+                                    .bold()
+                                    .foregroundColor(.negro)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                                TextField(
+                                    text: $direccionViewModel.departamento,
+                                    prompt: Text("").foregroundColor(.grisSecundario)
+                                ) {}
+                                .focused($campoEnFoco, equals: .departamento)
+                                .id(Campos.departamento)
+                                .tint(.verdePrincipal)
+                                .autocapitalization(.words)
+                                .disableAutocorrection(true)
+                                .font(.custom("Barlow", size: 16))
+                                .bold()
+                                .foregroundColor(.negro)
+                                .padding(12)
+                                .background(Color.blanco)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.grisSecundario, lineWidth: 1))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                            .frame(width: unit)
+                        }
+                    }
+                    .frame(height: 72)
+
+                    // Indicaciones
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Indicaciones de Entrega")
+                            .font(.custom("Barlow", size: 12))
+                            .bold()
+                            .foregroundColor(.negro)
+                        TextEditor(text: $direccionViewModel.indicaciones)
+                            .focused($campoEnFoco, equals: .indicaciones)
+                            .id(Campos.indicaciones)
+                            .scrollContentBackground(.hidden)
+                            .background(Color.blanco)
+                            .tint(.verdePrincipal)
+                            .font(.custom("Barlow", size: 16))
+                            .bold()
+                            .foregroundColor(.negro)
+                            .frame(minHeight: 70, maxHeight: 70)
+                            .padding(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.grisSecundario, lineWidth: 1)
+                            )
+                            .onChange(of: direccionViewModel.indicaciones) { _, newValue in
+                                if newValue.count > 200 {
+                                    direccionViewModel.indicaciones = String(newValue.prefix(200))
+                                }
+                            }
+                    }
+
+                    // Celular
+                    CelularFieldDireccion(
+                        pais: direccionViewModel.celularPais,
+                        numero: direccionViewModel.celularNumero,
+                        onPaisChange: { direccionViewModel.onCelularPaisChange($0) },
+                        onNumeroChange: { direccionViewModel.onCelularNumeroChange($0) }
+                    )
+
+                    Text("Te contactaremos solo en caso de ser necesario.")
+                        .font(.custom("Barlow", size: 12))
+                        .bold()
+                        .foregroundColor(.grisSecundario)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 2)
+
                     HStack {
                         Spacer()
                         Button {
@@ -194,25 +261,24 @@ struct FormularioDireccionView: View {
                                 perfilUsuarioState: perfilUsuarioState,
                                 direccionViewModel: direccionViewModel
                             )
-                        } label : {
+                        } label: {
                             Text("Guardar Dirección")
                                 .font(.custom("Barlow", size: 16))
                                 .bold()
                                 .frame(width: 250, height: 40)
                                 .foregroundColor(.blanco)
-                                .background(esFormularioValido(direccionViewModel) ?
-                                    .verdePrincipal : .grisSecundario)
+                                .background(esFormularioValido(direccionViewModel) ? Color.verdePrincipal : Color.grisSecundario)
                                 .cornerRadius(16)
                         }
                         .disabled(!esFormularioValido(direccionViewModel))
                         Spacer()
                     }
+                    .padding(.bottom, 8)
                 }
                 .padding(.horizontal, 16)
             }
-            .onChange(of: campoEnFoco) { old, nuevoCampo in
+            .onChange(of: campoEnFoco) { _, nuevoCampo in
                 if let campo = nuevoCampo {
-                    // Cuando un campo recibe el foco, hacemos scroll hacia él
                     withAnimation {
                         proxy.scrollTo(campo, anchor: .center)
                     }
@@ -222,7 +288,6 @@ struct FormularioDireccionView: View {
                 Button("Cancelar", role: .cancel) {
                     direccionViewModel.ocultarPopupAdvertencia()
                 }
-
                 Button("Guardar Igualmente") {
                     guardarDireccionConfirmada(
                         navManager: navManager,
@@ -232,6 +297,13 @@ struct FormularioDireccionView: View {
                 }
             } message: {
                 Text("La calle y número indicados no coinciden con la posición marcada en el mapa.\n\nAconsejamos utilizar el buscador que se encuentra en la parte superior del mapa.")
+            }
+            .alert("Importante", isPresented: $direccionViewModel.mostrarAdvertencia) {
+                Button("Entendido") {
+                    direccionViewModel.mostrarAdvertencia = false
+                }
+            } message: {
+                Text("La Ubicación en el Mapa debe coincidir con la Dirección Cargada.\n\nMover el Pin en el mapa para ajustarlo.")
             }
         }
     }
@@ -255,18 +327,6 @@ struct FormularioDireccionView: View {
                     .resizable()
                     .frame(width: 60, height: 60)
                     .zIndex(1)
-
-                // 🔍 BARRA ARRIBA
-                VStack {
-                    PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in
-                        direccionViewModel.actualizarDesdePlace(place)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 12)
-
-                    Spacer()
-                }
-                .zIndex(2)
             }
             .padding(8)
             .frame(height: 350)
@@ -276,15 +336,10 @@ struct FormularioDireccionView: View {
     private func esFormularioValido(
         _ direccionViewModel: DireccionViewModel
     ) -> Bool {
-        
-        if(direccionViewModel.calle.isEmpty
-           || direccionViewModel.numero.isEmpty
-           || direccionViewModel.coordenadas == nil
-        ) {
-            return false
-        } else {
-            return true
-        }
+        !direccionViewModel.calle.isEmpty
+            && !direccionViewModel.numero.isEmpty
+            && !direccionViewModel.celularNumero.isEmpty
+            && direccionViewModel.coordenadas != nil
     }
     
     private func guardarDireccion(
@@ -318,6 +373,83 @@ struct FormularioDireccionView: View {
             }
         }
     }
-}
 
+    private struct CelularFieldDireccion: View {
+        let pais: String
+        let numero: String
+        let onPaisChange: (String) -> Void
+        let onNumeroChange: (String) -> Void
+
+        private struct PaisCelular: Identifiable {
+            let id = UUID()
+            let emoji: String
+            let codigo: String
+        }
+
+        private let paises: [PaisCelular] = [
+            PaisCelular(emoji: "🇦🇷", codigo: "+54"),
+            PaisCelular(emoji: "🇧🇷", codigo: "+55"),
+            PaisCelular(emoji: "🇨🇱", codigo: "+56"),
+            PaisCelular(emoji: "🇺🇾", codigo: "+598"),
+            PaisCelular(emoji: "🇵🇾", codigo: "+595")
+        ]
+
+        var body: some View {
+            let paisActual = paises.first { $0.codigo == pais } ?? paises[0]
+            HStack(spacing: 8) {
+                Menu {
+                    ForEach(paises) { p in
+                        Button {
+                            onPaisChange(p.codigo)
+                        } label: {
+                            Text("\(p.emoji) \(p.codigo)")
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(paisActual.emoji)
+                            .font(.system(size: 18))
+                        Text(paisActual.codigo)
+                            .font(.custom("Barlow", size: 14))
+                            .bold()
+                            .foregroundColor(.negro)
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 10))
+                            .foregroundColor(.grisSecundario)
+                    }
+                    .frame(height: 48)
+                    .padding(.horizontal, 8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.grisSecundario, lineWidth: 1)
+                    )
+                }
+
+                TextField(
+                    text: Binding(
+                        get: { numero },
+                        set: { onNumeroChange($0) }
+                    ),
+                    prompt: Text("Número de Celular")
+                        .foregroundColor(.grisSecundario)
+                        .font(.custom("Barlow", size: 16))
+                ) {}
+                .keyboardType(.numberPad)
+                .font(.custom("Barlow", size: 16))
+                .bold()
+                .foregroundColor(.negro)
+                .tint(.verdePrincipal)
+                .padding(12)
+                .frame(height: 48)
+                .background(Color.blanco)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.grisSecundario, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .padding(.horizontal, 60)
+        }
+    }
+}
 

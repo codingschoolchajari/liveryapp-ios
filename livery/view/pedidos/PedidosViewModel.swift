@@ -304,6 +304,26 @@ class PedidosViewModel: ObservableObject {
         self.mostrarBottomSheet = mostrar
     }
     
+    func actualizarEstadoPedidoSeleccionado() {
+        guard let pedido = pedidoSeleccionado else { return }
+        Task {
+            do {
+                await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+                let accessToken = TokenRepository.repository.accessToken ?? ""
+                let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+                
+                let pedidoFresco = try await pedidosService.buscarPedido(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    idPedido: pedido.idInterno
+                )
+                self.pedidoSeleccionado?.estado = pedidoFresco.estado
+            } catch {
+                print("Error al actualizar estado del pedido: \(error)")
+            }
+        }
+    }
+    
     func onPedidoSeleccionadoChange(pedido: Pedido?) {
         self.pedidoSeleccionado = pedido
     }

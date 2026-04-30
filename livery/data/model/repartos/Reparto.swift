@@ -1,5 +1,12 @@
 import Foundation
 
+struct ModalidadPago: Codable {
+    let tipo: String
+    var precioTotal: Double?
+    var celular: String?
+    var codigoVerificacion: String?
+}
+
 struct DireccionReparto: Codable, Equatable {
     var calle: String = ""
     var numero: String = ""
@@ -31,6 +38,8 @@ struct Reparto: Codable, Identifiable, Equatable {
     let envio: Double
     let indicaciones: String?
     let descripcion: String?
+    var celular: String?
+    var modalidadPago: ModalidadPago?
     var estado: RepartoEstadoData?
 
     var id: String {

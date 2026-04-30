@@ -7,6 +7,11 @@
 import Foundation
 import CoreLocation
 
+struct ComercioAviso: Codable {
+    var habilitado: Bool = false
+    var mensaje: String = ""
+}
+
 struct ComercioIntervalo: Codable {
     var inicio: String = ""
     var fin: String = ""
@@ -55,6 +60,7 @@ struct Comercio: Codable, Identifiable {
     var localidad: String = ""
     var nombre: String = ""
     var puntuacion: Double = 0.0
+    var aviso: ComercioAviso = ComercioAviso()
     var direccion: ComercioDireccion = ComercioDireccion()
     var envios: ComercioEnvios = ComercioEnvios()
     var horarios: [ComercioHorario]? = []

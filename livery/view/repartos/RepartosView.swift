@@ -6,6 +6,7 @@ struct RepartosView: View {
 
     @StateObject private var repartosViewModel: RepartosViewModel
     @State private var mostrarNuevoReparto = false
+    @State private var mostrarNuevaDireccion = false
 
     init(perfilUsuarioState: PerfilUsuarioState) {
         _repartosViewModel = StateObject(wrappedValue: RepartosViewModel(perfilUsuarioState: perfilUsuarioState))
@@ -76,9 +77,17 @@ struct RepartosView: View {
                 },
                 onCerrar: {
                     mostrarNuevoReparto = false
+                },
+                onNuevaDireccion: {
+                    mostrarNuevoReparto = false
+                    mostrarNuevaDireccion = true
                 }
             )
             .presentationDetents([.large])
+        }
+        .sheet(isPresented: $mostrarNuevaDireccion) {
+            DireccionView()
+                .presentationDetents([.large])
         }
     }
 }

@@ -17,7 +17,13 @@ class ItemProductoViewModel: ObservableObject {
     @Published var seleccionadosMultiples: [String: Int] = [:]
     @Published var opcionesPersonalizablesSeleccionadas: [String: String] = [:]
     
-    @Published var alternativaSeleccionada: ProductoAlternativa? = nil
+    @Published var alternativasSeleccionadas: [ProductoAlternativa] = []
+
+    var alternativaParaDescripcion: ProductoAlternativa? {
+        guard let prod = producto else { return nil }
+        let esMultiSelect = (prod.cantidadMaximaAlternativasSeleccionables ?? 1) > 1
+        return esMultiSelect ? nil : alternativasSeleccionadas.first
+    }
     
     private let productosService = ProductosService()
     
@@ -56,7 +62,7 @@ class ItemProductoViewModel: ObservableObject {
         self.itemProducto = ItemProducto(
             idProducto: producto.idInterno,
             nombreProducto: producto.nombre,
-            nombreAlternativaProducto: alternativaSeleccionada != nil ? alternativaSeleccionada?.nombreAbreviado: nil,
+            nombreAlternativaProducto: buildNombreAlternativas(),
             imagenProductoURL: producto.imagenURL ?? "",
             cantidad: self.cantidad,
             precioUnitario: precio,
@@ -81,8 +87,11 @@ class ItemProductoViewModel: ObservableObject {
     }
     
     func inicializarProductoConAlternativas(producto: Producto) {
-        if(producto.alternativas.count > 0) {
-            alternativaSeleccionada = producto.alternativas.first
+        if !producto.alternativas.isEmpty {
+            let esMultiSelect = (producto.cantidadMaximaAlternativasSeleccionables ?? 1) > 1
+            alternativasSeleccionadas = esMultiSelect ? [] : [producto.alternativas[0]]
+        } else {
+            alternativasSeleccionadas = []
         }
     }
 
@@ -147,29 +156,44 @@ class ItemProductoViewModel: ObservableObject {
         itemProducto!.seleccionables = nuevaLista ?? []
     }
     
-    func cambiarAlternativaSeleccionada(productoAlternativa: ProductoAlternativa){
-        if(producto == nil) { return }
-        
-        alternativaSeleccionada = productoAlternativa
-        
-        self.cantidad = 1
-        
-        let precio = obtenerPrecio()
-        
-        self.itemProducto = ItemProducto(
-            idProducto: producto!.idInterno,
-            nombreProducto: producto!.nombre,
-            nombreAlternativaProducto: alternativaSeleccionada != nil ? alternativaSeleccionada?.nombreAbreviado: nil,
-            imagenProductoURL: producto!.imagenURL ?? "",
-            cantidad: self.cantidad,
-            precioUnitario: precio,
-            precio: precio * Double(self.cantidad),
-            opcionesPersonalizables: buildOpcionesPersonalizables(),
-            esPremio: producto!.esPremio ?? false,
-            idPremio: producto!.idPremio,
-            contieneAlcohol: producto!.contieneAlcohol,
-            disponibleParaDelivery: buildDisponibleParaDelivery()
-        )
+    func cambiarAlternativaSeleccionada(productoAlternativa: ProductoAlternativa) {
+        guard let prod = producto else { return }
+        let maxSeleccionables = prod.cantidadMaximaAlternativasSeleccionables ?? 1
+
+        if maxSeleccionables > 1 {
+            // Multi-select: toggle en la lista
+            var actual = alternativasSeleccionadas
+            if actual.contains(where: { $0.idInterno == productoAlternativa.idInterno }) {
+                actual.removeAll { $0.idInterno == productoAlternativa.idInterno }
+            } else if actual.count < maxSeleccionables {
+                actual.append(productoAlternativa)
+            }
+            alternativasSeleccionadas = actual
+            let precio = obtenerPrecio()
+            itemProducto?.nombreAlternativaProducto = buildNombreAlternativas()
+            itemProducto?.precioUnitario = precio
+            itemProducto?.precio = precio * Double(self.cantidad)
+            itemProducto?.disponibleParaDelivery = buildDisponibleParaDelivery()
+        } else {
+            // Single-select: reemplaza la selección y reinicia cantidad
+            alternativasSeleccionadas = [productoAlternativa]
+            self.cantidad = 1
+            let precio = obtenerPrecio()
+            self.itemProducto = ItemProducto(
+                idProducto: prod.idInterno,
+                nombreProducto: prod.nombre,
+                nombreAlternativaProducto: buildNombreAlternativas(),
+                imagenProductoURL: prod.imagenURL ?? "",
+                cantidad: self.cantidad,
+                precioUnitario: precio,
+                precio: precio * Double(self.cantidad),
+                opcionesPersonalizables: buildOpcionesPersonalizables(),
+                esPremio: prod.esPremio ?? false,
+                idPremio: prod.idPremio,
+                contieneAlcohol: prod.contieneAlcohol,
+                disponibleParaDelivery: buildDisponibleParaDelivery()
+            )
+        }
     }
     
     func aumentarCantidad() {
@@ -247,19 +271,22 @@ class ItemProductoViewModel: ObservableObject {
         }
     }
     
-    private func obtenerPrecio() -> Double {
-        if(producto == nil) { return 0 }
+    private func buildNombreAlternativas() -> String? {
+        let nombres = alternativasSeleccionadas.map { $0.nombreAbreviado }.joined(separator: " / ")
+        return nombres.isEmpty ? nil : nombres
+    }
 
-        let esPremio: Bool = producto?.esPremio ?? false
-        
-        if(alternativaSeleccionada != nil && !esPremio){
-            return alternativaSeleccionada!.precio
+    private func obtenerPrecio() -> Double {
+        guard let prod = producto else { return 0 }
+        let esPremio = prod.esPremio ?? false
+        if !alternativasSeleccionadas.isEmpty && !esPremio {
+            return alternativasSeleccionadas.reduce(0) { $0 + $1.precio }
         } else {
-            return producto!.precio
+            return prod.precio
         }
     }
 
     private func buildDisponibleParaDelivery() -> Bool? {
-        return alternativaSeleccionada?.disponibleParaDelivery == false ? false : nil
+        return alternativasSeleccionadas.contains(where: { $0.disponibleParaDelivery == false }) ? false : nil
     }
 }

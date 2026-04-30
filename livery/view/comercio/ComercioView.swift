@@ -8,23 +8,35 @@ import SwiftUI
 
 struct ComercioView: View {
     @StateObject var comercioViewModel : ComercioViewModel
+    @Environment(\.scenePhase) var scenePhase
     
     var body: some View {
-        if let comercio = comercioViewModel.comercio {
-            VStack {
-                Portada(comercio: comercio)
-                Spacer().frame(height: 8)
-                InformacionExtra(comercio: comercio)
-                Spacer().frame(height: 8)
-                Productos(comercioViewModel: comercioViewModel)
-                Spacer()
+        ZStack(alignment: .bottom) {
+            if let comercio = comercioViewModel.comercio {
+                VStack {
+                    Portada(comercio: comercio)
+                    Spacer().frame(height: 8)
+                    InformacionExtra(comercio: comercio)
+                    Spacer().frame(height: 8)
+                    Productos(comercioViewModel: comercioViewModel)
+                    Spacer()
+                }
+                .background(Color.blanco)
+                .ignoresSafeArea(edges: .top)
+
+                BannerAviso(comercioViewModel: comercioViewModel)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 92)
+            } else {
+                ProgressView()
+                    .tint(.verdePrincipal)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .background(Color.blanco)
-            .ignoresSafeArea(edges: .top)
-        } else {
-            ProgressView()
-                .tint(.verdePrincipal)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                comercioViewModel.refreshCategoriasYPromociones()
+            }
         }
     }
 }
@@ -124,8 +136,8 @@ struct ComercioTitulo: View {
                             Text(comercio.categoriasPrincipalesToString())
                                 .font(.custom("Barlow", size: 14))
                                 .foregroundColor(.negro)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         
                         if mostrarSubtituloDistancia, let distancia = comercio.distanciaUsuario, distancia > 0 {
@@ -208,12 +220,39 @@ struct InformacionExtra: View {
     }
 }
 
+struct BannerAviso: View {
+    @ObservedObject var comercioViewModel: ComercioViewModel
+
+    var body: some View {
+        let aviso = comercioViewModel.comercio?.aviso
+        if aviso?.habilitado == true, let mensaje = aviso?.mensaje, !mensaje.isEmpty {
+            HStack(spacing: 10) {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .resizable()
+                    .frame(width: 28, height: 28)
+                    .foregroundColor(.white)
+                Text(mensaje)
+                    .font(.custom("Barlow", size: 13))
+                    .bold()
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(Color.verdePrincipal)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+        }
+    }
+}
+
 struct Productos: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
 
     var body: some View {
         if let comercio = comercioViewModel.comercio {
             let mostrarPromociones = !comercio.promociones.isEmpty && comercio.hayPromocionesDisponibles()
+
+            let avisoHabilitado = comercio.aviso.habilitado && !comercio.aviso.mensaje.isEmpty
 
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 0) {
@@ -259,6 +298,10 @@ struct Productos: View {
                                 }
                             }
                         }
+                    }
+
+                    if avisoHabilitado {
+                        Spacer().frame(height: 64)
                     }
                 }
             }

@@ -327,7 +327,7 @@ struct BottomSheetSeleccionProducto: View {
 
                     let esMultiSelect = (producto.cantidadMaximaAlternativasSeleccionables ?? 1) > 1
                     CantidadUnidadesYPrecio(
-                        cambioUnidadesHabilitado: esMultiSelect ? false : true,
+                        cambioUnidadesHabilitado: true,
                         cantidad: itemProductoViewModel.cantidad,
                         precio: item?.precio,
                         onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },

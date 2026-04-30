@@ -23,8 +23,8 @@ class PerfilUsuarioState: ObservableObject {
     @Published var idDireccionSeleccionada: String? = nil
     @Published var ciudadSeleccionada: String? = nil
 
-    /// `true` cuando el usuario no tiene sesión de Firebase activa (modo invitado con datos ficticios).
-    var esInvitado: Bool { currentUser == nil }
+    /// `true` cuando no hay sesión real: sin usuario o usuario anónimo de Firebase.
+    var esInvitado: Bool { currentUser?.isAnonymous ?? true }
 
     var categoriaSeleccionadaHome: String? = nil
     
@@ -74,20 +74,23 @@ class PerfilUsuarioState: ObservableObject {
         self.currentUser = firebaseUser
         
         if let user = firebaseUser {
+            // Los usuarios anónimos solo necesitan el token para la API;
+            // no tienen perfil en el backend, así que no buscamos usuario.
+            guard !user.isAnonymous else { return }
+
             do {
                 // Intentamos obtener el token.
                 // Si expiró, Firebase lo refresca automáticamente aquí.
-                var token = try await user.getIDToken(forcingRefresh: false)
+                let _ = try await user.getIDToken(forcingRefresh: false)
                 print("Token validado/refrescado correctamente")
                 
-                // 2. Una vez que el token es seguro, buscamos al usuario en TU backend
+                // Una vez que el token es seguro, buscamos al usuario en el backend
                 await buscarUsuario()
                 
             } catch {
                 print("Sesión de Firebase expirada o inválida: \(error.localizedDescription)")
                 self.usuario = nil
                 self.currentUser = nil
-                // Aquí podrías marcar logueado = false si el error es de autenticación
             }
         } else {
             // No hay usuario en Firebase
@@ -264,7 +267,8 @@ class PerfilUsuarioState: ObservableObject {
     
     // MARK: - Usuario Invitado (modo sin sesión)
 
-    /// Configura un perfil ficticio con dirección en Chajarí para permitir navegar sin login.
+    /// Configura un perfil ficticio con dirección en Chajarí y hace sign-in anónimo
+    /// en Firebase para que la app pueda obtener tokens y llamar al backend.
     func configurarUsuarioInvitado() {
         let idDireccionDefault = "_invitado_default_"
         let coordenadasChajari = Point(coordinates: [-30.758463452217256, -57.98012148325772])
@@ -283,6 +287,20 @@ class PerfilUsuarioState: ObservableObject {
         )
         self.idDireccionSeleccionada = idDireccionDefault
         self.ciudadSeleccionada = "Chajarí"
+
+        // Iniciar sesión anónima en Firebase para poder obtener tokens y llamar al backend.
+        // Los usuarios anónimos tienen UID válido pero sin email.
+        Task {
+            if Auth.auth().currentUser == nil {
+                do {
+                    let result = try await Auth.auth().signInAnonymously()
+                    self.currentUser = result.user
+                    print("Sesión anónima iniciada: \(result.user.uid)")
+                } catch {
+                    print("Error iniciando sesión anónima: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     func eliminarDireccion(idDireccion: String) async {

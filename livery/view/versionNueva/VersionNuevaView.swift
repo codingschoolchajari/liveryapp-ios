@@ -34,7 +34,7 @@ struct CuadroVersionNueva: View {
             Image("icono_app_store")
                 .resizable()
                 .scaledToFit()
-                .frame(height: 40)
+                .frame(height: 48)
                 .onTapGesture {
                     if let urlStr = url, !urlStr.isEmpty, let appStoreURL = URL(string: urlStr) {
                         UIApplication.shared.open(appStoreURL)

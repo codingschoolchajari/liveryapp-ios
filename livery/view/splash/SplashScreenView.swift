@@ -31,6 +31,17 @@ struct SplashScreenView: View {
                     // No hay sesión → awaitar configuración completa del invitado
                     // (sign-in anónimo + estado) y luego navegar.
                     await perfilUsuarioState.configurarUsuarioInvitado()
+
+                    // Verificar nueva versión antes de navegar a main
+                    if let config = perfilUsuarioState.configuracion {
+                        let versionRequerida = config.plataformas.versionIOS
+                        let versionApp = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+                        if !versionRequerida.isEmpty && hayNuevaVersionDisponible(versionApp: versionApp, versionRequerida: versionRequerida) {
+                            navManager.replaceRoot(with: .versionNueva)
+                            return
+                        }
+                    }
+
                     navManager.replaceRoot(with: .main)
                     navManager.select(.home)
                 }

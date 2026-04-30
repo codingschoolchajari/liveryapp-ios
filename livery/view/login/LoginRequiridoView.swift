@@ -21,7 +21,7 @@ struct LoginRequiridoView: View {
 
             Spacer().frame(height: 24)
 
-            Text("Para acceder a esta funcionalidad necesitamos que inicies sesión")
+            Text("Para acceder a esta funcionalidad es necesario iniciar sesión")
                 .font(.custom("Barlow", size: 20))
                 .bold()
                 .foregroundColor(.negro)

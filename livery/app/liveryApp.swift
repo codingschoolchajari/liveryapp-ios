@@ -58,16 +58,10 @@ struct RootContainerView: View {
         }
 
         guard logueado else {
-            // Usuario no logueado → modo invitado, mostrar home sin forzar login
-            if perfilUsuarioState.usuario == nil {
-                Task {
-                    await perfilUsuarioState.configurarUsuarioInvitado()
-                    if navManager.currentPhase != .main {
-                        navManager.replaceRoot(with: .main)
-                        navManager.select(.home)
-                    }
-                }
-            } else if navManager.currentPhase != .main {
+            // Usuario no logueado → si el usuario invitado ya está configurado
+            // (lo hace SplashScreen o signOut), simplemente navegar a main.
+            // No lanzamos configurarUsuarioInvitado() aquí para evitar race conditions.
+            if perfilUsuarioState.usuario != nil, navManager.currentPhase != .main {
                 navManager.replaceRoot(with: .main)
                 navManager.select(.home)
             }

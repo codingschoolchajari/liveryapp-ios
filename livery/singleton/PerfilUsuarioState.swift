@@ -270,6 +270,22 @@ class PerfilUsuarioState: ObservableObject {
     /// Configura un perfil ficticio con dirección en Chajarí y hace sign-in anónimo
     /// en Firebase para que la app pueda obtener tokens y llamar al backend.
     func configurarUsuarioInvitado() async {
+        // 1. Primero completar el sign-in anónimo para que el token esté listo
+        //    antes de que los observers disparen la carga de datos.
+        if Auth.auth().currentUser == nil {
+            do {
+                let result = try await Auth.auth().signInAnonymously()
+                self.currentUser = result.user
+                print("Sesión anónima iniciada: \(result.user.uid)")
+            } catch {
+                print("Error iniciando sesión anónima: \(error.localizedDescription)")
+            }
+        } else if let existing = Auth.auth().currentUser, existing.isAnonymous {
+            self.currentUser = existing
+        }
+
+        // 2. Solo después asignar el estado — así cuando HomeViewModel observe
+        //    ciudadSeleccionada, el token ya está disponible.
         let idDireccionDefault = "_invitado_default_"
         let coordenadasChajari = Point(coordinates: [-30.758463452217256, -57.98012148325772])
         let direccionDefault = UsuarioDireccion(
@@ -287,20 +303,6 @@ class PerfilUsuarioState: ObservableObject {
         )
         self.idDireccionSeleccionada = idDireccionDefault
         self.ciudadSeleccionada = "Chajarí"
-
-        // Awaitar el sign-in anónimo para que currentUser esté listo antes de
-        // que el HomeViewModel intente obtener tokens.
-        if Auth.auth().currentUser == nil {
-            do {
-                let result = try await Auth.auth().signInAnonymously()
-                self.currentUser = result.user
-                print("Sesión anónima iniciada: \(result.user.uid)")
-            } catch {
-                print("Error iniciando sesión anónima: \(error.localizedDescription)")
-            }
-        } else if let existing = Auth.auth().currentUser, existing.isAnonymous {
-            self.currentUser = existing
-        }
     }
 
     func eliminarDireccion(idDireccion: String) async {

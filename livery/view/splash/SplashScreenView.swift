@@ -28,10 +28,15 @@ struct SplashScreenView: View {
                         navManager.replaceRoot(with: .auth)
                     }
                 } else {
-                    // No hay sesión → configurar perfil invitado y mostrar home
+                    // No hay sesión → configurar perfil invitado y mostrar home.
+                    // configurarUsuarioInvitado() setea usuario al final, lo que dispara
+                    // navegarSegunEstadoActual() en RootContainerView y navega a .main.
+                    // El guard evita una segunda llamada redundante.
                     await perfilUsuarioState.configurarUsuarioInvitado()
-                    navManager.replaceRoot(with: .main)
-                    navManager.select(.home)
+                    if navManager.currentPhase != .main {
+                        navManager.replaceRoot(with: .main)
+                        navManager.select(.home)
+                    }
                 }
             }
         }

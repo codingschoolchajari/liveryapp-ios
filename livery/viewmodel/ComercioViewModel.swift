@@ -53,15 +53,14 @@ class ComercioViewModel: ObservableObject {
                 let accessToken = TokenRepository.repository.accessToken ?? ""
                 let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
                 
-                if let fresco = try await comerciosService.buscarComercio(
+                let fresco = try await comerciosService.buscarComercio(
                     token: accessToken,
                     dispositivoID: dispositivoID,
                     idInterno: idComercio
-                ) {
-                    self.comercio?.categorias = fresco.categorias
-                    self.comercio?.promociones = fresco.promociones
-                    self.comercio?.aviso = fresco.aviso
-                }
+                )
+                self.comercio?.categorias = fresco.categorias
+                self.comercio?.promociones = fresco.promociones
+                self.comercio?.aviso = fresco.aviso
             } catch {
                 print("Error al refrescar categorias y promociones: \(error)")
             }

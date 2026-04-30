@@ -1,6 +1,6 @@
 import Foundation
 
-struct ModalidadPago: Codable {
+struct ModalidadPago: Codable, Equatable {
     let tipo: String
     var precioTotal: Double?
     var celular: String?

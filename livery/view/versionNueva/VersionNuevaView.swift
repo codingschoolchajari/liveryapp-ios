@@ -31,24 +31,15 @@ struct CuadroVersionNueva: View {
                 .scaledToFit()
                 .frame(height: 180)
 
-            Button(action: {
-                if let urlStr = url, !urlStr.isEmpty, let appStoreURL = URL(string: urlStr) {
-                    UIApplication.shared.open(appStoreURL)
+            Image("icono_app_store")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 56)
+                .onTapGesture {
+                    if let urlStr = url, !urlStr.isEmpty, let appStoreURL = URL(string: urlStr) {
+                        UIApplication.shared.open(appStoreURL)
+                    }
                 }
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "apple.logo")
-                        .font(.system(size: 22))
-                    Text("App Store")
-                        .font(.custom("Barlow", size: 18))
-                        .bold()
-                }
-                .foregroundColor(.white)
-                .frame(height: 50)
-                .frame(maxWidth: .infinity)
-                .background(Color.verdePrincipal)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            }
         }
         .padding(24)
         .background(Color.white)

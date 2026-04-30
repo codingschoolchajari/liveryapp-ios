@@ -10,6 +10,8 @@ import SwiftUI
 struct LoginRequiridoView: View {
     let onDismiss: () -> Void
 
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 32)
@@ -44,5 +46,10 @@ struct LoginRequiridoView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.blanco)
+        .onChange(of: perfilUsuarioState.esInvitado) { _, esInvitado in
+            if !esInvitado {
+                onDismiss()
+            }
+        }
     }
 }

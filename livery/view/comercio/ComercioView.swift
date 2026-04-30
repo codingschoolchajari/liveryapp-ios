@@ -26,7 +26,7 @@ struct ComercioView: View {
 
                 BannerAviso(comercioViewModel: comercioViewModel)
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 92)
+                    .padding(.bottom, 8)
             } else {
                 ProgressView()
                     .tint(.verdePrincipal)
@@ -240,7 +240,7 @@ struct BannerAviso: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(Color.verdePrincipal)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 }

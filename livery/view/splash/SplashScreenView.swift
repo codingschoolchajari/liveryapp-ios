@@ -29,7 +29,7 @@ struct SplashScreenView: View {
                     }
                 } else {
                     // No hay sesión → configurar perfil invitado y mostrar home
-                    perfilUsuarioState.configurarUsuarioInvitado()
+                    await perfilUsuarioState.configurarUsuarioInvitado()
                     navManager.replaceRoot(with: .main)
                     navManager.select(.home)
                 }

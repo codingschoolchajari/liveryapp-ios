@@ -125,11 +125,11 @@ class LoginViewModel: ObservableObject {
         do {
             try Auth.auth().signOut()
 
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 perfilUsuarioState.usuario = nil
                 perfilUsuarioState.currentUser = nil
                 UserDefaults.standard.set(false, forKey: "logueado")
-                perfilUsuarioState.configurarUsuarioInvitado()
+                await perfilUsuarioState.configurarUsuarioInvitado()
                 navManager.replaceRoot(with: .main)
             }
 

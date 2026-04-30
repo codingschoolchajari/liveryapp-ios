@@ -333,7 +333,7 @@ struct PersonalizablesSelector: View {
                         ForEach(opcionesDisponibles) { opcion in
                             let seleccionada = opcionesSeleccionadas[personalizable.idInterno] == opcion.idInterno
 
-                            HStack(alignment: .center, spacing: 12) {
+                            HStack(alignment: .center, spacing: 0) {
                                 Text(opcion.nombre)
                                     .font(.custom("Barlow", size: 14))
                                     .foregroundColor(.negro)
@@ -343,6 +343,7 @@ struct PersonalizablesSelector: View {
                                     seleccionado: seleccionada,
                                     color: seleccionada ? .verdePrincipal : .grisTerciario
                                 )
+                                .frame(width: 40, height: 28, alignment: .center)
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {

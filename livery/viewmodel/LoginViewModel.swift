@@ -119,19 +119,20 @@ class LoginViewModel: ObservableObject {
     
     // Método para desloguearse
     func signOut(
-        perfilUsuarioState: PerfilUsuarioState
+        perfilUsuarioState: PerfilUsuarioState,
+        navManager: NavigationManager
     ) {
         do {
             try Auth.auth().signOut()
-            
-            // IMPORTANTE: Limpiar el estado en memoria
+
             DispatchQueue.main.async {
                 perfilUsuarioState.usuario = nil
                 perfilUsuarioState.currentUser = nil
-                // Aquí reseteamos el flag que observa el RootContainer
                 UserDefaults.standard.set(false, forKey: "logueado")
+                perfilUsuarioState.configurarUsuarioInvitado()
+                navManager.replaceRoot(with: .main)
             }
-            
+
             print("Usuario deslogueado y estado limpiado")
         } catch let error as NSError {
             print("Error al desloguear: \(error)")

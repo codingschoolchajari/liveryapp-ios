@@ -151,6 +151,7 @@ struct TituloSeccion: View {
 
 struct SeccionSesion: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @EnvironmentObject var navManager: NavigationManager
     @StateObject private var loginViewModel = LoginViewModel()
     
     var body: some View {
@@ -160,7 +161,8 @@ struct SeccionSesion: View {
             
             Button {
                 loginViewModel.signOut(
-                    perfilUsuarioState: perfilUsuarioState
+                    perfilUsuarioState: perfilUsuarioState,
+                    navManager: navManager
                 )
             } label: {
                 HStack(spacing: 12) {

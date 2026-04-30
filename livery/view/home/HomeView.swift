@@ -101,11 +101,7 @@ struct FranjaPrincipal: View {
     var body: some View {
         HStack {
             Button {
-                if !perfilUsuarioState.esInvitado {
-                    mostrarDirecciones = true
-                } else {
-                    mostrarLoginRequerido = true
-                }
+                mostrarDirecciones = true
             } label: {
                 HStack(spacing: 6) {
                     Text(
@@ -595,6 +591,7 @@ struct BottomSheetDirecciones: View {
     let onDireccionSeleccionada: () -> Void
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @State private var mostrarLoginRequerido = false
     
     var direcciones: [UsuarioDireccion] {
         perfilUsuarioState.usuario?.direcciones ?? []
@@ -608,7 +605,11 @@ struct BottomSheetDirecciones: View {
                 .bold()
             
             Button {
-                onNuevaDireccion()
+                if !perfilUsuarioState.esInvitado {
+                    onNuevaDireccion()
+                } else {
+                    mostrarLoginRequerido = true
+                }
             } label: {
                 HStack(spacing: 6) {
                     Image("icono_add")
@@ -665,6 +666,12 @@ struct BottomSheetDirecciones: View {
         }
         .padding()
         .background(Color.blanco)
+        .sheet(isPresented: $mostrarLoginRequerido) {
+            LoginRequiridoView {
+                mostrarLoginRequerido = false
+            }
+            .presentationDetents([.fraction(0.75)])
+        }
     }
 }
 

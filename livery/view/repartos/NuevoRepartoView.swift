@@ -905,11 +905,6 @@ private struct SeccionVerificacionWhatsAppView: View {
     }
 }
 
-    let onRepartoCreado: () -> Void
-    let onCerrar: () -> Void
-
-    @StateObject private var viewModel: NuevoRepartoViewModel
-    @State private var tabSeleccionada = 0
     @State private var mostrarDireccionesUsuario = false
     @State private var mostrarDialogoValidacion = false
     @State private var faltantesValidacion: [String] = []

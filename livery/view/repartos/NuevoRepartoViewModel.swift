@@ -419,12 +419,6 @@ class NuevoRepartoViewModel: ObservableObject {
     }
 }
 
-
-    init(perfilUsuarioState: PerfilUsuarioState) {
-        self.perfilUsuarioState = perfilUsuarioState
-        inicializarDatos()
-    }
-
     func inicializarDatos() {
         direccionesUsuario = perfilUsuarioState.usuario?.direcciones ?? []
 

@@ -305,7 +305,7 @@ class PerfilUsuarioState: ObservableObject {
             direcciones: [direccionDefault]
         )
         self.idDireccionSeleccionada = idDireccionDefault
-        self.ciudadSeleccionada = "Chajarí"
+        self.ciudadSeleccionada = "chajari_entre-rios"
         print("[Invitado] Estado seteado. currentUser=\(String(describing: self.currentUser?.uid)), ciudad=\(self.ciudadSeleccionada ?? "nil")")
     }
 

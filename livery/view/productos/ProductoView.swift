@@ -262,6 +262,15 @@ struct BottomSheetSeleccionProducto: View {
                             )
                         }
                     )
+
+                    let tieneAlternativas = !producto.alternativas.isEmpty && !esPremio
+                    let tieneSeleccionables = (producto.cantidadMinimaSeleccionables ?? 0) > 0 && categoria.seleccionables != nil
+                    if tieneAlternativas || tieneSeleccionables {
+                        Divider()
+                            .frame(height: 3)
+                            .overlay(Color.gray.opacity(0.3))
+                            .padding(.top, 8)
+                    }
                 }
 
                 Spacer().frame(height: 12)

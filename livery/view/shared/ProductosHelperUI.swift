@@ -349,7 +349,6 @@ struct PersonalizablesSelector: View {
                             .onTapGesture {
                                 onSeleccionarOpcion(personalizable.idInterno, opcion.idInterno)
                             }
-                            .padding(.bottom, 4)
                         }
                     }
                 }

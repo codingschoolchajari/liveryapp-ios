@@ -21,18 +21,10 @@ struct LoginRequiridoView: View {
 
             Spacer().frame(height: 24)
 
-            Text("Para continuar necesitás iniciar sesión")
+            Text("Para acceder a esta funcionalidad necesitamos que inicies sesión")
                 .font(.custom("Barlow", size: 20))
                 .bold()
                 .foregroundColor(.negro)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-
-            Spacer().frame(height: 8)
-
-            Text("Creá tu cuenta o ingresá con Apple para acceder a todas las funciones.")
-                .font(.custom("Barlow", size: 15))
-                .foregroundColor(.grisSecundario)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 

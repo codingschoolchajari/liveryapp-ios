@@ -122,13 +122,18 @@ class HomeViewModel: ObservableObject {
             !noHayMasComercios,
             let categoria = categoriaSeleccionada,
             let ciudad = perfilUsuarioState.ciudadSeleccionada
-        else { return }
+        else {
+            print("[Home] cargarMasComercios guard falló: cargando=\(cargandoComercios), noHayMas=\(noHayMasComercios), categoria=\(String(describing: categoriaSeleccionada)), ciudad=\(String(describing: perfilUsuarioState.ciudadSeleccionada))")
+            return
+        }
 
+        print("[Home] Cargando comercios: ciudad=\(ciudad), categoria=\(categoria), pagina=\(paginaActualComercios)")
         cargandoComercios = true
 
         do {
             await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
             let accessToken = TokenRepository.repository.accessToken ?? ""
+            print("[Home] accessToken para comercios: \(accessToken.isEmpty ? "VACIO" : "OK (\(accessToken.prefix(20))...)")")
             
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             
@@ -149,17 +154,17 @@ class HomeViewModel: ObservableObject {
 
             if nuevos.isEmpty {
                 noHayMasComercios = true
+                print("[Home] No hay más comercios para ciudad=\(ciudad), categoria=\(categoria)")
             } else {
-                // Ordenar por distancia (calculada por el backend)
                 nuevos.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
-                
                 comercios += nuevos
                 paginaActualComercios += 1
+                print("[Home] Cargados \(nuevos.count) comercios. Total: \(comercios.count)")
             }
 
             cargandoComercios = false
         } catch {
-            print("Error cargando más comercios: \(error)")
+            print("[Home] Error cargando comercios: \(error)")
             cargandoComercios = false
         }
     }

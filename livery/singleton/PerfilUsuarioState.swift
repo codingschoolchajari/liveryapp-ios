@@ -276,12 +276,15 @@ class PerfilUsuarioState: ObservableObject {
             do {
                 let result = try await Auth.auth().signInAnonymously()
                 self.currentUser = result.user
-                print("Sesión anónima iniciada: \(result.user.uid)")
+                print("[Invitado] Sesión anónima iniciada: \(result.user.uid)")
             } catch {
-                print("Error iniciando sesión anónima: \(error.localizedDescription)")
+                print("[Invitado] Error iniciando sesión anónima: \(error.localizedDescription)")
             }
         } else if let existing = Auth.auth().currentUser, existing.isAnonymous {
             self.currentUser = existing
+            print("[Invitado] Reutilizando sesión anónima existente: \(existing.uid)")
+        } else if let existing = Auth.auth().currentUser {
+            print("[Invitado] currentUser existente NO es anónimo: \(existing.uid), isAnonymous=\(existing.isAnonymous)")
         }
 
         // 2. Solo después asignar el estado — así cuando HomeViewModel observe
@@ -303,6 +306,7 @@ class PerfilUsuarioState: ObservableObject {
         )
         self.idDireccionSeleccionada = idDireccionDefault
         self.ciudadSeleccionada = "Chajarí"
+        print("[Invitado] Estado seteado. currentUser=\(String(describing: self.currentUser?.uid)), ciudad=\(self.ciudadSeleccionada ?? "nil")")
     }
 
     func eliminarDireccion(idDireccion: String) async {

@@ -35,11 +35,16 @@ class TokenRepository {
     func validarToken(perfilUsuarioState: PerfilUsuarioState) async {
         do {
             if !isTokenActive(token: self.accessToken) {
+                print("[Token] accessToken inactivo, solicitando nuevo...")
                 if let firebaseIdToken = await perfilUsuarioState.obtenerFirebaseIdToken() {
+                    print("[Token] Firebase ID Token obtenido, solicitando accessToken...")
                     await solicitarToken(firebaseIdToken: firebaseIdToken)
+                    print("[Token] accessToken resultado: \(self.accessToken != nil ? "OK" : "nil")")
                 } else {
-                    print("ERROR: No se pudo obtener Firebase ID Token")
+                    print("[Token] ERROR: No se pudo obtener Firebase ID Token")
                 }
+            } else {
+                print("[Token] accessToken vigente, reutilizando")
             }
         }
     }

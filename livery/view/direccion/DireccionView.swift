@@ -409,7 +409,7 @@ struct FormularioDireccionView: View {
                         get: { numero },
                         set: { onNumeroChange($0) }
                     ),
-                    prompt: Text("Número de Celular")
+                    prompt: Text("Sin 0 y sin 15")
                         .foregroundColor(.grisSecundario)
                         .font(.custom("Barlow", size: 16))
                 ) {}

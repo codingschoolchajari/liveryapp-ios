@@ -441,7 +441,7 @@ struct FormularioDireccionView: View {
                 .foregroundColor(.negro)
                 .tint(.verdePrincipal)
                 .padding(12)
-                .frame(maxWidth: .infinity, height: 48)
+                .frame(maxWidth: .infinity)
                 .background(Color.blanco)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)

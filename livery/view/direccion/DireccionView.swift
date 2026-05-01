@@ -436,28 +436,25 @@ struct FormularioDireccionView: View {
             @State private var expanded = false
 
             var body: some View {
-                ZStack(alignment: .topLeading) {
-                    // Botón principal
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            expanded.toggle()
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            BanderaView(iso: paisActual.iso)
-                            Text(paisActual.codigo)
-                                .font(.custom("Barlow", size: 13))
-                                .bold()
-                                .foregroundColor(.negro)
-                            Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                                .font(.system(size: 10))
-                                .foregroundColor(.grisSecundario)
-                        }
-                        .frame(width: 80, height: 48)
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.grisSecundario, lineWidth: 1))
+                Button {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        expanded.toggle()
                     }
-
-                    // Lista desplegable
+                } label: {
+                    HStack(spacing: 4) {
+                        BanderaView(iso: paisActual.iso)
+                        Text(paisActual.codigo)
+                            .font(.custom("Barlow", size: 13))
+                            .bold()
+                            .foregroundColor(.negro)
+                        Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 10))
+                            .foregroundColor(.grisSecundario)
+                    }
+                    .frame(width: 80, height: 48)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.grisSecundario, lineWidth: 1))
+                }
+                .overlay(alignment: .topLeading) {
                     if expanded {
                         VStack(spacing: 0) {
                             ForEach(paises) { p in

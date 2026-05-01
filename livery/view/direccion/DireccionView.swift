@@ -402,7 +402,22 @@ struct FormularioDireccionView: View {
                         Button {
                             onPaisChange(p.codigo)
                         } label: {
-                            Text("\(p.iso) \(p.codigo)")
+                            HStack(spacing: 8) {
+                                AsyncImage(url: URL(string: "https://flagcdn.com/80x60/\(p.iso.lowercased()).png")) { phase in
+                                    if let image = phase.image {
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 20, height: 15)
+                                            .clipShape(RoundedRectangle(cornerRadius: 2))
+                                    } else {
+                                        Color.grisSurface
+                                            .frame(width: 20, height: 15)
+                                            .clipShape(RoundedRectangle(cornerRadius: 2))
+                                    }
+                                }
+                                Text("\(p.iso) \(p.codigo)")
+                            }
                         }
                     }
                 } label: {

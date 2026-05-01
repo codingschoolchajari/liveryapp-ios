@@ -381,15 +381,15 @@ private struct PasoComercioView: View {
             .padding(.horizontal, 30)
 
             // Buscador (solo en modo búsqueda)
-            if !viewModel.modoManual {
-                PlacesSearchBar(
-                    coordenadasInicialesGPS: viewModel.coordenadasDestino,
-                    soloDirecciones: false,
-                    placeholder: "Buscar Dirección / Comercio"
-                ) { place in
-                    viewModel.actualizarDesdePlace(place)
-                }
+            PlacesSearchBar(
+                coordenadasInicialesGPS: viewModel.coordenadasDestino,
+                soloDirecciones: false,
+                placeholder: "Buscar Dirección / Comercio"
+            ) { place in
+                viewModel.actualizarDesdePlace(place)
             }
+            .opacity(viewModel.modoManual ? 0 : 1)
+            .allowsHitTesting(!viewModel.modoManual)
 
             // Calle y Número
             GeometryReader { geo in
@@ -427,15 +427,17 @@ private struct PasoComercioView: View {
                         TextField(
                             text: Binding(
                                 get: { viewModel.numero },
-                                set: { if viewModel.modoManual { viewModel.numero = $0 } }
+                                set: { viewModel.numero = $0 }
                             ),
                             prompt: Text("").foregroundColor(.grisSecundario)
                         ) { EmptyView() }
                             .font(.custom("Barlow", size: 16))
                             .foregroundColor(.negro)
-                            .disabled(!viewModel.modoManual)
+                            .disabled(viewModel.modoManual ? false : viewModel.calle.isEmpty)
                             .padding(10)
-                            .background(viewModel.modoManual ? Color.blanco : Color.grisSecundario.opacity(0.15))
+                            .background(
+                                (viewModel.modoManual || !viewModel.calle.isEmpty) ? Color.blanco : Color.grisSecundario.opacity(0.15)
+                            )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(Color.grisSecundario, lineWidth: 1)

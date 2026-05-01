@@ -71,26 +71,11 @@ struct NuevoRepartoView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            HStack {
-                Color.clear.frame(width: 32, height: 32)
-                Spacer()
-                Text("Solicitar Nuevo Mandado")
-                    .font(.custom("Barlow", size: 18))
-                    .bold()
-                    .foregroundColor(.negro)
-                    .multilineTextAlignment(.center)
-                Spacer()
-                Button(action: onCerrar) {
-                    ZStack {
-                        Circle()
-                            .stroke(Color.negro, lineWidth: 2)
-                            .frame(width: 32, height: 32)
-                        Image("icono_cerrar")
-                            .resizable()
-                            .frame(width: 32, height: 32)
-                    }
-                }
-            }
+            Text("Solicitar Nuevo Mandado")
+                .font(.custom("Barlow", size: 18))
+                .bold()
+                .foregroundColor(.negro)
+                .frame(maxWidth: .infinity, alignment: .center)
             .padding(.horizontal, 16)
             .padding(.top, 16)
             .padding(.bottom, 8)
@@ -290,48 +275,50 @@ private struct PasoDireccionUsuarioView: View {
                     .cornerRadius(12)
                 }
                 .buttonStyle(.plain)
-
-                // Lista desplegable
-                if expandirDirecciones {
-                    Spacer().frame(height: 4)
-                    VStack(spacing: 0) {
-                        ForEach(Array(viewModel.direccionesUsuario.enumerated()), id: \.element.id) { index, direccion in
-                            let seleccionada = direccion.id == idSeleccionada
-                            Button {
-                                viewModel.onDireccionUsuarioSeleccionadaChange(idDireccion: direccion.id)
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    expandirDirecciones = false
+                .overlay(alignment: .topLeading) {
+                    if expandirDirecciones {
+                        VStack(spacing: 0) {
+                            ForEach(Array(viewModel.direccionesUsuario.enumerated()), id: \.element.id) { index, direccion in
+                                let seleccionada = direccion.id == idSeleccionada
+                                Button {
+                                    viewModel.onDireccionUsuarioSeleccionadaChange(idDireccion: direccion.id)
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        expandirDirecciones = false
+                                    }
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        Circle()
+                                            .stroke(seleccionada ? Color.verdePrincipal : Color.grisSecundario, lineWidth: 2)
+                                            .background(
+                                                Circle().fill(seleccionada ? Color.verdePrincipal : Color.clear)
+                                            )
+                                            .frame(width: 18, height: 18)
+                                        Text(StringUtils.formatearDireccion(direccion.calle, direccion.numero, direccion.departamento))
+                                            .font(.custom("Barlow", size: 15))
+                                            .foregroundColor(.negro)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(seleccionada ? Color.verdePrincipal.opacity(0.08) : Color.blanco)
                                 }
-                            } label: {
-                                HStack(spacing: 12) {
-                                    Circle()
-                                        .stroke(seleccionada ? Color.verdePrincipal : Color.grisSecundario, lineWidth: 2)
-                                        .background(
-                                            Circle().fill(seleccionada ? Color.verdePrincipal : Color.clear)
-                                        )
-                                        .frame(width: 18, height: 18)
-                                    Text(StringUtils.formatearDireccion(direccion.calle, direccion.numero, direccion.departamento))
-                                        .font(.custom("Barlow", size: 15))
-                                        .foregroundColor(.negro)
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(seleccionada ? Color.verdePrincipal.opacity(0.08) : Color.blanco)
-                            }
-                            .buttonStyle(.plain)
+                                .buttonStyle(.plain)
 
-                            if index < viewModel.direccionesUsuario.count - 1 {
-                                Divider()
+                                if index < viewModel.direccionesUsuario.count - 1 {
+                                    Divider()
+                                }
                             }
                         }
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blanco)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.grisSecundario, lineWidth: 1))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .shadow(radius: 4)
+                        .offset(y: 52)
+                        .zIndex(10)
                     }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-                    .cornerRadius(12)
                 }
+                .zIndex(expandirDirecciones ? 10 : 0)
             }
 
             Spacer().frame(height: 16)

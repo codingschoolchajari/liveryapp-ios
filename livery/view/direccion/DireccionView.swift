@@ -86,33 +86,33 @@ struct FormularioDireccionView: View {
                             direccionViewModel.seleccionarModo(manual: false)
                         } label: {
                             Text("Buscar Dirección")
-                                .font(.custom("Barlow", size: 14))
+                                .font(.custom("Barlow", size: 11))
                                 .bold()
-                                .foregroundColor(.blanco)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(!direccionViewModel.modoManual ? Color.verdePrincipal : Color.grisSecundario)
+                                .foregroundColor(!direccionViewModel.modoManual ? Color.blanco : Color.grisSecundario)
+                                .frame(maxWidth: .infinity, minHeight: 30, maxHeight: 30)
+                                .background(!direccionViewModel.modoManual ? Color.verdePrincipal : Color.blanco)
                         }
                         Button {
                             direccionViewModel.seleccionarModo(manual: true)
                         } label: {
                             Text("Cargar Manualmente")
-                                .font(.custom("Barlow", size: 14))
+                                .font(.custom("Barlow", size: 11))
                                 .bold()
-                                .foregroundColor(.blanco)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(direccionViewModel.modoManual ? Color.verdePrincipal : Color.grisSecundario)
+                                .foregroundColor(direccionViewModel.modoManual ? Color.blanco : Color.grisSecundario)
+                                .frame(maxWidth: .infinity, minHeight: 30, maxHeight: 30)
+                                .background(direccionViewModel.modoManual ? Color.verdePrincipal : Color.blanco)
                         }
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.grisSecundario, lineWidth: 1))
+                    .padding(.horizontal, 30)
 
                     // Buscador (solo en modo Buscar Dirección)
-                    if !direccionViewModel.modoManual {
-                        PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in
-                            direccionViewModel.actualizarDesdePlace(place)
-                        }
+                    PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in
+                        direccionViewModel.actualizarDesdePlace(place)
                     }
+                    .opacity(direccionViewModel.modoManual ? 0 : 1)
+                    .allowsHitTesting(!direccionViewModel.modoManual)
 
                     // Calle | Número | Dpto (proporciones 2:1:1)
                     GeometryReader { geo in
@@ -224,7 +224,7 @@ struct FormularioDireccionView: View {
                             .font(.custom("Barlow", size: 16))
                             .bold()
                             .foregroundColor(.negro)
-                            .frame(minHeight: 70, maxHeight: 70)
+                            .frame(minHeight: 35, maxHeight: 35)
                             .padding(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
@@ -329,7 +329,7 @@ struct FormularioDireccionView: View {
                     .zIndex(1)
             }
             .padding(8)
-            .frame(height: 350)
+            .frame(height: 228)
         }
     }
     
@@ -382,16 +382,16 @@ struct FormularioDireccionView: View {
 
         private struct PaisCelular: Identifiable {
             let id = UUID()
-            let emoji: String
+            let iso: String
             let codigo: String
         }
 
         private let paises: [PaisCelular] = [
-            PaisCelular(emoji: "🇦🇷", codigo: "+54"),
-            PaisCelular(emoji: "🇧🇷", codigo: "+55"),
-            PaisCelular(emoji: "🇨🇱", codigo: "+56"),
-            PaisCelular(emoji: "🇺🇾", codigo: "+598"),
-            PaisCelular(emoji: "🇵🇾", codigo: "+595")
+            PaisCelular(iso: "AR", codigo: "+54"),
+            PaisCelular(iso: "BR", codigo: "+55"),
+            PaisCelular(iso: "CL", codigo: "+56"),
+            PaisCelular(iso: "UY", codigo: "+598"),
+            PaisCelular(iso: "PY", codigo: "+595")
         ]
 
         var body: some View {
@@ -402,23 +402,24 @@ struct FormularioDireccionView: View {
                         Button {
                             onPaisChange(p.codigo)
                         } label: {
-                            Text("\(p.emoji) \(p.codigo)")
+                            Text("\(p.iso) \(p.codigo)")
                         }
                     }
                 } label: {
                     HStack(spacing: 4) {
-                        Text(paisActual.emoji)
-                            .font(.system(size: 18))
+                        Text(paisActual.iso)
+                            .font(.custom("Barlow", size: 12))
+                            .bold()
+                            .foregroundColor(.negro)
                         Text(paisActual.codigo)
-                            .font(.custom("Barlow", size: 14))
+                            .font(.custom("Barlow", size: 13))
                             .bold()
                             .foregroundColor(.negro)
                         Image(systemName: "chevron.down")
                             .font(.system(size: 10))
                             .foregroundColor(.grisSecundario)
                     }
-                    .frame(height: 48)
-                    .padding(.horizontal, 8)
+                    .frame(width: 80, height: 48)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.grisSecundario, lineWidth: 1)
@@ -440,7 +441,7 @@ struct FormularioDireccionView: View {
                 .foregroundColor(.negro)
                 .tint(.verdePrincipal)
                 .padding(12)
-                .frame(height: 48)
+                .frame(maxWidth: .infinity, height: 48)
                 .background(Color.blanco)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
@@ -448,7 +449,6 @@ struct FormularioDireccionView: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
-            .padding(.horizontal, 60)
         }
     }
 }

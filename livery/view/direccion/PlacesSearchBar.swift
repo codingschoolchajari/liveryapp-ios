@@ -55,12 +55,12 @@ struct PlacesSearchBar: View {
                     }
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .background(Color.blanco)
             .foregroundColor(Color.negro)
-            .cornerRadius(20)
-            .shadow(radius: 4)
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.verdePrincipal, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             .zIndex(1)
 
             if !autocompleteManager.results.isEmpty {

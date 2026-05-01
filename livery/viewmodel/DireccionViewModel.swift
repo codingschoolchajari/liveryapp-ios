@@ -29,6 +29,7 @@ class DireccionViewModel: ObservableObject {
     @Published var mostrarAdvertencia: Bool = false
 
     private var yaFijoUbicacionInicial = false
+    private var geocodingTask: Task<Void, Never>? = nil
     @Published var coordenadasInicialesGPS: CLLocationCoordinate2D?
 
     init(locationService: LocationServicing = LocationService()) {
@@ -267,6 +268,21 @@ class DireccionViewModel: ObservableObject {
 
     func onNumeroChange(_ texto: String) {
         self.numero = normalizarPalabras(texto)
+        guard !modoManual, !calle.isEmpty, !texto.isEmpty else { return }
+        geocodingTask?.cancel()
+        geocodingTask = Task {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            guard !Task.isCancelled else { return }
+            await geocodificarCalleNumero(calle: calle, numero: texto)
+        }
+    }
+
+    private func geocodificarCalleNumero(calle: String, numero: String) async {
+        let geocoder = CLGeocoder()
+        let query = calle + " " + numero
+        guard let placemarks = try? await geocoder.geocodeAddressString(query),
+              let location = placemarks.first?.location else { return }
+        coordenadas = location.coordinate
     }
 
     private func normalizarPalabras(_ texto: String) -> String {

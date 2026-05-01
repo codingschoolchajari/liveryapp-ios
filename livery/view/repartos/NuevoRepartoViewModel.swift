@@ -49,8 +49,10 @@ class NuevoRepartoViewModel: ObservableObject {
     @Published var codigoVerificado: Bool = false
     @Published var mostrarErrorTelefono: Bool = false
     @Published var mostrarErrorCodigo: Bool = false
+    @Published var validandoCodigo: Bool = false
 
     private var costoEnvioDebounceTask: Task<Void, Never>? = nil
+    private var geocodingTask: Task<Void, Never>? = nil
     private var coordenadasOrigen: CLLocationCoordinate2D? = nil
 
     init(perfilUsuarioState: PerfilUsuarioState) {
@@ -113,6 +115,25 @@ class NuevoRepartoViewModel: ObservableObject {
         }
 
         actualizarDestino(coordenada: place.coordinate)
+    }
+
+    func onNumeroChange(_ texto: String) {
+        numero = texto
+        guard !modoManual, !calle.isEmpty, !texto.isEmpty else { return }
+        geocodingTask?.cancel()
+        geocodingTask = Task {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            guard !Task.isCancelled else { return }
+            await geocodificarCalleNumero(calle: calle, numero: texto)
+        }
+    }
+
+    private func geocodificarCalleNumero(calle: String, numero: String) async {
+        let geocoder = CLGeocoder()
+        let query = calle + " " + numero
+        guard let placemarks = try? await geocoder.geocodeAddressString(query),
+              let location = placemarks.first?.location else { return }
+        coordenadasDestino = location.coordinate
     }
 
     func seleccionarModo(manual: Bool) {
@@ -179,6 +200,8 @@ class NuevoRepartoViewModel: ObservableObject {
 
     func validarCodigoVerificacion() async -> Bool {
         let telefono = "\(celularPais)\(celularNumero.trimmingCharacters(in: .whitespaces))"
+        validandoCodigo = true
+        defer { validandoCodigo = false }
 
         do {
             await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)

@@ -173,18 +173,32 @@ struct NuevoRepartoView: View {
 
                 if pasoActual < PASO_RESUMEN {
                     Button {
-                        if pasoValido { pasoActual += 1 }
+                        Task {
+                            if pasoActual == PASO_PAGO && viewModel.pagoTransferencia == false {
+                                let valido = await viewModel.validarCodigoVerificacion()
+                                if valido { pasoActual += 1 }
+                            } else if pasoValido {
+                                pasoActual += 1
+                            }
+                        }
                     } label: {
-                        Text("Siguiente")
-                            .font(.custom("Barlow", size: 16))
-                            .bold()
-                            .foregroundColor(pasoValido ? .blanco : .grisSecundario)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 45)
-                            .background(pasoValido ? Color.naranjaIntentosRestantes : Color.grisSecundario.opacity(0.3))
-                            .cornerRadius(24)
+                        Group {
+                            if viewModel.validandoCodigo {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .blanco))
+                            } else {
+                                Text("Siguiente")
+                                    .font(.custom("Barlow", size: 16))
+                                    .bold()
+                                    .foregroundColor(pasoValido ? .blanco : .grisSecundario)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 45)
+                        .background(pasoValido ? Color.naranjaIntentosRestantes : Color.grisSecundario.opacity(0.3))
+                        .cornerRadius(24)
                     }
-                    .disabled(!pasoValido)
+                    .disabled(!pasoValido || viewModel.validandoCodigo)
                 } else {
                     Button {
                         Task { await viewModel.crearReparto() }
@@ -427,7 +441,7 @@ private struct PasoComercioView: View {
                         TextField(
                             text: Binding(
                                 get: { viewModel.numero },
-                                set: { viewModel.numero = $0 }
+                                set: { viewModel.onNumeroChange($0) }
                             ),
                             prompt: Text("").foregroundColor(.grisSecundario)
                         ) { EmptyView() }

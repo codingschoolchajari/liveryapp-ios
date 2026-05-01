@@ -244,6 +244,7 @@ struct FormularioDireccionView: View {
                         onPaisChange: { direccionViewModel.onCelularPaisChange($0) },
                         onNumeroChange: { direccionViewModel.onCelularNumeroChange($0) }
                     )
+                    .padding(.horizontal, 30)
 
                     Text("Te contactaremos solo en caso de ser necesario.")
                         .font(.custom("Barlow", size: 12))

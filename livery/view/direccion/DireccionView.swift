@@ -417,6 +417,8 @@ struct FormularioDireccionView: View {
                                     }
                                 }
                                 Text("\(p.iso) \(p.codigo)")
+                                    .font(.custom("Barlow", size: 13))
+                                    .bold()
                             }
                         }
                     }

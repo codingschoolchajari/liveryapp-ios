@@ -59,7 +59,7 @@ struct PlacesSearchBar: View {
             .padding(.vertical, 10)
             .background(Color.blanco)
             .foregroundColor(Color.negro)
-            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.verdePrincipal, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.verdePrincipal, lineWidth: 3))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .zIndex(1)
 

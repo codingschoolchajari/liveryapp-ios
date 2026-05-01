@@ -407,10 +407,19 @@ struct FormularioDireccionView: View {
                     }
                 } label: {
                     HStack(spacing: 4) {
-                        Text(paisActual.iso)
-                            .font(.custom("Barlow", size: 12))
-                            .bold()
-                            .foregroundColor(.negro)
+                        AsyncImage(url: URL(string: "https://flagcdn.com/80x60/\(paisActual.iso.lowercased()).png")) { phase in
+                            if let image = phase.image {
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 20, height: 15)
+                                    .clipShape(RoundedRectangle(cornerRadius: 2))
+                            } else {
+                                Color.grisSurface
+                                    .frame(width: 20, height: 15)
+                                    .clipShape(RoundedRectangle(cornerRadius: 2))
+                            }
+                        }
                         Text(paisActual.codigo)
                             .font(.custom("Barlow", size: 13))
                             .bold()

@@ -725,7 +725,7 @@ private struct ResumenFilaView: View {
             Text(label)
                 .font(.custom("Barlow", size: 12))
                 .bold()
-                .foregroundColor(.grisTertiary)
+                .foregroundColor(.grisTerciario)
             Text(value)
                 .font(.custom("Barlow", size: 14))
                 .foregroundColor(.negro)

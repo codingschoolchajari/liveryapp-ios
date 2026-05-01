@@ -397,60 +397,12 @@ struct FormularioDireccionView: View {
         var body: some View {
             let paisActual = paises.first { $0.codigo == pais } ?? paises[0]
             HStack(spacing: 8) {
-                Menu {
-                    ForEach(paises) { p in
-                        Button {
-                            onPaisChange(p.codigo)
-                        } label: {
-                            HStack(spacing: 8) {
-                                AsyncImage(url: URL(string: "https://flagcdn.com/80x60/\(p.iso.lowercased()).png")) { phase in
-                                    if let image = phase.image {
-                                        image
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 20, height: 15)
-                                            .clipShape(RoundedRectangle(cornerRadius: 2))
-                                    } else {
-                                        Color.grisSurface
-                                            .frame(width: 20, height: 15)
-                                            .clipShape(RoundedRectangle(cornerRadius: 2))
-                                    }
-                                }
-                                Text("\(p.iso) \(p.codigo)")
-                                    .font(.custom("Barlow", size: 13))
-                                    .bold()
-                            }
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        AsyncImage(url: URL(string: "https://flagcdn.com/80x60/\(paisActual.iso.lowercased()).png")) { phase in
-                            if let image = phase.image {
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 20, height: 15)
-                                    .clipShape(RoundedRectangle(cornerRadius: 2))
-                            } else {
-                                Color.grisSurface
-                                    .frame(width: 20, height: 15)
-                                    .clipShape(RoundedRectangle(cornerRadius: 2))
-                            }
-                        }
-                        Text(paisActual.codigo)
-                            .font(.custom("Barlow", size: 13))
-                            .bold()
-                            .foregroundColor(.negro)
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 10))
-                            .foregroundColor(.grisSecundario)
-                    }
-                    .frame(width: 80, height: 48)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-                }
+                // Selector de país con dropdown custom
+                SelectorPais(
+                    paises: paises,
+                    paisActual: paisActual,
+                    onPaisChange: onPaisChange
+                )
 
                 TextField(
                     text: Binding(
@@ -474,6 +426,92 @@ struct FormularioDireccionView: View {
                         .stroke(Color.grisSecundario, lineWidth: 1)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+        }
+
+        private struct SelectorPais: View {
+            let paises: [PaisCelular]
+            let paisActual: PaisCelular
+            let onPaisChange: (String) -> Void
+            @State private var expanded = false
+
+            var body: some View {
+                ZStack(alignment: .topLeading) {
+                    // Botón principal
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            expanded.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            BanderaView(iso: paisActual.iso)
+                            Text(paisActual.codigo)
+                                .font(.custom("Barlow", size: 13))
+                                .bold()
+                                .foregroundColor(.negro)
+                            Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 10))
+                                .foregroundColor(.grisSecundario)
+                        }
+                        .frame(width: 80, height: 48)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.grisSecundario, lineWidth: 1))
+                    }
+
+                    // Lista desplegable
+                    if expanded {
+                        VStack(spacing: 0) {
+                            ForEach(paises) { p in
+                                Button {
+                                    onPaisChange(p.codigo)
+                                    withAnimation(.easeInOut(duration: 0.15)) {
+                                        expanded = false
+                                    }
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        BanderaView(iso: p.iso)
+                                        Text(p.codigo)
+                                            .font(.custom("Barlow", size: 13))
+                                            .bold()
+                                            .foregroundColor(.negro)
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .frame(height: 36)
+                                }
+                                if p.id != paises.last?.id {
+                                    Divider()
+                                }
+                            }
+                        }
+                        .frame(width: 90)
+                        .background(Color.blanco)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.grisSecundario, lineWidth: 1))
+                        .shadow(radius: 4)
+                        .offset(y: 50)
+                        .zIndex(10)
+                    }
+                }
+                .zIndex(expanded ? 10 : 0)
+            }
+        }
+
+        private struct BanderaView: View {
+            let iso: String
+            var body: some View {
+                AsyncImage(url: URL(string: "https://flagcdn.com/80x60/\(iso.lowercased()).png")) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 20, height: 15)
+                            .clipShape(RoundedRectangle(cornerRadius: 2))
+                    } else {
+                        Color.grisSurface
+                            .frame(width: 20, height: 15)
+                            .clipShape(RoundedRectangle(cornerRadius: 2))
+                    }
+                }
             }
         }
     }

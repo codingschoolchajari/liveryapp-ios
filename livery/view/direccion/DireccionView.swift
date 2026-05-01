@@ -454,7 +454,7 @@ struct FormularioDireccionView: View {
                     .frame(width: 80, height: 48)
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.grisSecundario, lineWidth: 1))
                 }
-                .overlay(alignment: .topLeading) {
+                .overlay(alignment: .bottomLeading) {
                     if expanded {
                         VStack(spacing: 0) {
                             ForEach(paises) { p in
@@ -485,7 +485,7 @@ struct FormularioDireccionView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.grisSecundario, lineWidth: 1))
                         .shadow(radius: 4)
-                        .offset(y: 50)
+                        .offset(y: -48)
                         .zIndex(10)
                     }
                 }

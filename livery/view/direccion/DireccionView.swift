@@ -329,7 +329,7 @@ struct FormularioDireccionView: View {
                     .zIndex(1)
             }
             .padding(8)
-            .frame(height: 228)
+            .frame(height: 300)
         }
     }
     

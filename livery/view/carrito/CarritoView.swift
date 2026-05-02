@@ -127,7 +127,10 @@ struct ItemPromocionRow: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            RemoteImage(url: URL(string: API.baseURL + "/" + itemPromocion.imagenPromocionURL))
+            RemoteImage(
+                url: URL(string: API.baseURL + "/" + itemPromocion.imagenPromocionURL),
+                fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(itemPromocion.imagenPromocionURL))
+            )
             .frame(width: 65, height: 65)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
@@ -158,7 +161,10 @@ struct ItemProductoRow: View {
                     .padding(.top, 8)
             }
             HStack(alignment: .top, spacing: 12) {
-            RemoteImage(url: URL(string: API.baseURL + "/" + itemProducto.imagenProductoURL))
+            RemoteImage(
+                url: URL(string: API.baseURL + "/" + itemProducto.imagenProductoURL),
+                fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(itemProducto.imagenProductoURL))
+            )
             .frame(width: 65, height: 65)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             

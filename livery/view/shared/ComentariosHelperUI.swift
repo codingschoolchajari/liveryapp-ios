@@ -119,7 +119,10 @@ struct PedidoItemsView: View {
     @ViewBuilder
     private func itemRow(nombre: String, url: String) -> some View {
         HStack(spacing: 8) {
-            RemoteImage(url: URL(string: API.baseURL + "/" + url))
+            RemoteImage(
+                url: URL(string: API.baseURL + "/" + url),
+                fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(url))
+            )
             .frame(width: 60, height: 60)
             .cornerRadius(12)
             

@@ -32,7 +32,10 @@ struct ProductoTitulo: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
                 ZStack(alignment: .center) {
-                    RemoteImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")))
+                    RemoteImage(
+                        url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")),
+                        fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(producto.imagenURL))
+                    )
                     .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     
@@ -465,7 +468,10 @@ struct PortadaProducto: View {
         let altoDeseado = UIScreen.main.bounds.height * (1/3)
         
         ZStack(alignment: .topTrailing) {
-            RemoteImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")))
+            RemoteImage(
+                url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")),
+                fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(producto.imagenURL))
+            )
             .frame(maxWidth: .infinity)
             .frame(height: altoDeseado)
             .clipped()

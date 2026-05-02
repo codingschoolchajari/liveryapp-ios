@@ -458,7 +458,10 @@ struct DialogoResultadoGirarRuleta: View {
                                 .multilineTextAlignment(.center)
 
                             // Imagen del Producto
-                            RemoteImage(url: URL(string: API.baseURL + "/" + (resultado?.imagenProductoURL ?? "")))
+                            RemoteImage(
+                                url: URL(string: API.baseURL + "/" + (resultado?.imagenProductoURL ?? "")),
+                                fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(resultado?.imagenProductoURL))
+                            )
                             .frame(width: 100, height: 100)
                             .aspectRatio(contentMode: .fit)
                             .cornerRadius(12)

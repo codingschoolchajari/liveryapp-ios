@@ -61,6 +61,7 @@ struct ZoomableContainer<Content: View>: UIViewRepresentable {
 
 struct RemoteImage: View {
     let url: URL?
+    var fallbackURL: URL? = nil
 
     @State private var uiImage: UIImage? = nil
 
@@ -79,9 +80,16 @@ struct RemoteImage: View {
             guard let url else { return }
             var request = URLRequest(url: url)
             request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-            guard let (data, _) = try? await URLSession.shared.data(for: request),
-                  let loaded = UIImage(data: data) else { return }
-            uiImage = loaded
+            if let (data, _) = try? await URLSession.shared.data(for: request),
+               let loaded = UIImage(data: data) {
+                uiImage = loaded
+            } else if let fallbackURL {
+                var fallbackRequest = URLRequest(url: fallbackURL)
+                fallbackRequest.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+                guard let (data, _) = try? await URLSession.shared.data(for: fallbackRequest),
+                      let loaded = UIImage(data: data) else { return }
+                uiImage = loaded
+            }
         }
     }
 }

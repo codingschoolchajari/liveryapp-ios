@@ -68,3 +68,10 @@ func convertirPdfAJpg(pdfData: Data) -> Data? {
     // 4. Retornar como JPEG (usando tu calidad estándar de 0.9)
     return img.jpegData(compressionQuality: 0.9)
 }
+
+func imagenPorDefectoURL(_ imagenURL: String?) -> String {
+    guard let imagenURL = imagenURL, !imagenURL.isEmpty else { return "" }
+    let partes = imagenURL.split(separator: "/").map(String.init)
+    guard partes.count >= 4 else { return "" }
+    return partes.prefix(4).joined(separator: "/") + "/imagen_por_defecto.png"
+}

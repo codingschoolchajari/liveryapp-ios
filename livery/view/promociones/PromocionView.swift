@@ -28,7 +28,10 @@ struct PromocionTitulo: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
                 ZStack(alignment: .topTrailing) {
-                    RemoteImage(url: URL(string: API.baseURL + "/" + promocion.imagenURL))
+                    RemoteImage(
+                        url: URL(string: API.baseURL + "/" + promocion.imagenURL),
+                        fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(promocion.imagenURL))
+                    )
                     .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     
@@ -243,7 +246,10 @@ struct PortadaPromocion: View {
         let altoDeseado = UIScreen.main.bounds.height * (1/3)
         
         ZStack(alignment: .topTrailing) {
-            RemoteImage(url: URL(string: API.baseURL + "/" + promocion.imagenURL))
+            RemoteImage(
+                url: URL(string: API.baseURL + "/" + promocion.imagenURL),
+                fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(promocion.imagenURL))
+            )
             .frame(maxWidth: .infinity)
             .frame(height: altoDeseado)
             .clipped()

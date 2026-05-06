@@ -9,11 +9,13 @@ import Foundation
 struct ListUtils {
     
     static let categorias: [Categoria] = [
+        Categoria(idInterno: "bebidas", nombre: "Bebidas", imagenGenerica: "categoria_bebidas"),
         Categoria(idInterno: "carnes", nombre: "Carnes", imagenGenerica: "categoria_carnes"),
         Categoria(idInterno: "ensaladas", nombre: "Ensaladas", imagenGenerica: "categoria_ensaladas"),
         Categoria(idInterno: "hamburguesas", nombre: "Hamburguesas", imagenGenerica: "categoria_hamburguesas"),
         Categoria(idInterno: "helados", nombre: "Helados", imagenGenerica: "categoria_helados"),
         Categoria(idInterno: "milanesas", nombre: "Milanesas", imagenGenerica: "categoria_milanesas"),
+        Categoria(idInterno: "minimarket", nombre: "Minimarket", imagenGenerica: "categoria_minimarket"),
         Categoria(idInterno: "panificados", nombre: "Panificados", imagenGenerica: "categoria_panificados"),
         Categoria(idInterno: "pastas", nombre: "Pastas", imagenGenerica: "categoria_pastas"),
         Categoria(idInterno: "picadas", nombre: "Picadas", imagenGenerica: "categoria_picadas"),

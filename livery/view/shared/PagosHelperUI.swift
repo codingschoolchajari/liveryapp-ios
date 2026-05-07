@@ -134,8 +134,12 @@ struct ComprobantePagoView: View {
     var altoImagen: CGFloat = 380
     let onCargarComprobante: (Comprobante) -> Void
 
+    // Imagen cargada localmente: se actualiza de forma inmediata al seleccionar,
+    // sin pasar por el ciclo ViewModel → parent → prop (que requiere ZoomableContainer update)
+    @State private var imagenLocal: UIImage? = nil
+
     private var existeComprobante: Bool {
-        comprobanteEnMemoria != nil || urlComprobante != nil
+        imagenLocal != nil || comprobanteEnMemoria != nil || urlComprobante != nil
     }
     @State private var mostrarMenu = false
     @State private var mostrarSelectorFotos = false
@@ -147,15 +151,23 @@ struct ComprobantePagoView: View {
             ZStack {
                 if estaCargando {
                     ProgressView()
+                } else if let imagen = imagenLocal ?? comprobanteEnMemoria.flatMap({ UIImage(data: $0) }) {
+                    Image(uiImage: imagen)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 250, height: altoImagen)
+                        .background(backgroundImagen)
+                        .cornerRadius(12)
+                        .clipped()
                 } else {
                     ZoomableContainer {
-                        contenidoImagen
+                        contenidoRemoto
                     }
+                    .frame(width: 250, height: altoImagen)
+                    .background(backgroundImagen)
+                    .cornerRadius(12)
                 }
             }
-            .frame(width: 250, height: altoImagen)
-            .background(backgroundImagen)
-            .cornerRadius(12)
             .padding(.horizontal, 12)
             .padding(.top, 12)
             .padding(.bottom, 2)
@@ -200,15 +212,10 @@ struct ComprobantePagoView: View {
         }
     }
 
+    // Solo se usa cuando hay URL remota (sin datos en memoria)
     @ViewBuilder
-    private var contenidoImagen: some View {
-        if let comprobanteEnMemoria,
-           let image = UIImage(data: comprobanteEnMemoria) {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-        } else if let urlComprobante,
-                  let url = URL(string: urlComprobante) {
+    private var contenidoRemoto: some View {
+        if let urlComprobante, let url = URL(string: urlComprobante) {
             RemoteImage(url: url)
         } else {
             Image(systemName: "photo")
@@ -217,19 +224,22 @@ struct ComprobantePagoView: View {
     }
 
     private func procesarFotoDeGaleria(item: PhotosPickerItem) {
-        Task { @MainActor in
-            if let data = try? await item.loadTransferable(type: Data.self),
-               let dataRedimensionada = redimensionarImagen(
-                    imageBytes: data,
-                    maxWidth: 1000,
-                    maxHeight: 1200
-               ) {
-                let comprobante = Comprobante(
-                    contenido: dataRedimensionada,
-                    nombre: "comprobante_\(Int(Date().timeIntervalSince1970)).jpg",
-                    extension: "jpg"
-                )
-
+        Task {
+            guard let data = try? await item.loadTransferable(type: Data.self) else {
+                print("❌ ComprobantePagoView: loadTransferable devolvió nil")
+                return
+            }
+            guard let dataFinal = redimensionarImagen(imageBytes: data, maxWidth: 1000, maxHeight: 1200) else {
+                print("❌ ComprobantePagoView: redimensionarImagen devolvió nil")
+                return
+            }
+            let comprobante = Comprobante(
+                contenido: dataFinal,
+                nombre: "comprobante_\(Int(Date().timeIntervalSince1970)).jpg",
+                extension: "jpg"
+            )
+            await MainActor.run {
+                imagenLocal = UIImage(data: dataFinal)
                 onCargarComprobante(comprobante)
             }
         }
@@ -273,14 +283,15 @@ struct ComprobantePagoView: View {
                         extension: extensionFinal
                     )
 
+                    imagenLocal = UIImage(data: dataFinal)
                     onCargarComprobante(comprobante)
                 } catch {
-                    print("Error al leer los datos del archivo: \(error.localizedDescription)")
+                    print("❌ ComprobantePagoView: error al leer archivo: \(error.localizedDescription)")
                 }
             }
 
         case .failure(let error):
-            print("Error al seleccionar el archivo: \(error.localizedDescription)")
+            print("❌ ComprobantePagoView: error al seleccionar archivo: \(error.localizedDescription)")
         }
     }
 }

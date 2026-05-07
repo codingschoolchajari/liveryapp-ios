@@ -163,8 +163,7 @@ class PedidosService {
               200...299 ~= httpResponse.statusCode else {
             throw URLError(.badServerResponse)
         }
-        
-        _ = try await URLSession.shared.data(for: request)
+        _ = data
     }
 
     func cargarComprobante(
@@ -176,7 +175,9 @@ class PedidosService {
     ) async throws {
 
         let boundary = UUID().uuidString.lowercased()
-        let url = URL(string: "\(pedidosURL)/cargarComprobante/\(email)/\(idPedido)")!
+        guard let url = URL(string: "\(pedidosURL)/cargarComprobante/\(email)/\(idPedido)") else {
+            throw URLError(.badURL)
+        }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -200,6 +201,10 @@ class PedidosService {
 
         request.httpBody = body
 
-        _ = try await URLSession.shared.data(for: request)
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
     }
 }

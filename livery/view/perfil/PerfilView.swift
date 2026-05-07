@@ -259,6 +259,7 @@ struct SeccionEliminarUsuario: View {
                     .foregroundColor(.blanco)
                     .background(Color.rojoError)
                     .cornerRadius(24)
+                    .contentShape(Rectangle())
             }
             .padding(.horizontal, 96)
             .padding(.bottom, 12)

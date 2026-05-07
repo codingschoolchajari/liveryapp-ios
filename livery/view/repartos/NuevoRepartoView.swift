@@ -43,10 +43,11 @@ struct NuevoRepartoView: View {
             case .some(true):
                 return viewModel.comprobanteSeleccionado != nil
             case .some(false):
-                return viewModel.codigoVerificacion.count == 6
-                    && viewModel.estadoEnvioCodigo == .enviado
-                    && !viewModel.precioTotalProductos.isEmpty
-                    && !viewModel.superaLimitePagoEfectivo
+                let codigoCompleto = viewModel.codigoVerificacion.count == 6
+                let codigoEnviado = viewModel.estadoEnvioCodigo == .enviado
+                let tienePrecio = !viewModel.precioTotalProductos.isEmpty
+                let noSuperaLimite = !viewModel.superaLimitePagoEfectivo
+                return codigoCompleto && codigoEnviado && tienePrecio && noSuperaLimite
             default:
                 return false
             }
@@ -373,6 +374,7 @@ private struct PasoComercioView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 30)
                         .background(!viewModel.modoManual ? Color.verdePrincipal : Color.blanco)
+                        .contentShape(Rectangle())
                 }
 
                 Button {
@@ -385,6 +387,7 @@ private struct PasoComercioView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 30)
                         .background(viewModel.modoManual ? Color.verdePrincipal : Color.blanco)
+                        .contentShape(Rectangle())
                 }
             }
             .overlay(

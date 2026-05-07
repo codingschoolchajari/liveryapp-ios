@@ -7,10 +7,6 @@
 import Foundation
 import Combine
 
-enum EstadoEnvioCodigo {
-    case idle, enviando, enviado, error
-}
-
 @MainActor
 class CarritoViewModel: ObservableObject {
     

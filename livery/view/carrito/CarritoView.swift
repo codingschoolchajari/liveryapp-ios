@@ -328,6 +328,7 @@ struct TipoEntregaButton: View {
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, minHeight: 44)
                 .background(seleccionado ? Color.grisSurface : Color.blanco)
+                .contentShape(Rectangle())
         }
         .clipShape(shape)
         .overlay(
@@ -544,11 +545,14 @@ struct BottomSheetPagoCarrito: View {
 
     private var confirmarHabilitado: Bool {
         switch tabSeleccionado {
-        case 0: return carritoViewModel.comprobanteSeleccionado != nil
-        case 1: return !superaLimiteEfectivo
-            && carritoViewModel.codigoVerificacion.count == 6
-            && carritoViewModel.estadoEnvioCodigo == .enviado
-        default: return false
+        case 0:
+            return carritoViewModel.comprobanteSeleccionado != nil
+        case 1:
+            let codigoCompleto = carritoViewModel.codigoVerificacion.count == 6
+            let codigoEnviado = carritoViewModel.estadoEnvioCodigo == .enviado
+            return !superaLimiteEfectivo && codigoCompleto && codigoEnviado
+        default:
+            return false
         }
     }
 
@@ -867,6 +871,7 @@ private struct SelectorMetodoPagoView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 40)
                 .background(seleccionado ? Color.verdePrincipal.opacity(0.1) : Color.blanco)
+                .contentShape(Rectangle())
         }
     }
 }

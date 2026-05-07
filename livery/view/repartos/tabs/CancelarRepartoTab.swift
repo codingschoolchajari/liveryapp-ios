@@ -59,6 +59,7 @@ struct CancelarRepartoTab: View {
                                 (motivoCancelacion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || estado == .cancelado) ? Color.grisSurface : Color.rojoError
                             )
                             .cornerRadius(24)
+                            .contentShape(Rectangle())
                     }
                     .disabled(motivoCancelacion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || estado == .cancelado)
                     .padding(.horizontal, 50)

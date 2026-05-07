@@ -10,6 +10,10 @@ struct PagoTab: View {
     @ObservedObject var pedidosViewModel: PedidosViewModel
     let pedido: Pedido
     let estadoPedido: EstadoPedido?
+
+    private var totalDescuentos: Double {
+        (pedido.descuentos ?? []).reduce(0) { $0 + $1.monto }
+    }
     
     var body: some View {
         ScrollView {
@@ -18,7 +22,8 @@ struct PagoTab: View {
                     subtotal: obtenerSubtotal(
                         tipoEntrega: TipoEntrega.desdeString(pedido.tipoEntrega),
                         precioTotal: pedido.precioTotal,
-                        tarifaServicio: pedido.tarifaServicio
+                        tarifaServicio: pedido.tarifaServicio,
+                        totalDescuentos: totalDescuentos
                     ),
                     tipoEntrega: TipoEntrega.desdeString(pedido.tipoEntrega)
                 )

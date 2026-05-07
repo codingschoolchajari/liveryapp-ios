@@ -166,6 +166,14 @@ struct FilaPromocion: View {
 
 struct ResumenPedidoView: View {
     let pedido: Pedido
+
+    private var descuentos: [DescuentoPedido] {
+        pedido.descuentos ?? []
+    }
+
+    private var totalDescuentos: Double {
+        descuentos.reduce(0) { $0 + $1.monto }
+    }
     
     var body: some View {
         Spacer().frame(height: 8)
@@ -179,10 +187,19 @@ struct ResumenPedidoView: View {
                 label: "Tarifa de Servicio",
                 value: DoubleUtils.formatearPrecio(valor: pedido.tarifaServicio)
             )
+
+            ForEach(Array(descuentos.enumerated()), id: \.offset) { _, descuento in
+                row(
+                    label: descuento.descripcion,
+                    value: DoubleUtils.formatearPrecio(valor: descuento.monto),
+                    textColor: .naranjaIntentosRestantes
+                )
+            }
+
             row(
                 label: "Subtotal",
                 value: DoubleUtils.formatearPrecio(
-                    valor : (pedido.precioTotal + pedido.tarifaServicio)
+                    valor : (pedido.precioTotal + pedido.tarifaServicio + totalDescuentos)
                 ),
                 isBoldLabel: true,
                 isBoldValue: true
@@ -242,18 +259,19 @@ struct ResumenPedidoView: View {
         label: String,
         value: String,
         isBoldLabel: Bool = false,
-        isBoldValue: Bool = false
+        isBoldValue: Bool = false,
+        textColor: Color = .negro
     ) -> some View {
         HStack {
             Text(label)
                 .font(.custom("Barlow", size: 14))
                 .fontWeight(isBoldLabel ? .bold : .regular)
-                .foregroundColor(.negro)
+                .foregroundColor(textColor)
             Spacer()
             Text(value)
                 .font(.custom("Barlow", size: 14))
                 .fontWeight(isBoldValue ? .bold : .regular)
-                .foregroundColor(.negro)
+                .foregroundColor(textColor)
         }
     }
 }

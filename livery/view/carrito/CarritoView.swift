@@ -538,41 +538,56 @@ struct BottomSheetPagoCarrito: View {
                         subtotal: obtenerSubtotal(
                             tipoEntrega: carritoViewModel.tipoEntregaSeleccionada,
                             precioTotal: carritoViewModel.precioTotal,
-                            tarifaServicio: tarifaServicio
+                            tarifaServicio: tarifaServicio,
+                            totalDescuentos: carritoViewModel.calcularTotalDescuentosSeleccionPago()
                         ),
                         tipoEntrega: carritoViewModel.tipoEntregaSeleccionada
                     )
 
                     Spacer().frame(height: 8)
 
-                    SeccionDesplegable(
-                        titulo: "Datos Bancarios",
-                        expandidoInicialmente: false,
-                        backgroundColor: .grisSurface,
-                        contenido: {
-                            DatosBancariosPagoView(
-                                datosBancarios: carritoViewModel.comercio?.datosBancarios
-                            )
-                        }
-                    )
+                    SelectorMetodoPagoView()
 
                     Spacer().frame(height: 8)
 
-                    SeccionDesplegable(
-                        titulo: "Comprobante",
-                        expandidoInicialmente: true,
-                        backgroundColor: .grisSurface,
-                        contenido: {
-                            ComprobantePagoView(
-                                estaCargando: carritoViewModel.cargandoComprobante,
-                                comprobanteEnMemoria: carritoViewModel.comprobanteSeleccionado?.contenido,
-                                urlComprobante: nil,
-                                onCargarComprobante: { comprobante in
-                                    carritoViewModel.cargarComprobante(comprobante: comprobante)
-                                }
-                            )
-                        }
-                    )
+                    if carritoViewModel.pagoTransferencia {
+                        SeccionDesplegable(
+                            titulo: "Datos Bancarios",
+                            expandidoInicialmente: false,
+                            backgroundColor: .grisSurface,
+                            contenido: {
+                                DatosBancariosPagoView(
+                                    datosBancarios: carritoViewModel.comercio?.datosBancarios
+                                )
+                            }
+                        )
+
+                        Spacer().frame(height: 8)
+
+                        SeccionDesplegable(
+                            titulo: "Comprobante",
+                            expandidoInicialmente: true,
+                            backgroundColor: .grisSurface,
+                            contenido: {
+                                ComprobantePagoView(
+                                    estaCargando: carritoViewModel.cargandoComprobante,
+                                    comprobanteEnMemoria: carritoViewModel.comprobanteSeleccionado?.contenido,
+                                    urlComprobante: nil,
+                                    onCargarComprobante: { comprobante in
+                                        carritoViewModel.cargarComprobante(comprobante: comprobante)
+                                    }
+                                )
+                            }
+                        )
+                    } else {
+                        Text("El pago se realizará en efectivo al retirar o recibir tu pedido.")
+                            .font(.custom("Barlow", size: 14))
+                            .bold()
+                            .foregroundColor(.grisSecundario)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 12)
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(12)
@@ -591,17 +606,54 @@ struct BottomSheetPagoCarrito: View {
                 Text("Confirmar Pedido")
                     .font(.custom("Barlow", size: 16))
                     .bold()
-                    .foregroundColor(carritoViewModel.comprobanteSeleccionado != nil ? .blanco : .grisSecundario)
+                    .foregroundColor(botonConfirmarHabilitado ? .blanco : .grisSecundario)
                     .frame(maxWidth: .infinity)
                     .frame(height: 45)
-                    .background(carritoViewModel.comprobanteSeleccionado != nil ? Color.verdePrincipal : .grisSurface)
+                    .background(botonConfirmarHabilitado ? Color.verdePrincipal : .grisSurface)
                     .cornerRadius(24)
             }
-            .disabled(carritoViewModel.comprobanteSeleccionado == nil)
+            .disabled(!botonConfirmarHabilitado)
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.blanco)
+    }
+
+    private var botonConfirmarHabilitado: Bool {
+        carritoViewModel.pagoTransferencia ? carritoViewModel.comprobanteSeleccionado != nil : true
+    }
+}
+
+private struct SelectorMetodoPagoView: View {
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
+
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 0) {
+                botonMetodoPago(titulo: "Transferencia", esTransferencia: true)
+                botonMetodoPago(titulo: "Efectivo", esTransferencia: false)
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.grisSecundario, lineWidth: 1)
+            )
+        }
+    }
+
+    private func botonMetodoPago(titulo: String, esTransferencia: Bool) -> some View {
+        let seleccionado = carritoViewModel.pagoTransferencia == esTransferencia
+
+        return Button(action: {
+            carritoViewModel.onPagoTransferenciaChange(esTransferencia)
+        }) {
+            Text(titulo)
+                .font(.custom("Barlow", size: 14))
+                .bold()
+                .foregroundColor(seleccionado ? .verdePrincipal : .negro)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
+                .background(seleccionado ? Color.verdePrincipal.opacity(0.1) : Color.blanco)
+        }
     }
 }

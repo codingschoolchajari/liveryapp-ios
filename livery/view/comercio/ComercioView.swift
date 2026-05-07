@@ -53,6 +53,16 @@ struct Portada: View {
             .frame(width: UIScreen.main.bounds.width, height: 180)
             .clipShape(RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight]))
             .background(Color.blanco)
+
+            if let descuentos = comercio.descuentos, !descuentos.isEmpty {
+                VStack(spacing: 6) {
+                    ForEach(Array(descuentos.enumerated()), id: \.offset) { _, descuento in
+                        BoxDescuentoPortada(descuento: descuento)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+            }
             
             VStack {
                 ComercioTitulo(
@@ -73,6 +83,36 @@ struct Portada: View {
             .padding(.horizontal, 20)
             .offset(y: 100)
         }
+    }
+}
+
+private struct BoxDescuentoPortada: View {
+    let descuento: ComercioDescuento
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(descuento.descripcion)
+                .font(.custom("Barlow", size: 13))
+                .bold()
+                .foregroundColor(.naranjaIntentosRestantes)
+                .lineLimit(1)
+
+            Spacer(minLength: 6)
+
+            Text("\(Int(descuento.porcentaje))% OFF")
+                .font(.custom("Barlow", size: 13))
+                .bold()
+                .foregroundColor(.negro)
+        }
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity)
+        .frame(height: 28)
+        .background(Color.blanco.opacity(0.92))
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.grisSecundario, lineWidth: 1)
+        )
     }
 }
 

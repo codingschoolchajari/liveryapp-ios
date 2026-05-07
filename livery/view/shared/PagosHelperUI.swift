@@ -12,13 +12,14 @@ import UIKit
 func obtenerSubtotal(
     tipoEntrega: TipoEntrega?,
     precioTotal: Double,
-    tarifaServicio: Double
+    tarifaServicio: Double,
+    totalDescuentos: Double = 0.0
 ) -> String {
     if tipoEntrega == .envioLivery {
-        return DoubleUtils.formatearPrecio(valor: precioTotal)
+        return DoubleUtils.formatearPrecio(valor: precioTotal + totalDescuentos)
     }
 
-    return DoubleUtils.formatearPrecio(valor: precioTotal + tarifaServicio)
+    return DoubleUtils.formatearPrecio(valor: precioTotal + tarifaServicio + totalDescuentos)
 }
 
 struct MontoAPagarView: View {

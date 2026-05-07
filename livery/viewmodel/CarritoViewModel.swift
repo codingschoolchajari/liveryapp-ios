@@ -25,6 +25,7 @@ class CarritoViewModel: ObservableObject {
     @Published var comprobanteSeleccionado: Comprobante? = nil
     @Published var cargandoComprobante: Bool = false
     @Published var pedidoConfirmado: Bool = false
+    @Published var pagoTransferencia: Bool = true
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -99,6 +100,7 @@ class CarritoViewModel: ObservableObject {
             itemsPromociones = []
             comercio = nil
             comprobanteSeleccionado = nil
+            pagoTransferencia = true
             pedidoConfirmado = false
         }
     }
@@ -259,6 +261,8 @@ class CarritoViewModel: ObservableObject {
         tarifaServicio: Double
     ) async {
         guard let comercioActual = comercio else { return }
+
+        let descuentosPedido = construirDescuentosPedido()
         
         let pedido = Pedido(
             idInterno: UUID().uuidString.lowercased(),
@@ -275,6 +279,7 @@ class CarritoViewModel: ObservableObject {
             envio: envio,
             tiempoRecorridoEstimado: tiempoRecorridoEstimado,
             precioTotal: precioTotal,
+            descuentos: descuentosPedido,
             itemsProductos: itemsProductos,
             itemsPromociones: itemsPromociones
         )
@@ -399,6 +404,7 @@ class CarritoViewModel: ObservableObject {
         itemsPromociones = []
         comercio = nil
         comprobanteSeleccionado = nil
+        pagoTransferencia = true
     }
 
     func cargarComprobante(comprobante: Comprobante) {
@@ -409,6 +415,52 @@ class CarritoViewModel: ObservableObject {
 
     func limpiarComprobante() {
         comprobanteSeleccionado = nil
+    }
+
+    func onPagoTransferenciaChange(_ esTransferencia: Bool) {
+        pagoTransferencia = esTransferencia
+        if !esTransferencia {
+            limpiarComprobante()
+        }
+    }
+
+    func calcularMontoDescuentoEfectivo() -> Double {
+        guard !pagoTransferencia else { return 0.0 }
+        guard let comercioActual = comercio else { return 0.0 }
+
+        let descuentoEfectivo = (comercioActual.descuentos ?? []).first {
+            $0.palabraClave.caseInsensitiveCompare("efectivo") == .orderedSame
+        }
+
+        guard let descuentoEfectivo else { return 0.0 }
+        guard descuentoEfectivo.porcentaje > 0 else { return 0.0 }
+
+        return precioTotal * (descuentoEfectivo.porcentaje / 100.0)
+    }
+
+    func calcularTotalDescuentosSeleccionPago() -> Double {
+        -calcularMontoDescuentoEfectivo()
+    }
+
+    func construirDescuentosPedido() -> [DescuentoPedido] {
+        guard let comercioActual = comercio else { return [] }
+        guard !pagoTransferencia else { return [] }
+
+        let descuentoEfectivo = (comercioActual.descuentos ?? []).first {
+            $0.palabraClave.caseInsensitiveCompare("efectivo") == .orderedSame
+        }
+
+        guard let descuentoEfectivo else { return [] }
+
+        let montoDescuento = calcularMontoDescuentoEfectivo()
+        guard montoDescuento > 0 else { return [] }
+
+        return [
+            DescuentoPedido(
+                descripcion: descuentoEfectivo.descripcion,
+                monto: -montoDescuento
+            )
+        ]
     }
     
     // Premios

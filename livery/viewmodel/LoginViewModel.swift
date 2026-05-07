@@ -130,6 +130,7 @@ class LoginViewModel: ObservableObject {
                 perfilUsuarioState.currentUser = nil
                 UserDefaults.standard.set(false, forKey: "logueado")
                 await perfilUsuarioState.configurarUsuarioInvitado()
+                navManager.select(.home)
                 navManager.replaceRoot(with: .main)
             }
 

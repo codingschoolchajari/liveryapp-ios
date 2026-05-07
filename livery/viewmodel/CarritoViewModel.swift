@@ -7,6 +7,10 @@
 import Foundation
 import Combine
 
+enum EstadoEnvioCodigo {
+    case idle, enviando, enviado, error
+}
+
 @MainActor
 class CarritoViewModel: ObservableObject {
     
@@ -26,6 +30,17 @@ class CarritoViewModel: ObservableObject {
     @Published var cargandoComprobante: Bool = false
     @Published var pedidoConfirmado: Bool = false
     @Published var pagoTransferencia: Bool = true
+
+    // MARK: Efectivo – verificación de teléfono
+    @Published var celularPais: String = "+54"
+    @Published var celularNumero: String = ""
+    @Published var estadoEnvioCodigo: EstadoEnvioCodigo = .idle
+    @Published var codigoVerificacion: String = ""
+    @Published var codigoVerificado: Bool = false
+    @Published var mostrarErrorTelefono: Bool = false
+    @Published var mostrarErrorCodigo: Bool = false
+
+    private let verificacionService = VerificacionService()
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -263,6 +278,7 @@ class CarritoViewModel: ObservableObject {
         guard let comercioActual = comercio else { return }
 
         let descuentosPedido = construirDescuentosPedido()
+        let modalidadPago = construirModalidadPago()
         
         let pedido = Pedido(
             idInterno: UUID().uuidString.lowercased(),
@@ -280,6 +296,7 @@ class CarritoViewModel: ObservableObject {
             tiempoRecorridoEstimado: tiempoRecorridoEstimado,
             precioTotal: precioTotal,
             descuentos: descuentosPedido,
+            modalidadPago: modalidadPago,
             itemsProductos: itemsProductos,
             itemsPromociones: itemsPromociones
         )
@@ -405,6 +422,7 @@ class CarritoViewModel: ObservableObject {
         comercio = nil
         comprobanteSeleccionado = nil
         pagoTransferencia = true
+        resetEfectivo()
     }
 
     func cargarComprobante(comprobante: Comprobante) {
@@ -422,6 +440,79 @@ class CarritoViewModel: ObservableObject {
         if !esTransferencia {
             limpiarComprobante()
         }
+    }
+
+    // MARK: Efectivo – métodos
+    func onCelularPaisChange(_ pais: String) { celularPais = pais }
+
+    func onCelularNumeroChange(_ numero: String) {
+        celularNumero = numero
+        if estadoEnvioCodigo == .enviado {
+            estadoEnvioCodigo = .idle
+            codigoVerificacion = ""
+            codigoVerificado = false
+        }
+    }
+
+    func onCodigoVerificacionChange(_ codigo: String) {
+        if codigo.count <= 6 { codigoVerificacion = codigo }
+    }
+
+    func enviarCodigoVerificacion(perfilUsuarioState: PerfilUsuarioState) {
+        let telefono = "\(celularPais)\(celularNumero.trimmingCharacters(in: .whitespaces))"
+        estadoEnvioCodigo = .enviando
+        codigoVerificacion = ""
+        codigoVerificado = false
+        Task {
+            do {
+                await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+                let token = TokenRepository.repository.accessToken ?? ""
+                let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+                let exito = try await verificacionService.enviarCodigo(
+                    token: token,
+                    dispositivoID: dispositivoID,
+                    telefono: telefono
+                )
+                estadoEnvioCodigo = exito ? .enviado : .error
+                if !exito { mostrarErrorTelefono = true }
+            } catch {
+                estadoEnvioCodigo = .error
+                mostrarErrorTelefono = true
+            }
+        }
+    }
+
+    func validarCodigoVerificacion(perfilUsuarioState: PerfilUsuarioState) async -> Bool {
+        let telefono = "\(celularPais)\(celularNumero.trimmingCharacters(in: .whitespaces))"
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let token = TokenRepository.repository.accessToken ?? ""
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            let valido = try await verificacionService.validarCodigo(
+                token: token,
+                dispositivoID: dispositivoID,
+                telefono: telefono,
+                codigo: codigoVerificacion
+            )
+            if valido { codigoVerificado = true } else { mostrarErrorCodigo = true }
+            return valido
+        } catch {
+            mostrarErrorCodigo = true
+            return false
+        }
+    }
+
+    func descartarErrorTelefono() { mostrarErrorTelefono = false }
+    func descartarErrorCodigo() { mostrarErrorCodigo = false }
+
+    func resetEfectivo() {
+        celularPais = "+54"
+        celularNumero = ""
+        estadoEnvioCodigo = .idle
+        codigoVerificacion = ""
+        codigoVerificado = false
+        mostrarErrorTelefono = false
+        mostrarErrorCodigo = false
     }
 
     func calcularMontoDescuentoEfectivo() -> Double {
@@ -461,6 +552,18 @@ class CarritoViewModel: ObservableObject {
                 monto: -montoDescuento
             )
         ]
+    }
+
+    private func construirModalidadPago() -> ModalidadPago {
+        if !pagoTransferencia {
+            let telefono = "\(celularPais)\(celularNumero.trimmingCharacters(in: .whitespaces))"
+            return ModalidadPago(
+                tipo: "EFECTIVO",
+                celular: telefono,
+                codigoVerificacion: codigoVerificacion
+            )
+        }
+        return ModalidadPago(tipo: "TRANSFERENCIA")
     }
     
     // Premios

@@ -175,6 +175,10 @@ struct ResumenPedidoView: View {
         descuentos.reduce(0) { $0 + $1.monto }
     }
     
+    private var esLivery: Bool {
+        TipoEntrega.desdeString(pedido.tipoEntrega) == .envioLivery
+    }
+
     var body: some View {
         Spacer().frame(height: 8)
         
@@ -183,10 +187,14 @@ struct ResumenPedidoView: View {
                 label: "Productos",
                 value: DoubleUtils.formatearPrecio(valor: pedido.precioTotal)
             )
-            row(
-                label: "Tarifa de Servicio",
-                value: DoubleUtils.formatearPrecio(valor: pedido.tarifaServicio)
-            )
+
+            // En Envío Livery la tarifa se suma al envío, no se muestra acá
+            if !esLivery {
+                row(
+                    label: "Impuesto de Aplicación",
+                    value: DoubleUtils.formatearPrecio(valor: pedido.tarifaServicio)
+                )
+            }
 
             ForEach(Array(descuentos.enumerated()), id: \.offset) { _, descuento in
                 row(
@@ -199,7 +207,9 @@ struct ResumenPedidoView: View {
             row(
                 label: "Subtotal",
                 value: DoubleUtils.formatearPrecio(
-                    valor : (pedido.precioTotal + pedido.tarifaServicio + totalDescuentos)
+                    valor: esLivery
+                        ? (pedido.precioTotal + totalDescuentos)
+                        : (pedido.precioTotal + pedido.tarifaServicio + totalDescuentos)
                 ),
                 isBoldLabel: true,
                 isBoldValue: true
@@ -233,7 +243,9 @@ struct ResumenPedidoView: View {
                 
                 row(
                     label: "Envío",
-                    value: DoubleUtils.formatearPrecio(valor: pedido.envio),
+                    value: DoubleUtils.formatearPrecio(
+                        valor: esLivery ? pedido.envio + pedido.tarifaServicio : pedido.envio
+                    ),
                     isBoldValue: true
                 )
                 

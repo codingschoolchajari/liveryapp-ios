@@ -343,8 +343,11 @@ struct ResumenView: View {
     var body: some View {
         let tarifaServicio = carritoViewModel.aplicaTarifaServicio ?
         (perfilUsuarioState.configuracion?.tarifaServicio ?? StringUtils.tarifaServicioDefault) : 0.0
-        
-        let subtotal = carritoViewModel.precioTotal + tarifaServicio
+
+        let esLivery = carritoViewModel.tipoEntregaSeleccionada == .envioLivery
+        let subtotal = esLivery
+            ? carritoViewModel.precioTotal
+            : carritoViewModel.precioTotal + tarifaServicio
         
         VStack(alignment: .leading, spacing: 2) {
             Text("Resumen")
@@ -359,14 +362,17 @@ struct ResumenView: View {
             }
             .font(.custom("Barlow", size: 16))
             .foregroundColor(.negro)
-            
-            HStack {
-                Text("Tarifa de Servicio")
-                Spacer()
-                Text(DoubleUtils.formatearPrecio(valor: tarifaServicio))
+
+            // En Envío Livery la tarifa se suma al envío, no se muestra acá
+            if !esLivery {
+                HStack {
+                    Text("Impuesto de Aplicación")
+                    Spacer()
+                    Text(DoubleUtils.formatearPrecio(valor: tarifaServicio))
+                }
+                .font(.custom("Barlow", size: 16))
+                .foregroundColor(.negro)
             }
-            .font(.custom("Barlow", size: 16))
-            .foregroundColor(.negro)
             
             HStack {
                 Text("Subtotal")
@@ -377,7 +383,7 @@ struct ResumenView: View {
             .bold()
             .foregroundColor(.negro)
             
-            if (carritoViewModel.tipoEntregaSeleccionada != TipoEntrega.retiroEnComercio) {
+            if carritoViewModel.tipoEntregaSeleccionada != .retiroEnComercio {
                 Divider().padding(.vertical, 4)
                 
                 HStack {
@@ -394,7 +400,11 @@ struct ResumenView: View {
                     Text("Envío")
                     Spacer()
                     if carritoViewModel.envio > 0 {
-                        Text(DoubleUtils.formatearPrecio(valor: carritoViewModel.envio))
+                        // En Envío Livery la tarifa se suma al costo del envío
+                        let envioMostrado = esLivery
+                            ? carritoViewModel.envio + tarifaServicio
+                            : carritoViewModel.envio
+                        Text(DoubleUtils.formatearPrecio(valor: envioMostrado))
                             .fontWeight(.bold)
                     }
                 }
@@ -511,9 +521,36 @@ struct ConfirmacionView: View {
 struct BottomSheetPagoCarrito: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var carritoViewModel: CarritoViewModel
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
 
     let tarifaServicio: Double
     let onConfirmarPedido: () -> Void
+
+    @State private var tabSeleccionado: Int = 0
+
+    private var limitePagoEfectivo: Double {
+        perfilUsuarioState.configuracion?.limitePagoEfectivo ?? 0.0
+    }
+
+    private var superaLimiteEfectivo: Bool {
+        guard limitePagoEfectivo > 0 else { return false }
+        let descuento = carritoViewModel.calcularMontoDescuentoEfectivo()
+        let base = carritoViewModel.precioTotal - descuento
+        let total = carritoViewModel.tipoEntregaSeleccionada == .envioLivery
+            ? base
+            : base + tarifaServicio
+        return total > limitePagoEfectivo
+    }
+
+    private var confirmarHabilitado: Bool {
+        switch tabSeleccionado {
+        case 0: return carritoViewModel.comprobanteSeleccionado != nil
+        case 1: return !superaLimiteEfectivo
+            && carritoViewModel.codigoVerificacion.count == 6
+            && carritoViewModel.estadoEnvioCodigo == .enviado
+        default: return false
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -521,7 +558,6 @@ struct BottomSheetPagoCarrito: View {
                 VStack(spacing: 0) {
                     HStack {
                         Spacer()
-
                         Button(action: { dismiss() }) {
                             Image("icono_cerrar")
                                 .resizable()
@@ -546,11 +582,12 @@ struct BottomSheetPagoCarrito: View {
 
                     Spacer().frame(height: 8)
 
-                    SelectorMetodoPagoView()
+                    SelectorMetodoPagoView(tabSeleccionado: $tabSeleccionado)
 
                     Spacer().frame(height: 8)
 
-                    if carritoViewModel.pagoTransferencia {
+                    switch tabSeleccionado {
+                    case 0:
                         SeccionDesplegable(
                             titulo: "Datos Bancarios",
                             expandidoInicialmente: false,
@@ -561,9 +598,7 @@ struct BottomSheetPagoCarrito: View {
                                 )
                             }
                         )
-
                         Spacer().frame(height: 8)
-
                         SeccionDesplegable(
                             titulo: "Comprobante",
                             expandidoInicialmente: true,
@@ -579,14 +614,10 @@ struct BottomSheetPagoCarrito: View {
                                 )
                             }
                         )
-                    } else {
-                        Text("El pago se realizará en efectivo al retirar o recibir tu pedido.")
-                            .font(.custom("Barlow", size: 14))
-                            .bold()
-                            .foregroundColor(.grisSecundario)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 12)
+                    case 1:
+                        SeccionEfectivo(superaLimite: superaLimiteEfectivo, limitePagoEfectivo: limitePagoEfectivo)
+                    default:
+                        EmptyView()
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -600,53 +631,235 @@ struct BottomSheetPagoCarrito: View {
             Spacer().frame(height: 12)
 
             Button(action: {
-                onConfirmarPedido()
-                dismiss()
+                Task {
+                    if tabSeleccionado == 1 {
+                        let valido = await carritoViewModel.validarCodigoVerificacion(
+                            perfilUsuarioState: perfilUsuarioState
+                        )
+                        if !valido { return }
+                    }
+                    onConfirmarPedido()
+                    dismiss()
+                }
             }) {
                 Text("Confirmar Pedido")
                     .font(.custom("Barlow", size: 16))
                     .bold()
-                    .foregroundColor(botonConfirmarHabilitado ? .blanco : .grisSecundario)
+                    .foregroundColor(confirmarHabilitado ? .blanco : .grisSecundario)
                     .frame(maxWidth: .infinity)
                     .frame(height: 45)
-                    .background(botonConfirmarHabilitado ? Color.verdePrincipal : .grisSurface)
+                    .background(confirmarHabilitado ? Color.verdePrincipal : .grisSurface)
                     .cornerRadius(24)
             }
-            .disabled(!botonConfirmarHabilitado)
+            .disabled(!confirmarHabilitado)
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.blanco)
+        .onChange(of: tabSeleccionado) { _, newTab in
+            carritoViewModel.onPagoTransferenciaChange(newTab == 0)
+        }
+        .alert("Error enviando código", isPresented: $carritoViewModel.mostrarErrorTelefono) {
+            Button("Aceptar", role: .cancel) { carritoViewModel.descartarErrorTelefono() }
+        } message: {
+            Text("Hubo un error al enviar el código de verificación. Por favor verificá el código de país y el número.")
+        }
+        .alert("Código inválido", isPresented: $carritoViewModel.mostrarErrorCodigo) {
+            Button("Aceptar", role: .cancel) { carritoViewModel.descartarErrorCodigo() }
+        } message: {
+            Text("El código de verificación ingresado no es válido. Revisá el código o solicitá uno nuevo.")
+        }
+    }
+}
+
+// MARK: – Sección Efectivo
+private struct SeccionEfectivo: View {
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+
+    let superaLimite: Bool
+    let limitePagoEfectivo: Double
+
+    var body: some View {
+        VStack(spacing: 12) {
+            if superaLimite {
+                Text("El límite máximo para pago en efectivo es de \(DoubleUtils.formatearPrecio(valor: limitePagoEfectivo)). Utilizá la opción de transferencia para realizar tu pedido.")
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.rojoError)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 8)
+            } else {
+                Text("Ingresá tu número de WhatsApp para recibir el código de verificación.")
+                    .font(.custom("Barlow", size: 13))
+                    .foregroundColor(.negro)
+                    .multilineTextAlignment(.center)
+
+                HStack(spacing: 8) {
+                    CelularPaisSelector(
+                        pais: carritoViewModel.celularPais,
+                        onPaisChange: { carritoViewModel.onCelularPaisChange($0) }
+                    )
+
+                    TextField("Sin 0 y sin 15", text: Binding(
+                        get: { carritoViewModel.celularNumero },
+                        set: { carritoViewModel.onCelularNumeroChange($0) }
+                    ))
+                    .keyboardType(.numberPad)
+                    .font(.custom("Barlow", size: 16))
+                    .bold()
+                    .foregroundColor(.negro)
+                    .frame(height: 48)
+                    .padding(.horizontal, 8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.grisSecundario, lineWidth: 1)
+                    )
+
+                    let puedeEnviar = !carritoViewModel.celularNumero.isEmpty
+                        && carritoViewModel.estadoEnvioCodigo != .enviando
+                    Button(action: {
+                        carritoViewModel.enviarCodigoVerificacion(perfilUsuarioState: perfilUsuarioState)
+                    }) {
+                        Group {
+                            if carritoViewModel.estadoEnvioCodigo == .enviando {
+                                ProgressView()
+                                    .tint(.blanco)
+                                    .frame(width: 20, height: 20)
+                            } else {
+                                Text(carritoViewModel.estadoEnvioCodigo == .enviado ? "Reenviar" : "Enviar código")
+                                    .font(.custom("Barlow", size: 12))
+                                    .bold()
+                                    .foregroundColor(puedeEnviar ? .blanco : .grisSecundario)
+                            }
+                        }
+                        .frame(height: 48)
+                        .padding(.horizontal, 10)
+                        .background(puedeEnviar ? Color.verdePrincipal : Color.grisSurface)
+                        .cornerRadius(8)
+                    }
+                    .disabled(!puedeEnviar)
+                }
+
+                if carritoViewModel.estadoEnvioCodigo == .enviado
+                    || carritoViewModel.estadoEnvioCodigo == .error {
+                    VStack(spacing: 4) {
+                        Text("Ingresá el código de 6 dígitos que recibiste por WhatsApp.")
+                            .font(.custom("Barlow", size: 13))
+                            .foregroundColor(.negro)
+                            .multilineTextAlignment(.center)
+
+                        TextField("------", text: Binding(
+                            get: { carritoViewModel.codigoVerificacion },
+                            set: { carritoViewModel.onCodigoVerificacionChange($0) }
+                        ))
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.center)
+                        .font(.custom("Barlow", size: 20))
+                        .bold()
+                        .foregroundColor(.negro)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(
+                                    carritoViewModel.codigoVerificado
+                                        ? Color.verdePrincipal : Color.grisSecundario,
+                                    lineWidth: 1
+                                )
+                        )
+
+                        if carritoViewModel.codigoVerificado {
+                            Text("Código verificado")
+                                .font(.custom("Barlow", size: 12))
+                                .foregroundColor(.verdePrincipal)
+                        }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: – Selector país celular
+private struct CelularPaisSelector: View {
+    struct PaisCelular: Identifiable {
+        let id = UUID()
+        let iso: String
+        let codigo: String
+    }
+    private let paises: [PaisCelular] = [
+        .init(iso: "ar", codigo: "+54"),
+        .init(iso: "br", codigo: "+55"),
+        .init(iso: "cl", codigo: "+56"),
+        .init(iso: "uy", codigo: "+598"),
+        .init(iso: "py", codigo: "+595")
+    ]
+
+    let pais: String
+    let onPaisChange: (String) -> Void
+
+    @State private var expanded = false
+
+    var paisActual: PaisCelular {
+        paises.first { $0.codigo == pais } ?? paises[0]
     }
 
-    private var botonConfirmarHabilitado: Bool {
-        carritoViewModel.pagoTransferencia ? carritoViewModel.comprobanteSeleccionado != nil : true
+    var body: some View {
+        Menu {
+            ForEach(paises) { p in
+                Button(action: { onPaisChange(p.codigo) }) {
+                    Text("\(p.codigo)")
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                AsyncImage(url: URL(string: "https://flagcdn.com/80x60/\(paisActual.iso).png")) { phase in
+                    if let img = phase.image {
+                        img.resizable().scaledToFill()
+                            .frame(width: 20, height: 15)
+                            .clipShape(RoundedRectangle(cornerRadius: 2))
+                    } else {
+                        Color.grisSurface.frame(width: 20, height: 15)
+                    }
+                }
+                Text(paisActual.codigo)
+                    .font(.custom("Barlow", size: 13))
+                    .bold()
+                    .foregroundColor(.negro)
+            }
+            .frame(width: 78, height: 48)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.grisSecundario, lineWidth: 1)
+            )
+        }
     }
 }
 
 private struct SelectorMetodoPagoView: View {
     @EnvironmentObject var carritoViewModel: CarritoViewModel
+    @Binding var tabSeleccionado: Int
 
     var body: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 0) {
-                botonMetodoPago(titulo: "Transferencia", esTransferencia: true)
-                botonMetodoPago(titulo: "Efectivo", esTransferencia: false)
-            }
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.grisSecundario, lineWidth: 1)
-            )
+        HStack(spacing: 0) {
+            botonTab(titulo: "Transferencia", index: 0)
+            botonTab(titulo: "Efectivo", index: 1)
         }
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.grisSecundario, lineWidth: 1)
+        )
     }
 
-    private func botonMetodoPago(titulo: String, esTransferencia: Bool) -> some View {
-        let seleccionado = carritoViewModel.pagoTransferencia == esTransferencia
-
-        return Button(action: {
-            carritoViewModel.onPagoTransferenciaChange(esTransferencia)
-        }) {
+    private func botonTab(titulo: String, index: Int) -> some View {
+        let seleccionado = tabSeleccionado == index
+        return Button(action: { tabSeleccionado = index }) {
             Text(titulo)
                 .font(.custom("Barlow", size: 14))
                 .bold()

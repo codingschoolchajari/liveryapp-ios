@@ -19,6 +19,12 @@ struct DescuentoPedido: Codable {
     var monto: Double
 }
 
+struct ModalidadPago: Codable {
+    var tipo: String
+    var celular: String? = nil
+    var codigoVerificacion: String? = nil
+}
+
 struct Pedido: Codable, Identifiable {
     let idInterno: String
     let email: String
@@ -36,6 +42,7 @@ struct Pedido: Codable, Identifiable {
     var tiempoRecorridoEstimado: Int? = nil
     let precioTotal: Double
     var descuentos: [DescuentoPedido]? = nil
+    var modalidadPago: ModalidadPago? = nil
     let itemsProductos: [ItemProducto]
     let itemsPromociones: [ItemPromocion]
     var estado: Estado? = nil
@@ -50,6 +57,6 @@ struct Pedido: Codable, Identifiable {
         case idInterno, email, nombreUsuario, idComercio, nombreComercio
         case logoComercioURL, localidad, idRepartidor, direccion, notas
         case tipoEntrega, tarifaServicio, envio, tiempoRecorridoEstimado
-        case precioTotal, descuentos, itemsProductos, itemsPromociones, estado, comentario
+        case precioTotal, descuentos, modalidadPago, itemsProductos, itemsPromociones, estado, comentario
     }
 }

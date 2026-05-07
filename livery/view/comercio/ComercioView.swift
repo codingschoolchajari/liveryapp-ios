@@ -45,7 +45,15 @@ struct ComercioView: View {
 struct Portada: View {
     let comercio: Comercio
     
+    private var descuentosFiltrados: [ComercioDescuento] {
+        (comercio.descuentos ?? []).filter { $0.porcentaje > 0.0 }
+    }
+    
     var body: some View {
+        // offsetY = 100 para 0 descuentos; se eleva 46pt por cada descuento (44 height + 2 spacing)
+        let descuentos = descuentosFiltrados
+        let offsetY: CGFloat = 100 - CGFloat(descuentos.count) * 46
+        
         ZStack(alignment: .top) {
             VStack {
                 RemoteImage(url: URL(string: API.baseURL + "/" + comercio.imagenURL))
@@ -54,34 +62,31 @@ struct Portada: View {
             .clipShape(RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight]))
             .background(Color.blanco)
 
-            if let descuentos = comercio.descuentos, !descuentos.isEmpty {
-                VStack(spacing: 6) {
-                    ForEach(Array(descuentos.enumerated()), id: \.offset) { _, descuento in
-                        BoxDescuentoPortada(descuento: descuento)
-                    }
+            // Título + descuentos en una sola columna anclada al fondo (igual que Android)
+            VStack(spacing: 2) {
+                VStack {
+                    ComercioTitulo(
+                        comercio: comercio,
+                        mostrarBotonAdd: false,
+                        mostrarHorarios: false
+                    )
+                    .padding(.horizontal, 16)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-            }
-            
-            VStack {
-                ComercioTitulo(
-                    comercio: comercio,
-                    mostrarBotonAdd: false,
-                    mostrarHorarios: false
+                .frame(maxWidth: .infinity)
+                .frame(height: 80)
+                .background(Color.blanco)
+                .cornerRadius(24)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.grisSecundario, lineWidth: 2)
                 )
-                .padding(.horizontal, 16)
+
+                ForEach(Array(descuentos.enumerated()), id: \.offset) { _, descuento in
+                    BoxDescuentoPortada(descuento: descuento)
+                }
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 80)
-            .background(Color.blanco)
-            .cornerRadius(24)
-            .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color.grisSecundario, lineWidth: 2)
-            )
             .padding(.horizontal, 20)
-            .offset(y: 100)
+            .offset(y: offsetY)
         }
     }
 }
@@ -90,29 +95,24 @@ private struct BoxDescuentoPortada: View {
     let descuento: ComercioDescuento
 
     var body: some View {
-        HStack(spacing: 6) {
-            Text(descuento.descripcion)
-                .font(.custom("Barlow", size: 13))
-                .bold()
-                .foregroundColor(.naranjaIntentosRestantes)
-                .lineLimit(1)
+        let porcentajeTexto = descuento.porcentaje.truncatingRemainder(dividingBy: 1.0) == 0
+            ? "\(Int(descuento.porcentaje))"
+            : "\(descuento.porcentaje)"
 
-            Spacer(minLength: 6)
-
-            Text("\(Int(descuento.porcentaje))% OFF")
-                .font(.custom("Barlow", size: 13))
-                .bold()
-                .foregroundColor(.negro)
-        }
-        .padding(.horizontal, 12)
-        .frame(maxWidth: .infinity)
-        .frame(height: 28)
-        .background(Color.blanco.opacity(0.92))
-        .cornerRadius(10)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.grisSecundario, lineWidth: 1)
-        )
+        Text("\(descuento.descripcion) (\(porcentajeTexto)%)")
+            .font(.custom("Barlow", size: 13))
+            .bold()
+            .foregroundColor(.verdePrincipal)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 12)
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .background(Color.blanco)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.grisSecundario, lineWidth: 2)
+            )
     }
 }
 

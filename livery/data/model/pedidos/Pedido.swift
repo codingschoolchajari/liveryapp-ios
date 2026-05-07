@@ -19,12 +19,6 @@ struct DescuentoPedido: Codable {
     var monto: Double
 }
 
-struct ModalidadPago: Codable {
-    var tipo: String
-    var celular: String? = nil
-    var codigoVerificacion: String? = nil
-}
-
 struct Pedido: Codable, Identifiable {
     let idInterno: String
     let email: String

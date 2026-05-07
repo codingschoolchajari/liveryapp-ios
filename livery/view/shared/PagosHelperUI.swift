@@ -217,7 +217,7 @@ struct ComprobantePagoView: View {
     }
 
     private func procesarFotoDeGaleria(item: PhotosPickerItem) {
-        Task {
+        Task { @MainActor in
             if let data = try? await item.loadTransferable(type: Data.self),
                let dataRedimensionada = redimensionarImagen(
                     imageBytes: data,

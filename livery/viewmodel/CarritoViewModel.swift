@@ -442,6 +442,7 @@ class CarritoViewModel: ObservableObject {
     func onCelularPaisChange(_ pais: String) { celularPais = pais }
 
     func onCelularNumeroChange(_ numero: String) {
+        guard numero != celularNumero else { return }
         celularNumero = numero
         if estadoEnvioCodigo == .enviado {
             estadoEnvioCodigo = .idle

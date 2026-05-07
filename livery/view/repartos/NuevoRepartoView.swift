@@ -132,6 +132,8 @@ struct NuevoRepartoView: View {
                 }
                 .padding(.horizontal, 8)
                 .frame(height: UIScreen.main.bounds.height * 0.28)
+
+                Spacer().frame(height: 12)
             }
 
             // Contenido scrollable del paso

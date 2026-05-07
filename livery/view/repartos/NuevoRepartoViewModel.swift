@@ -153,7 +153,9 @@ class NuevoRepartoViewModel: ObservableObject {
     }
 
     func onCelularNumeroChange(_ texto: String) {
-        celularNumero = String(texto.filter { $0.isNumber }.prefix(10))
+        let nuevo = String(texto.filter { $0.isNumber }.prefix(10))
+        guard nuevo != celularNumero else { return }
+        celularNumero = nuevo
         if estadoEnvioCodigo == .enviado {
             estadoEnvioCodigo = .idle
             codigoVerificacion = ""

@@ -63,7 +63,7 @@ struct Portada: View {
             .background(Color.blanco)
 
             // Título + descuentos en una sola columna anclada al fondo (igual que Android)
-            VStack(spacing: 2) {
+            VStack(spacing: 4) {
                 VStack {
                     ComercioTitulo(
                         comercio: comercio,
@@ -106,7 +106,7 @@ private struct BoxDescuentoPortada: View {
             .multilineTextAlignment(.center)
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity)
-            .frame(height: 44)
+            .frame(height: 38)
             .background(Color.blanco)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(

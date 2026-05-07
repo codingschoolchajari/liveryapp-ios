@@ -706,10 +706,10 @@ private struct SeccionEfectivo: View {
                         onPaisChange: { carritoViewModel.onCelularPaisChange($0) }
                     )
 
-                    TextField("Sin 0 y sin 15", text: Binding(
+                    TextField("", text: Binding(
                         get: { carritoViewModel.celularNumero },
                         set: { carritoViewModel.onCelularNumeroChange($0) }
-                    ))
+                    ), prompt: Text("Sin 0 y sin 15").foregroundColor(.grisSecundario))
                     .keyboardType(.numberPad)
                     .font(.custom("Barlow", size: 16))
                     .bold()

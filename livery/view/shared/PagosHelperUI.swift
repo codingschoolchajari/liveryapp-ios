@@ -225,36 +225,26 @@ struct ComprobantePagoView: View {
 
     private func procesarFotoDeGaleria(item: PhotosPickerItem) {
         Task {
-            // Intentar cargar como Data (con .compatible fuerza JPEG en lugar de HEIC)
-            var imagenUIKit: UIImage? = nil
-
-            if let data = try? await item.loadTransferable(type: Data.self),
-               let imagen = UIImage(data: data) {
-                imagenUIKit = imagen
-            }
-
-            // Fallback: si loadTransferable falla (puede ocurrir en builds de distribución),
-            // cargar usando el NSItemProvider subyacente
-            if imagenUIKit == nil {
-                imagenUIKit = await withCheckedContinuation { continuation in
-                    item.itemProvider.loadObject(ofClass: UIImage.self) { obj, _ in
-                        continuation.resume(returning: obj as? UIImage)
-                    }
-                }
-            }
-
-            guard let imagenCargada = imagenUIKit else {
-                print("❌ ComprobantePagoView: no se pudo cargar la imagen desde galería")
+            // preferredItemEncoding: .compatible (definido en .photosPicker) fuerza
+            // que el sistema entregue JPEG en lugar de HEIC antes de llegar aquí.
+            guard let data = try? await item.loadTransferable(type: Data.self) else {
+                print("❌ ComprobantePagoView: loadTransferable devolvió nil")
                 return
             }
 
-            // Convertir a JPEG para redimensionar (asegura compatibilidad cross-build)
-            let rawData = imagenCargada.jpegData(compressionQuality: 1.0) ?? Data()
+            guard let imagenCargada = UIImage(data: data) else {
+                print("❌ ComprobantePagoView: UIImage(data:) devolvió nil")
+                return
+            }
+
+            // Convertir a JPEG para garantizar compatibilidad en redimensionarImagen
+            let rawData = imagenCargada.jpegData(compressionQuality: 1.0) ?? data
 
             guard let dataFinal = redimensionarImagen(imageBytes: rawData, maxWidth: 1000, maxHeight: 1200) else {
                 print("❌ ComprobantePagoView: redimensionarImagen devolvió nil")
                 return
             }
+
             let comprobante = Comprobante(
                 contenido: dataFinal,
                 nombre: "comprobante_\(Int(Date().timeIntervalSince1970)).jpg",

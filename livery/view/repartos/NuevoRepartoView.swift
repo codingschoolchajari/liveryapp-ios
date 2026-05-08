@@ -409,6 +409,7 @@ private struct PasoComercioView: View {
             }
             .opacity(viewModel.modoManual ? 0 : 1)
             .allowsHitTesting(!viewModel.modoManual)
+            .zIndex(999)
 
             // Calle y Número
             GeometryReader { geo in

@@ -256,9 +256,12 @@ class DireccionViewModel: ObservableObject {
 
         onCalleChange(calle)
         onNumeroChange(numero)
-        
+
         if let coords = place.coordinate.latitude != 0 ? place.coordinate : nil {
             self.coordenadas = coords
+            // Cancelar el geocoding programado por onNumeroChange: las coordenadas
+            // de Google Places son más precisas que las de CLGeocoder con texto libre.
+            geocodingTask?.cancel()
         }
     }
 

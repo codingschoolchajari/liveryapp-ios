@@ -7,6 +7,7 @@
 import SwiftUI
 import CoreLocation
 import GooglePlaces
+import GoogleMaps
 
 @MainActor
 class DireccionViewModel: ObservableObject {
@@ -281,11 +282,40 @@ class DireccionViewModel: ObservableObject {
     }
 
     private func geocodificarCalleNumero(calle: String, numero: String) async {
-        let geocoder = CLGeocoder()
         let query = calle + " " + numero
-        guard let placemarks = try? await geocoder.geocodeAddressString(query),
-              let location = placemarks.first?.location else { return }
-        coordenadas = location.coordinate
+
+        // Usar GMSGeocoder (mismo motor que Google Maps) para que el resultado
+        // coincida con lo que muestra Google Maps para un número de calle dado.
+        let geocoder = GMSGeocoder()
+
+        await withCheckedContinuation { continuation in
+            if let centro = coordenadasInicialesGPS ?? coordenadas {
+                // Restringir la búsqueda a un área de ~15km alrededor de la ubicación actual
+                let delta: CLLocationDegrees = 0.15
+                let swCorner = CLLocationCoordinate2D(
+                    latitude: centro.latitude - delta,
+                    longitude: centro.longitude - delta
+                )
+                let neCorner = CLLocationCoordinate2D(
+                    latitude: centro.latitude + delta,
+                    longitude: centro.longitude + delta
+                )
+                let bounds = GMSCoordinateBounds(coordinate: swCorner, coordinate: neCorner)
+                geocoder.geocodeAddressString(query, bounds: bounds) { [weak self] response, _ in
+                    if let coordinate = response?.firstResult()?.coordinate {
+                        DispatchQueue.main.async { self?.coordenadas = coordinate }
+                    }
+                    continuation.resume()
+                }
+            } else {
+                geocoder.geocodeAddressString(query) { [weak self] response, _ in
+                    if let coordinate = response?.firstResult()?.coordinate {
+                        DispatchQueue.main.async { self?.coordenadas = coordinate }
+                    }
+                    continuation.resume()
+                }
+            }
+        }
     }
 
     private func normalizarPalabras(_ texto: String) -> String {

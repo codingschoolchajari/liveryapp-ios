@@ -1,6 +1,7 @@
 ﻿import Foundation
 import CoreLocation
 import GooglePlaces
+import GoogleMaps
 
 enum EstadoEnvioCodigo {
     case idle, enviando, enviado, error
@@ -129,11 +130,37 @@ class NuevoRepartoViewModel: ObservableObject {
     }
 
     private func geocodificarCalleNumero(calle: String, numero: String) async {
-        let geocoder = CLGeocoder()
         let query = calle + " " + numero
-        guard let placemarks = try? await geocoder.geocodeAddressString(query),
-              let location = placemarks.first?.location else { return }
-        coordenadasDestino = location.coordinate
+
+        let geocoder = GMSGeocoder()
+
+        await withCheckedContinuation { continuation in
+            if let centro = coordenadasDestino {
+                let delta: CLLocationDegrees = 0.15
+                let swCorner = CLLocationCoordinate2D(
+                    latitude: centro.latitude - delta,
+                    longitude: centro.longitude - delta
+                )
+                let neCorner = CLLocationCoordinate2D(
+                    latitude: centro.latitude + delta,
+                    longitude: centro.longitude + delta
+                )
+                let bounds = GMSCoordinateBounds(coordinate: swCorner, coordinate: neCorner)
+                geocoder.geocodeAddressString(query, bounds: bounds) { [weak self] response, _ in
+                    if let coordinate = response?.firstResult()?.coordinate {
+                        DispatchQueue.main.async { self?.coordenadasDestino = coordinate }
+                    }
+                    continuation.resume()
+                }
+            } else {
+                geocoder.geocodeAddressString(query) { [weak self] response, _ in
+                    if let coordinate = response?.firstResult()?.coordinate {
+                        DispatchQueue.main.async { self?.coordenadasDestino = coordinate }
+                    }
+                    continuation.resume()
+                }
+            }
+        }
     }
 
     func seleccionarModo(manual: Bool) {

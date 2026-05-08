@@ -288,7 +288,7 @@ class DireccionViewModel: ObservableObject {
         // coincida con lo que muestra Google Maps para un número de calle dado.
         let geocoder = GMSGeocoder()
 
-        await withCheckedContinuation { continuation in
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             if let centro = coordenadasInicialesGPS ?? coordenadas {
                 // Restringir la búsqueda a un área de ~15km alrededor de la ubicación actual
                 let delta: CLLocationDegrees = 0.15

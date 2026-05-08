@@ -132,7 +132,10 @@ class NuevoRepartoViewModel: ObservableObject {
         let query = calle + " " + numero
 
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "GOOGLE_MAPS_API_KEY") as? String,
-              !apiKey.isEmpty else { return }
+              !apiKey.isEmpty else {
+            print("❌ [Geocoding] API key no encontrada")
+            return
+        }
 
         var components = URLComponents(string: "https://maps.googleapis.com/maps/api/geocode/json")!
         var queryItems = [
@@ -147,20 +150,38 @@ class NuevoRepartoViewModel: ObservableObject {
             let ne = "\(centro.latitude + delta),\(centro.longitude + delta)"
             queryItems.append(URLQueryItem(name: "bounds", value: "\(sw)|\(ne)"))
         }
-
         components.queryItems = queryItems
 
-        guard let url = components.url,
-              let data = try? await URLSession.shared.data(from: url).0,
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let results = json["results"] as? [[String: Any]],
-              let geometry = results.first?["geometry"] as? [String: Any],
-              let location = geometry["location"] as? [String: Any],
-              let lat = location["lat"] as? Double,
-              let lng = location["lng"] as? Double
-        else { return }
+        guard let url = components.url else {
+            print("❌ [Geocoding] URL inválida")
+            return
+        }
 
-        coordenadasDestino = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+        print("🌍 [Geocoding] consultando: \(query)")
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                print("❌ [Geocoding] JSON inválido")
+                return
+            }
+            let status = json["status"] as? String ?? "desconocido"
+            guard let results = json["results"] as? [[String: Any]], !results.isEmpty else {
+                print("❌ [Geocoding] sin resultados — status: \(status)")
+                return
+            }
+            guard let geometry = results.first?["geometry"] as? [String: Any],
+                  let location = geometry["location"] as? [String: Any],
+                  let lat = location["lat"] as? Double,
+                  let lng = location["lng"] as? Double else {
+                print("❌ [Geocoding] no se pudo extraer coordenadas")
+                return
+            }
+            print("✅ [Geocoding] resultado: (\(lat), \(lng))")
+            coordenadasDestino = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+        } catch {
+            print("❌ [Geocoding] error de red: \(error.localizedDescription)")
+        }
     }
 
     func seleccionarModo(manual: Bool) {

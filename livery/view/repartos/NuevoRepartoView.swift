@@ -506,6 +506,7 @@ private struct PasoDescripcionView: View {
                 .foregroundColor(.negro)
                 .frame(minHeight: 140, maxHeight: 140)
                 .padding(8)
+                .scrollContentBackground(.hidden)
                 .background(Color.blanco)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)

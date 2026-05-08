@@ -301,14 +301,14 @@ class DireccionViewModel: ObservableObject {
                     longitude: centro.longitude + delta
                 )
                 let bounds = GMSCoordinateBounds(coordinate: swCorner, coordinate: neCorner)
-                geocoder.geocodeAddressString(query, bounds: bounds) { [weak self] response, _ in
+                geocoder.geocodeAddressString(query, bounds: bounds) { [weak self] (response: GMSGeocoderResponse?, _: Error?) in
                     if let coordinate = response?.firstResult()?.coordinate {
                         DispatchQueue.main.async { self?.coordenadas = coordinate }
                     }
                     continuation.resume()
                 }
             } else {
-                geocoder.geocodeAddressString(query) { [weak self] response, _ in
+                geocoder.geocodeAddressString(query) { [weak self] (response: GMSGeocoderResponse?, _: Error?) in
                     if let coordinate = response?.firstResult()?.coordinate {
                         DispatchQueue.main.async { self?.coordenadas = coordinate }
                     }

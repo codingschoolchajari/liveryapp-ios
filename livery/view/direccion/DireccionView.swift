@@ -108,11 +108,13 @@ struct FormularioDireccionView: View {
                     .padding(.horizontal, 30)
 
                     // Buscador (solo en modo Buscar Dirección)
+                    // zIndex alto para que el dropdown flotante aparezca sobre los campos del formulario
                     PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in
                         direccionViewModel.actualizarDesdePlace(place)
                     }
                     .opacity(direccionViewModel.modoManual ? 0 : 1)
                     .allowsHitTesting(!direccionViewModel.modoManual)
+                    .zIndex(999)
 
                     // Calle | Número | Dpto (proporciones 2:1:1)
                     GeometryReader { geo in

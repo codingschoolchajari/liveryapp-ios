@@ -1,7 +1,6 @@
 ﻿import Foundation
 import CoreLocation
 import GooglePlaces
-import GoogleMaps
 
 enum EstadoEnvioCodigo {
     case idle, enviando, enviado, error
@@ -132,35 +131,36 @@ class NuevoRepartoViewModel: ObservableObject {
     private func geocodificarCalleNumero(calle: String, numero: String) async {
         let query = calle + " " + numero
 
-        let geocoder = GMSGeocoder()
+        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "GOOGLE_MAPS_API_KEY") as? String,
+              !apiKey.isEmpty else { return }
 
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            if let centro = coordenadasDestino {
-                let delta: CLLocationDegrees = 0.15
-                let swCorner = CLLocationCoordinate2D(
-                    latitude: centro.latitude - delta,
-                    longitude: centro.longitude - delta
-                )
-                let neCorner = CLLocationCoordinate2D(
-                    latitude: centro.latitude + delta,
-                    longitude: centro.longitude + delta
-                )
-                let bounds = GMSCoordinateBounds(coordinate: swCorner, coordinate: neCorner)
-                geocoder.geocodeAddressString(query, bounds: bounds) { [weak self] (response: GMSGeocoderResponse?, _: Error?) in
-                    if let coordinate = response?.firstResult()?.coordinate {
-                        DispatchQueue.main.async { self?.coordenadasDestino = coordinate }
-                    }
-                    continuation.resume()
-                }
-            } else {
-                geocoder.geocodeAddressString(query) { [weak self] (response: GMSGeocoderResponse?, _: Error?) in
-                    if let coordinate = response?.firstResult()?.coordinate {
-                        DispatchQueue.main.async { self?.coordenadasDestino = coordinate }
-                    }
-                    continuation.resume()
-                }
-            }
+        var components = URLComponents(string: "https://maps.googleapis.com/maps/api/geocode/json")!
+        var queryItems = [
+            URLQueryItem(name: "address", value: query),
+            URLQueryItem(name: "region", value: "ar"),
+            URLQueryItem(name: "key", value: apiKey)
+        ]
+
+        if let centro = coordenadasDestino {
+            let delta = 0.15
+            let sw = "\(centro.latitude - delta),\(centro.longitude - delta)"
+            let ne = "\(centro.latitude + delta),\(centro.longitude + delta)"
+            queryItems.append(URLQueryItem(name: "bounds", value: "\(sw)|\(ne)"))
         }
+
+        components.queryItems = queryItems
+
+        guard let url = components.url,
+              let data = try? await URLSession.shared.data(from: url).0,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let results = json["results"] as? [[String: Any]],
+              let geometry = results.first?["geometry"] as? [String: Any],
+              let location = geometry["location"] as? [String: Any],
+              let lat = location["lat"] as? Double,
+              let lng = location["lng"] as? Double
+        else { return }
+
+        coordenadasDestino = CLLocationCoordinate2D(latitude: lat, longitude: lng)
     }
 
     func seleccionarModo(manual: Bool) {

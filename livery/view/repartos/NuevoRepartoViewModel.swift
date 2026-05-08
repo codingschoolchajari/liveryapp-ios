@@ -134,7 +134,7 @@ class NuevoRepartoViewModel: ObservableObject {
 
         let geocoder = GMSGeocoder()
 
-        await withCheckedContinuation { continuation in
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             if let centro = coordenadasDestino {
                 let delta: CLLocationDegrees = 0.15
                 let swCorner = CLLocationCoordinate2D(

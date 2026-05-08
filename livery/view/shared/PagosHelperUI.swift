@@ -197,7 +197,7 @@ struct ComprobantePagoView: View {
             }
             Button("Cancelar", role: .cancel) {}
         }
-        .photosPicker(isPresented: $mostrarSelectorFotos, selection: $fotoSeleccionada, matching: .images)
+        .photosPicker(isPresented: $mostrarSelectorFotos, selection: $fotoSeleccionada, matching: .images, preferredItemEncoding: .compatible)
         .onChange(of: fotoSeleccionada) { _, newItem in
             if let newItem {
                 procesarFotoDeGaleria(item: newItem)
@@ -225,11 +225,33 @@ struct ComprobantePagoView: View {
 
     private func procesarFotoDeGaleria(item: PhotosPickerItem) {
         Task {
-            guard let data = try? await item.loadTransferable(type: Data.self) else {
-                print("❌ ComprobantePagoView: loadTransferable devolvió nil")
+            // Intentar cargar como Data (con .compatible fuerza JPEG en lugar de HEIC)
+            var imagenUIKit: UIImage? = nil
+
+            if let data = try? await item.loadTransferable(type: Data.self),
+               let imagen = UIImage(data: data) {
+                imagenUIKit = imagen
+            }
+
+            // Fallback: si loadTransferable falla (puede ocurrir en builds de distribución),
+            // cargar usando el NSItemProvider subyacente
+            if imagenUIKit == nil {
+                imagenUIKit = await withCheckedContinuation { continuation in
+                    item.itemProvider.loadObject(ofClass: UIImage.self) { obj, _ in
+                        continuation.resume(returning: obj as? UIImage)
+                    }
+                }
+            }
+
+            guard let imagenCargada = imagenUIKit else {
+                print("❌ ComprobantePagoView: no se pudo cargar la imagen desde galería")
                 return
             }
-            guard let dataFinal = redimensionarImagen(imageBytes: data, maxWidth: 1000, maxHeight: 1200) else {
+
+            // Convertir a JPEG para redimensionar (asegura compatibilidad cross-build)
+            let rawData = imagenCargada.jpegData(compressionQuality: 1.0) ?? Data()
+
+            guard let dataFinal = redimensionarImagen(imageBytes: rawData, maxWidth: 1000, maxHeight: 1200) else {
                 print("❌ ComprobantePagoView: redimensionarImagen devolvió nil")
                 return
             }

@@ -38,6 +38,7 @@ struct PlacesSearchBar: View {
                 .foregroundColor(.negro)
                 .background(Color.blanco)
                 .onChange(of: searchText) { oldValue, newValue in
+                    print("🔍 [PlacesSearchBar] onChange — '\(oldValue)' → '\(newValue)'")
                     autocompleteManager.buscarLugares(
                         text: newValue,
                         cercaDe: coordenadasInicialesGPS,

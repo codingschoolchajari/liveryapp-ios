@@ -130,7 +130,8 @@ class DireccionViewModel: ObservableObject {
                 coords: coords
             )
         } catch {
-            print("Error al guardar direccion: \(error.localizedDescription)")
+            let nsError = error as NSError
+            print("❌ Error al guardar direccion: \(error.localizedDescription) — dominio: \(nsError.domain) código: \(nsError.code)")
             return nil
         }
     }

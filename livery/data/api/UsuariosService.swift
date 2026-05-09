@@ -90,6 +90,8 @@ class UsuariosService {
         
         guard let httpResponse = response as? HTTPURLResponse,
               200...299 ~= httpResponse.statusCode else {
+            let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+            print("❌ [guardarDireccion] HTTP \(code)")
             throw URLError(.badServerResponse)
         }
     }

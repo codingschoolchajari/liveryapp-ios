@@ -160,7 +160,11 @@ class NuevoRepartoViewModel: ObservableObject {
         print("🌍 [Geocoding] consultando: \(query)")
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            var request = URLRequest(url: url)
+            if let bundleID = Bundle.main.bundleIdentifier {
+                request.setValue(bundleID, forHTTPHeaderField: "X-Ios-Bundle-Identifier")
+            }
+            let (data, _) = try await URLSession.shared.data(for: request)
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 print("❌ [Geocoding] JSON inválido")
                 return

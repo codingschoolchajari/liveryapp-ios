@@ -25,7 +25,9 @@ struct NuevoRepartoView: View {
         self.onRepartoCreado = onRepartoCreado
         self.onCerrar = onCerrar
         self.onNuevaDireccion = onNuevaDireccion
-        _viewModel = StateObject(wrappedValue: NuevoRepartoViewModel(perfilUsuarioState: perfilUsuarioState))
+        let vm = NuevoRepartoViewModel(perfilUsuarioState: perfilUsuarioState)
+        vm.ciudadSeleccionada = perfilUsuarioState.ciudadSeleccionada
+        _viewModel = StateObject(wrappedValue: vm)
     }
 
     private var pasoValido: Bool {

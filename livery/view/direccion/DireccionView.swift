@@ -45,6 +45,7 @@ struct DireccionView: View {
         }
         .background(Color.blanco)
         .task {
+            direccionViewModel.ciudadSeleccionada = perfilUsuarioState.ciudadSeleccionada
             direccionViewModel.verificarPermisoUbicacion()
         }
         .onReceive(

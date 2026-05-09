@@ -31,6 +31,7 @@ class DireccionViewModel: ObservableObject {
     private var yaFijoUbicacionInicial = false
     private var geocodingTask: Task<Void, Never>? = nil
     @Published var coordenadasInicialesGPS: CLLocationCoordinate2D?
+    var ciudadSeleccionada: String? = nil
 
     init(locationService: LocationServicing = LocationService()) {
         self.locationService = locationService
@@ -282,7 +283,15 @@ class DireccionViewModel: ObservableObject {
     }
 
     private func geocodificarCalleNumero(calle: String, numero: String) async {
-        let query = calle + " " + numero
+        // Igual que Android: agregar ciudad al query para evitar resultados en otras ciudades
+        let ciudadLegible = ciudadSeleccionada
+            .map { $0.replacingOccurrences(of: "_", with: " ").replacingOccurrences(of: "-", with: " ") }
+        let query: String
+        if let ciudad = ciudadLegible, !ciudad.isEmpty {
+            query = "\(calle) \(numero), \(ciudad)"
+        } else {
+            query = "\(calle) \(numero)"
+        }
 
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "GOOGLE_MAPS_API_KEY") as? String,
               !apiKey.isEmpty else {

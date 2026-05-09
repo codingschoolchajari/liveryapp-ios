@@ -23,6 +23,7 @@ class NuevoRepartoViewModel: ObservableObject {
     @Published var nombreComercio: String = ""
     @Published var descripcionEnvio: String = ""
     @Published var modoManual: Bool = false
+    var ciudadSeleccionada: String? = nil
 
     @Published var calculandoCostoEnvio: Bool = false
     @Published var tarifaServicio: Double = 0
@@ -129,7 +130,14 @@ class NuevoRepartoViewModel: ObservableObject {
     }
 
     private func geocodificarCalleNumero(calle: String, numero: String) async {
-        let query = calle + " " + numero
+        let ciudadLegible = ciudadSeleccionada
+            .map { $0.replacingOccurrences(of: "_", with: " ").replacingOccurrences(of: "-", with: " ") }
+        let query: String
+        if let ciudad = ciudadLegible, !ciudad.isEmpty {
+            query = "\(calle) \(numero), \(ciudad)"
+        } else {
+            query = "\(calle) \(numero)"
+        }
 
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "GOOGLE_MAPS_API_KEY") as? String,
               !apiKey.isEmpty else {

@@ -492,6 +492,7 @@ struct TarjetaComercio: View {
 
 struct ListaComerciosProductos: View {
     @ObservedObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var navManager: NavigationManager
 
     var body: some View {
         let comerciosProductos = homeViewModel.comerciosProductos
@@ -508,9 +509,12 @@ struct ListaComerciosProductos: View {
                         distanciaUsuario: comercioProductos.distanciaUsuario
                     )
                     
-                    TituloComercio(comercio: comercio, mostrarBotonAdd: false, mostrarSubtituloDistancia: true)
+                    TituloComercio(comercio: comercio, mostrarBotonAdd: true, mostrarSubtituloDistancia: true)
                         .padding(.top, 8)
                         .padding(.bottom, 6)
+                        .onTapGesture {
+                            navManager.homePath.append(NavigationManager.HomeDestination.comercio(idComercio: comercioProductos.idComercio))
+                        }
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {

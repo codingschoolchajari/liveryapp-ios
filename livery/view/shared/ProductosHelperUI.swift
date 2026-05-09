@@ -13,7 +13,10 @@ struct ProductoMiniatura: View {
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             ZStack(alignment: .bottom) {
-                RemoteImage(url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")))
+                RemoteImage(
+                    url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")),
+                    fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(producto.imagenURL))
+                )
                 .frame(width: 100, height: 100)
                 .background(Color.blanco)
                 .clipShape(RoundedRectangle(cornerRadius: 12))

@@ -15,6 +15,7 @@ struct NuevoRepartoView: View {
 
     @StateObject private var viewModel: NuevoRepartoViewModel
     @State private var pasoActual: Int = PASO_DIRECCION_USUARIO
+    @Environment(\.openURL) private var openURL
 
     init(
         perfilUsuarioState: PerfilUsuarioState,
@@ -45,11 +46,10 @@ struct NuevoRepartoView: View {
             case .some(true):
                 return viewModel.comprobanteSeleccionado != nil
             case .some(false):
-                let codigoCompleto = viewModel.codigoVerificacion.count == 6
-                let codigoEnviado = viewModel.estadoEnvioCodigo == .enviado
+                let codigoValidado = viewModel.estadoValidacionEfectivo == .validado
                 let tienePrecio = !viewModel.precioTotalProductos.isEmpty
                 let noSuperaLimite = !viewModel.superaLimitePagoEfectivo
-                return codigoCompleto && codigoEnviado && tienePrecio && noSuperaLimite
+                return codigoValidado && tienePrecio && noSuperaLimite
             default:
                 return false
             }
@@ -163,7 +163,12 @@ struct NuevoRepartoView: View {
             // Botones de navegación
             HStack(spacing: 12) {
                 Button {
-                    if pasoActual > 0 { pasoActual -= 1 }
+                    if pasoActual > 0 {
+                        if pasoActual == PASO_PAGO {
+                            viewModel.resetEfectivo()
+                        }
+                        pasoActual -= 1
+                    }
                 } label: {
                     Text("Atrás")
                         .font(.custom("Barlow", size: 16))
@@ -178,32 +183,20 @@ struct NuevoRepartoView: View {
 
                 if pasoActual < PASO_RESUMEN {
                     Button {
-                        Task {
-                            if pasoActual == PASO_PAGO && viewModel.pagoTransferencia == false {
-                                let valido = await viewModel.validarCodigoVerificacion()
-                                if valido { pasoActual += 1 }
-                            } else if pasoValido {
-                                pasoActual += 1
-                            }
+                        if pasoValido {
+                            pasoActual += 1
                         }
                     } label: {
-                        Group {
-                            if viewModel.validandoCodigo {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .blanco))
-                            } else {
-                                Text("Siguiente")
-                                    .font(.custom("Barlow", size: 16))
-                                    .bold()
-                                    .foregroundColor(pasoValido ? .blanco : .grisSecundario)
-                            }
-                        }
+                        Text("Siguiente")
+                            .font(.custom("Barlow", size: 16))
+                            .bold()
+                            .foregroundColor(pasoValido ? .blanco : .grisSecundario)
                         .frame(maxWidth: .infinity)
                         .frame(height: 45)
                         .background(pasoValido ? Color.naranjaIntentosRestantes : Color.grisSecundario.opacity(0.3))
                         .cornerRadius(24)
                     }
-                    .disabled(!pasoValido || viewModel.validandoCodigo)
+                    .disabled(!pasoValido)
                 } else {
                     Button {
                         Task { await viewModel.crearReparto() }
@@ -224,15 +217,16 @@ struct NuevoRepartoView: View {
             .padding(.vertical, 12)
         }
         .background(Color.blanco)
-        .alert("Error enviando código", isPresented: $viewModel.mostrarErrorTelefono) {
-            Button("Entendido") { viewModel.descartarErrorTelefono() }
-        } message: {
-            Text("Hubo un error al enviar el código de verificación a través de WhatsApp. Por favor verificá el código de país y el número.")
+        .onChange(of: viewModel.urlWhatsapp) { _, nuevaUrl in
+            guard let nuevaUrl,
+                  let url = URL(string: nuevaUrl) else { return }
+            openURL(url)
+            viewModel.limpiarUrlWhatsapp()
         }
-        .alert("Código inválido", isPresented: $viewModel.mostrarErrorCodigo) {
-            Button("Entendido") { viewModel.descartarErrorCodigo() }
+        .alert("Error al validar", isPresented: $viewModel.mostrarErrorValidacion) {
+            Button("Entendido") { viewModel.descartarErrorValidacion() }
         } message: {
-            Text("El código de verificación ingresado no es válido. Revisá el código o solicitá uno nuevo.")
+            Text("Hubo un error al generar el código de validación. Por favor intentá nuevamente.")
         }
         .onChange(of: viewModel.repartoCreado) { _, creado in
             if creado {
@@ -774,144 +768,57 @@ private struct ResumenItemView: View {
 private struct SeccionVerificacionWhatsAppView: View {
     @ObservedObject var viewModel: NuevoRepartoViewModel
 
-    private let paises = [
-        ("ar", "+54"), ("br", "+55"), ("cl", "+56"),
-        ("uy", "+598"), ("py", "+595")
-    ]
-
-    private var puedeEnviar: Bool {
-        !viewModel.celularNumero.isEmpty && viewModel.estadoEnvioCodigo != .enviando
-    }
-
     var body: some View {
         VStack(spacing: 12) {
-            Text("Ingresá tu número de WhatsApp para recibir el código de verificación.")
+            Text("Necesitamos validar tu número de WhatsApp para poder abonar en efectivo.")
                 .font(.custom("Barlow", size: 13))
                 .foregroundColor(.negro)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
-
-            HStack(spacing: 8) {
-                // Selector de país
-                Menu {
-                    ForEach(paises, id: \.1) { pais in
-                        Button {
-                            viewModel.onCelularPaisChange(pais.1)
-                        } label: {
-                            Text("\(pais.1) (\(pais.0.uppercased()))")
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        if let iso = paises.first(where: { $0.1 == viewModel.celularPais })?.0 {
-                            AsyncImage(url: URL(string: "https://flagcdn.com/80x60/\(iso).png")) { img in
-                                img.resizable().aspectRatio(contentMode: .fill)
-                            } placeholder: {
-                                Color.grisSecundario.opacity(0.3)
-                            }
-                            .frame(width: 20, height: 15)
-                            .clipped()
-                            .cornerRadius(2)
-                        }
-                        Text(viewModel.celularPais)
-                            .font(.custom("Barlow", size: 13))
-                            .bold()
-                            .foregroundColor(.negro)
-                    }
-                    .frame(width: 80, height: 48)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-                    .cornerRadius(8)
-                }
-
-                // Campo número
-                TextField(
-                    text: Binding(
-                        get: { viewModel.celularNumero },
-                        set: { viewModel.onCelularNumeroChange($0) }
-                    ),
-                    prompt: Text("Sin 0 y sin 15")
-                        .font(.custom("Barlow", size: 12))
-                        .foregroundColor(.grisSecundario)
-                ) { EmptyView() }
-                    .keyboardType(.numberPad)
-                    .font(.custom("Barlow", size: 16))
-                    .foregroundColor(.negro)
-                    .frame(height: 48)
-                    .padding(.horizontal, 8)
-                    .background(Color.blanco)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-                    .cornerRadius(8)
-
-                // Botón enviar código
-                Button {
-                    viewModel.enviarCodigoVerificacion()
-                } label: {
-                    Group {
-                        if viewModel.estadoEnvioCodigo == .enviando {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .blanco))
-                                .frame(width: 20, height: 20)
-                        } else {
-                            Text(viewModel.estadoEnvioCodigo == .enviado ? "Reenviar" : "Enviar código")
-                                .font(.custom("Barlow", size: 12))
-                                .bold()
-                                .foregroundColor(puedeEnviar ? .blanco : .grisSecundario)
-                        }
-                    }
-                    .frame(height: 48)
-                    .padding(.horizontal, 10)
-                    .background(puedeEnviar ? Color.verdePrincipal : Color.grisSecundario.opacity(0.3))
-                    .cornerRadius(8)
-                }
-                .disabled(!puedeEnviar)
-            }
-
-            if viewModel.estadoEnvioCodigo == .enviado || viewModel.estadoEnvioCodigo == .error {
-                VStack(spacing: 6) {
-                    Text("Ingresá el código de 6 dígitos que recibiste por WhatsApp.")
-                        .font(.custom("Barlow", size: 13))
-                        .foregroundColor(.negro)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-
-                    TextField(
-                        text: Binding(
-                            get: { viewModel.codigoVerificacion },
-                            set: { viewModel.onCodigoVerificacionChange($0) }
-                        ),
-                        prompt: Text("------")
-                            .font(.custom("Barlow", size: 20))
-                            .bold()
-                            .foregroundColor(.grisSecundario)
-                    ) { EmptyView() }
-                        .keyboardType(.numberPad)
-                        .font(.custom("Barlow", size: 20))
+            switch viewModel.estadoValidacionEfectivo {
+            case .validado:
+                Text("✓ Número de WhatsApp validado")
+                    .font(.custom("Barlow", size: 15))
+                    .bold()
+                    .foregroundColor(.verdePrincipal)
+                    .multilineTextAlignment(.center)
+            case .esperando:
+                if !viewModel.codigoEfectivo.isEmpty {
+                    Text("Tu código: \(viewModel.codigoEfectivo)")
+                        .font(.custom("Barlow", size: 18))
                         .bold()
                         .foregroundColor(.negro)
-                        .multilineTextAlignment(.center)
-                        .frame(height: 48)
-                        .frame(maxWidth: .infinity)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(
-                                    viewModel.codigoVerificado ? Color.verdePrincipal : Color.grisSecundario,
-                                    lineWidth: 1
-                                )
-                        )
-                        .cornerRadius(8)
-
-                    if viewModel.codigoVerificado {
-                        Text("Código verificado")
-                            .font(.custom("Barlow", size: 12))
-                            .foregroundColor(.verdePrincipal)
-                    }
                 }
+                Text("Esperando validación...")
+                    .font(.custom("Barlow", size: 13))
+                    .foregroundColor(.grisSecundario)
+                    .multilineTextAlignment(.center)
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .verdePrincipal))
+            default:
+                let cargando = viewModel.estadoValidacionEfectivo == .cargandoCodigo
+                Button {
+                    viewModel.generarCodigoEfectivo()
+                } label: {
+                    Group {
+                        if cargando {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .blanco))
+                                .frame(width: 22, height: 22)
+                        } else {
+                            Text("Validar WhatsApp")
+                                .font(.custom("Barlow", size: 15))
+                                .bold()
+                                .foregroundColor(.blanco)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 38)
+                    .background(Color.verdePrincipal)
+                    .cornerRadius(24)
+                    .padding(.horizontal, 40)
+                }
+                .disabled(cargando)
             }
         }
     }

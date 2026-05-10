@@ -32,7 +32,12 @@ struct RepartosView: View {
                 HStack {
                     Spacer()
                     Button {
-                        mostrarNuevoReparto = true
+                        Task {
+                            let permitido = await repartosViewModel.crecionMandadosPermitita()
+                            if permitido {
+                                mostrarNuevoReparto = true
+                            }
+                        }
                     } label: {
                         Image(systemName: "plus")
                             .font(.system(size: 18, weight: .bold))
@@ -88,6 +93,13 @@ struct RepartosView: View {
         .sheet(isPresented: $mostrarNuevaDireccion) {
             DireccionView()
                 .presentationDetents([.large])
+        }
+        .alert("Mandados pendientes", isPresented: $repartosViewModel.mostrarMandadosPendientes) {
+            Button("Entendido") {
+                repartosViewModel.mostrarMandadosPendientes = false
+            }
+        } message: {
+            Text(repartosViewModel.mensajeMandadosPendientes)
         }
     }
 }

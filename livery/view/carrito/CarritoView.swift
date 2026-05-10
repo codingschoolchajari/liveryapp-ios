@@ -521,6 +521,7 @@ struct ConfirmacionView: View {
 
 struct BottomSheetPagoCarrito: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @EnvironmentObject var carritoViewModel: CarritoViewModel
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
 
@@ -548,9 +549,7 @@ struct BottomSheetPagoCarrito: View {
         case 0:
             return carritoViewModel.comprobanteSeleccionado != nil
         case 1:
-            let codigoCompleto = carritoViewModel.codigoVerificacion.count == 6
-            let codigoEnviado = carritoViewModel.estadoEnvioCodigo == .enviado
-            return !superaLimiteEfectivo && codigoCompleto && codigoEnviado
+            return !superaLimiteEfectivo && carritoViewModel.estadoValidacionEfectivo == .validado
         default:
             return false
         }
@@ -635,16 +634,8 @@ struct BottomSheetPagoCarrito: View {
             Spacer().frame(height: 12)
 
             Button(action: {
-                Task {
-                    if tabSeleccionado == 1 {
-                        let valido = await carritoViewModel.validarCodigoVerificacion(
-                            perfilUsuarioState: perfilUsuarioState
-                        )
-                        if !valido { return }
-                    }
-                    onConfirmarPedido()
-                    dismiss()
-                }
+                onConfirmarPedido()
+                dismiss()
             }) {
                 Text("Confirmar Pedido")
                     .font(.custom("Barlow", size: 16))
@@ -664,15 +655,16 @@ struct BottomSheetPagoCarrito: View {
         .onChange(of: tabSeleccionado) { _, newTab in
             carritoViewModel.onPagoTransferenciaChange(newTab == 0)
         }
-        .alert("Error enviando código", isPresented: $carritoViewModel.mostrarErrorTelefono) {
-            Button("Aceptar", role: .cancel) { carritoViewModel.descartarErrorTelefono() }
-        } message: {
-            Text("Hubo un error al enviar el código de verificación. Por favor verificá el código de país y el número.")
+        .onChange(of: carritoViewModel.urlWhatsapp) { _, nuevaUrl in
+            guard let nuevaUrl,
+                  let url = URL(string: nuevaUrl) else { return }
+            openURL(url)
+            carritoViewModel.limpiarUrlWhatsapp()
         }
-        .alert("Código inválido", isPresented: $carritoViewModel.mostrarErrorCodigo) {
-            Button("Aceptar", role: .cancel) { carritoViewModel.descartarErrorCodigo() }
+        .alert("Error al validar", isPresented: $carritoViewModel.mostrarErrorValidacion) {
+            Button("Aceptar", role: .cancel) { carritoViewModel.descartarErrorValidacion() }
         } message: {
-            Text("El código de verificación ingresado no es válido. Revisá el código o solicitá uno nuevo.")
+            Text("Hubo un error al generar el código de validación. Por favor intentá nuevamente.")
         }
     }
 }
@@ -695,91 +687,56 @@ private struct SeccionEfectivo: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 8)
             } else {
-                Text("Ingresá tu número de WhatsApp para recibir el código de verificación.")
+                Text("Necesitamos validar tu número de WhatsApp para poder abonar en efectivo.")
                     .font(.custom("Barlow", size: 13))
                     .foregroundColor(.negro)
                     .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
 
-                HStack(spacing: 8) {
-                    CelularPaisSelector(
-                        pais: carritoViewModel.celularPais,
-                        onPaisChange: { carritoViewModel.onCelularPaisChange($0) }
-                    )
-
-                    TextField("", text: Binding(
-                        get: { carritoViewModel.celularNumero },
-                        set: { carritoViewModel.onCelularNumeroChange($0) }
-                    ), prompt: Text("Sin 0 y sin 15").foregroundColor(.grisSecundario))
-                    .keyboardType(.numberPad)
-                    .font(.custom("Barlow", size: 16))
-                    .bold()
-                    .foregroundColor(.negro)
-                    .frame(height: 48)
-                    .padding(.horizontal, 8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-
-                    let puedeEnviar = !carritoViewModel.celularNumero.isEmpty
-                        && carritoViewModel.estadoEnvioCodigo != .enviando
+                switch carritoViewModel.estadoValidacionEfectivo {
+                case .validado:
+                    Text("✓ Número de WhatsApp validado")
+                        .font(.custom("Barlow", size: 15))
+                        .bold()
+                        .foregroundColor(.verdePrincipal)
+                        .multilineTextAlignment(.center)
+                case .esperando:
+                    if !carritoViewModel.codigoEfectivo.isEmpty {
+                        Text("Tu código: \(carritoViewModel.codigoEfectivo)")
+                            .font(.custom("Barlow", size: 18))
+                            .bold()
+                            .foregroundColor(.negro)
+                    }
+                    Text("Esperando validación...")
+                        .font(.custom("Barlow", size: 13))
+                        .foregroundColor(.grisSecundario)
+                        .multilineTextAlignment(.center)
+                    ProgressView()
+                        .tint(.verdePrincipal)
+                default:
+                    let cargando = carritoViewModel.estadoValidacionEfectivo == .cargandoCodigo
                     Button(action: {
-                        carritoViewModel.enviarCodigoVerificacion(perfilUsuarioState: perfilUsuarioState)
+                        carritoViewModel.generarCodigoEfectivo(perfilUsuarioState: perfilUsuarioState)
                     }) {
                         Group {
-                            if carritoViewModel.estadoEnvioCodigo == .enviando {
+                            if cargando {
                                 ProgressView()
                                     .tint(.blanco)
-                                    .frame(width: 20, height: 20)
+                                    .frame(width: 22, height: 22)
                             } else {
-                                Text(carritoViewModel.estadoEnvioCodigo == .enviado ? "Reenviar" : "Enviar código")
-                                    .font(.custom("Barlow", size: 12))
+                                Text("Validar WhatsApp")
+                                    .font(.custom("Barlow", size: 15))
                                     .bold()
-                                    .foregroundColor(puedeEnviar ? .blanco : .grisSecundario)
+                                    .foregroundColor(.blanco)
                             }
                         }
-                        .frame(height: 48)
-                        .padding(.horizontal, 10)
-                        .background(puedeEnviar ? Color.verdePrincipal : Color.grisSurface)
-                        .cornerRadius(8)
-                    }
-                    .disabled(!puedeEnviar)
-                }
-
-                if carritoViewModel.estadoEnvioCodigo == .enviado
-                    || carritoViewModel.estadoEnvioCodigo == .error {
-                    VStack(spacing: 4) {
-                        Text("Ingresá el código de 6 dígitos que recibiste por WhatsApp.")
-                            .font(.custom("Barlow", size: 13))
-                            .foregroundColor(.negro)
-                            .multilineTextAlignment(.center)
-
-                        TextField("------", text: Binding(
-                            get: { carritoViewModel.codigoVerificacion },
-                            set: { carritoViewModel.onCodigoVerificacionChange($0) }
-                        ))
-                        .keyboardType(.numberPad)
-                        .multilineTextAlignment(.center)
-                        .font(.custom("Barlow", size: 20))
-                        .bold()
-                        .foregroundColor(.negro)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(
-                                    carritoViewModel.codigoVerificado
-                                        ? Color.verdePrincipal : Color.grisSecundario,
-                                    lineWidth: 1
-                                )
-                        )
-
-                        if carritoViewModel.codigoVerificado {
-                            Text("Código verificado")
-                                .font(.custom("Barlow", size: 12))
-                                .foregroundColor(.verdePrincipal)
-                        }
+                        .frame(height: 38)
+                        .background(Color.verdePrincipal)
+                        .cornerRadius(24)
+                        .padding(.horizontal, 40)
                     }
+                    .disabled(cargando)
                 }
             }
         }

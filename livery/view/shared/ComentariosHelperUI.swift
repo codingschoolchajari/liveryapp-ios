@@ -10,6 +10,7 @@ struct BottomSheetComentarios: View {
     let comercio: Comercio
     
     @StateObject var pedidosComentariosViewModel : PedidosComentariosViewModel
+    @Environment(\.dismiss) private var dismiss
     
     init(comercio: Comercio, perfilUsuarioState: PerfilUsuarioState) {
         self.comercio = comercio
@@ -21,7 +22,20 @@ struct BottomSheetComentarios: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Spacer().frame(height: 16)
+            HStack {
+                Spacer()
+                Button {
+                    dismiss()
+                } label: {
+                    Image("icono_cerrar")
+                        .resizable()
+                        .frame(width: 32, height: 32)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+
             TituloComercio(
                 comercio: comercio,
                 mostrarBotonAdd: false

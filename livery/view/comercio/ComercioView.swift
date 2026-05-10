@@ -9,16 +9,28 @@ import SwiftUI
 struct ComercioView: View {
     @StateObject var comercioViewModel : ComercioViewModel
     @Environment(\.scenePhase) var scenePhase
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @State private var categoriaSeleccionadaId: String? = nil
+    @State private var mostrarComentarios = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
             if let comercio = comercioViewModel.comercio {
                 VStack {
-                    Portada(comercio: comercio)
+                    Portada(
+                        comercio: comercio,
+                        onComentariosTap: { mostrarComentarios = true }
+                    )
                     Spacer().frame(height: 8)
-                    InformacionExtra(comercio: comercio)
+                    InformacionExtra(
+                        comercio: comercio,
+                        categoriaSeleccionadaId: $categoriaSeleccionadaId
+                    )
                     Spacer().frame(height: 8)
-                    Productos(comercioViewModel: comercioViewModel)
+                    Productos(
+                        comercioViewModel: comercioViewModel,
+                        categoriaSeleccionadaId: categoriaSeleccionadaId
+                    )
                     Spacer()
                 }
                 .background(Color.blanco)
@@ -38,12 +50,21 @@ struct ComercioView: View {
                 comercioViewModel.refreshCategoriasYPromociones()
             }
         }
+        .sheet(isPresented: $mostrarComentarios) {
+            if let comercio = comercioViewModel.comercio {
+                BottomSheetComentarios(
+                    comercio: comercio,
+                    perfilUsuarioState: perfilUsuarioState
+                )
+            }
+        }
     }
 }
 
 
 struct Portada: View {
     let comercio: Comercio
+    var onComentariosTap: () -> Void = {}
     
     private var descuentosFiltrados: [ComercioDescuento] {
         (comercio.descuentos ?? []).filter { $0.porcentaje > 0.0 }
@@ -68,7 +89,9 @@ struct Portada: View {
                     ComercioTitulo(
                         comercio: comercio,
                         mostrarBotonAdd: false,
-                        mostrarHorarios: false
+                        mostrarHorarios: false,
+                        mostrarBotonComentarios: true,
+                        onComentariosTap: onComentariosTap
                     )
                     .padding(.horizontal, 16)
                 }
@@ -122,6 +145,8 @@ struct ComercioTitulo: View {
     var mostrarHorarios: Bool = false
     var mostrarEncabezado: Bool = false
     var mostrarSubtituloDistancia: Bool = false
+    var mostrarBotonComentarios: Bool = false
+    var onComentariosTap: () -> Void = {}
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -167,10 +192,25 @@ struct ComercioTitulo: View {
                     .clipped()
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(comercio.nombre)
-                            .font(.custom("Barlow", size: 18))
-                            .bold()
-                            .foregroundColor(.negro)
+                        HStack(alignment: .center, spacing: 10) {
+                            Text(comercio.nombre)
+                                .font(.custom("Barlow", size: 18))
+                                .bold()
+                                .foregroundColor(.negro)
+                                .lineLimit(1)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            if mostrarBotonComentarios {
+                                Button(action: onComentariosTap) {
+                                    Image("icono_comentarios")
+                                        .resizable()
+                                        .renderingMode(.template)
+                                        .foregroundColor(.negro)
+                                        .frame(width: 28, height: 28)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
                         
                         if !comercio.categoriasPrincipales.isEmpty {
                             Text(comercio.categoriasPrincipalesToString())
@@ -207,21 +247,10 @@ struct ComercioTitulo: View {
 
 struct InformacionExtra: View {
     let comercio: Comercio
-    
-    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    
-    @State private var mostrarComentariosSheet = false
+    @Binding var categoriaSeleccionadaId: String?
 
     var body: some View {
         VStack(spacing: 4) {
-            if let horarios = comercio.horarios {
-                Text(DateUtils.obtenerHorariosHoy(horarios: horarios))
-                    .font(.custom("Barlow", size: 14))
-                    .bold()
-                    .foregroundColor(.grisTerciario)
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-            
             HStack(alignment: .center, spacing: 8) {
                 // Icono Ubicación
                 Image("icono_ubicacion")
@@ -235,28 +264,82 @@ struct InformacionExtra: View {
                     .foregroundColor(.negro)
                 
                 Spacer()
-                // Botón Comentarios
-                Button(action: {
-                    mostrarComentariosSheet = true
-                }) {
-                    Text("Comentarios")
+                if let horarios = comercio.horarios {
+                    Text(DateUtils.obtenerHorariosHoy(horarios: horarios))
                         .font(.custom("Barlow", size: 14))
                         .bold()
-                        .foregroundColor(.negro)
+                        .foregroundColor(.grisTerciario)
                 }
             }
             .padding(.horizontal, 40)
             .frame(maxWidth: .infinity)
-        }
-        
-        .sheet(isPresented: $mostrarComentariosSheet) {
-            // Aquí va tu vista de comentarios
-            BottomSheetComentarios(
-                comercio: comercio,
-                perfilUsuarioState: perfilUsuarioState
+            
+            SelectorCategoriasComercio(
+                categorias: comercio.categorias,
+                categoriaSeleccionadaId: $categoriaSeleccionadaId
             )
-                .presentationDetents([.large])
         }
+    }
+}
+
+struct SelectorCategoriasComercio: View {
+    let categorias: [Categoria]
+    @Binding var categoriaSeleccionadaId: String?
+
+    private var categoriaSeleccionadaNombre: String {
+        guard let categoriaSeleccionadaId,
+              let categoria = categorias.first(where: { $0.idInterno == categoriaSeleccionadaId }) else {
+            return "Todas las categorías"
+        }
+
+        return categoria.nombre
+    }
+
+    var body: some View {
+        Menu {
+            Button {
+                categoriaSeleccionadaId = nil
+            } label: {
+                Text("Todas las categorías")
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+
+            ForEach(categorias) { categoria in
+                Button {
+                    categoriaSeleccionadaId = categoria.idInterno
+                } label: {
+                    Text(categoria.nombre)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
+        } label: {
+            ZStack {
+                Text(categoriaSeleccionadaNombre)
+                    .font(.custom("Barlow", size: 12))
+                    .foregroundColor(.negro)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 18)
+
+                HStack {
+                    Spacer()
+                    Image("icono_flecha_abajo")
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                }
+            }
+            .frame(height: 30)
+            .padding(.horizontal, 10)
+            .background(Color.blanco)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Color.grisSecundario, lineWidth: 1)
+            )
+        }
+        .padding(.horizontal, 80)
+        .padding(.vertical, 2)
     }
 }
 
@@ -287,6 +370,7 @@ struct BannerAviso: View {
 
 struct Productos: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
+    let categoriaSeleccionadaId: String?
 
     var body: some View {
         if let comercio = comercioViewModel.comercio {
@@ -294,54 +378,68 @@ struct Productos: View {
 
             let avisoHabilitado = comercio.aviso.habilitado && !comercio.aviso.mensaje.isEmpty
 
-            ScrollView(showsIndicators: false) {
-                LazyVStack(spacing: 0) {
-                    if mostrarPromociones {
-                        VStack(spacing: 0) {
-                            TituloPromociones()
+            ScrollViewReader { proxy in
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(spacing: 0) {
+                        Color.clear
+                            .frame(height: 0)
+                            .id("top")
 
-                            ForEach(comercio.promociones) { promocion in
-                                if promocion.disponible {
-                                    PromocionTitulo(
-                                        comercioViewModel: comercioViewModel,
-                                        promocion: promocion,
-                                        onSelect: {
-                                            comercioViewModel.seleccionarPromocion(promocion: promocion)
-                                        }
-                                    )
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 4)
+                        if mostrarPromociones {
+                            VStack(spacing: 0) {
+                                TituloPromociones()
+
+                                ForEach(comercio.promociones) { promocion in
+                                    if promocion.disponible {
+                                        PromocionTitulo(
+                                            comercioViewModel: comercioViewModel,
+                                            promocion: promocion,
+                                            onSelect: {
+                                                comercioViewModel.seleccionarPromocion(promocion: promocion)
+                                            }
+                                        )
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 4)
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    ForEach(Array(comercio.categorias.enumerated()), id: \.offset) { _, categoria in
-                        VStack(spacing: 0) {
-                            TituloSeccionComercio(titulo: categoria.nombre)
+                        ForEach(comercio.categorias) { categoria in
+                            VStack(spacing: 0) {
+                                TituloSeccionComercio(titulo: categoria.nombre)
+                                    .id(categoria.idInterno)
 
-                            ForEach(categoria.productos) { producto in
-                                if producto.disponible {
-                                    ProductoTitulo(
-                                        comercioViewModel: comercioViewModel,
-                                        producto: producto,
-                                        categoria: categoria,
-                                        onSelect: {
-                                            comercioViewModel.seleccionarProducto(
-                                                producto: producto,
-                                                categoria: categoria
-                                            )
-                                        }
-                                    )
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 4)
+                                ForEach(categoria.productos) { producto in
+                                    if producto.disponible {
+                                        ProductoTitulo(
+                                            comercioViewModel: comercioViewModel,
+                                            producto: producto,
+                                            categoria: categoria,
+                                            onSelect: {
+                                                comercioViewModel.seleccionarProducto(
+                                                    producto: producto,
+                                                    categoria: categoria
+                                                )
+                                            }
+                                        )
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 4)
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    if avisoHabilitado {
-                        Spacer().frame(height: 64)
+                        if avisoHabilitado {
+                            Spacer().frame(height: 64)
+                        }
+                    }
+                }
+                .onChange(of: categoriaSeleccionadaId) { _, newValue in
+                    if let newValue {
+                        proxy.scrollTo(newValue, anchor: .top)
+                    } else {
+                        proxy.scrollTo("top", anchor: .top)
                     }
                 }
             }

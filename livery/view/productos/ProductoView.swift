@@ -292,7 +292,11 @@ struct BottomSheetSeleccionProducto: View {
                             )
                         },
                         onCambiarSeleccionadoMultiple: { id, cant in
-                            itemProductoViewModel.cambiarSeleccionadoMultiple(id: id, cantidad: cant)
+                            itemProductoViewModel.cambiarSeleccionadoMultiple(
+                                perfilUsuarioState: perfilUsuarioState,
+                                id: id,
+                                cantidad: cant
+                            )
                         }
                     )
                     Spacer()

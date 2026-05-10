@@ -15,6 +15,8 @@ class RepartosViewModel: ObservableObject {
     @Published var mostrarBottomSheet: Bool = false
     @Published var cargandoComprobante: Bool = false
     @Published var recorridoTick: Int = 0
+    @Published var mostrarMandadosPendientes: Bool = false
+    @Published var mensajeMandadosPendientes: String = "No es posible crear nuevos mandados porque tenés mandados pendientes."
 
     private var paginaActual = 0
     private let tamanoPagina = 10
@@ -196,5 +198,41 @@ class RepartosViewModel: ObservableObject {
 
     func onEstadoSeleccionadoChange(estado: EstadosRepartos) {
         estadoSeleccionado = estado
+    }
+
+    func crecionMandadosPermitita() async -> Bool {
+        let email = perfilUsuarioState.usuario?.email ?? ""
+        guard !email.isEmpty else {
+            mensajeMandadosPendientes = "No pudimos validar tus mandados pendientes. Intentá nuevamente."
+            mostrarMandadosPendientes = true
+            return false
+        }
+
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+
+            let respuesta = try await repartosService.crecionMandadosPermitita(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                idUsuario: email
+            )
+
+            if respuesta.puedeCrear {
+                return true
+            }
+
+            mensajeMandadosPendientes = respuesta.mensaje.isEmpty
+                ? "No es posible crear nuevos mandados porque tenés mandados pendientes."
+                : respuesta.mensaje
+            mostrarMandadosPendientes = true
+            return false
+        } catch {
+            print("Error al validar creación de mandado: \(error)")
+            mensajeMandadosPendientes = "No pudimos validar tus mandados pendientes. Intentá nuevamente."
+            mostrarMandadosPendientes = true
+            return false
+        }
     }
 }

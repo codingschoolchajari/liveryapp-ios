@@ -141,7 +141,11 @@ class ItemProductoViewModel: ObservableObject {
         }
     }
     
-    func cambiarSeleccionadoMultiple(id: String, cantidad: Int) {
+    func cambiarSeleccionadoMultiple(
+        perfilUsuarioState: PerfilUsuarioState,
+        id: String,
+        cantidad: Int
+    ) {
         productoSeleccionableState?.cambiarSeleccionadoMultiple(id: id, cantidad: cantidad)
         
         if(itemProducto == nil || categoria == nil) { return }
@@ -154,6 +158,10 @@ class ItemProductoViewModel: ObservableObject {
             }
         
         itemProducto!.seleccionables = nuevaLista ?? []
+
+        if let producto = self.producto, !producto.procesosExtras.isEmpty {
+            procesosExtras(perfilUsuarioState: perfilUsuarioState)
+        }
     }
     
     func cambiarAlternativaSeleccionada(productoAlternativa: ProductoAlternativa) {
@@ -261,11 +269,46 @@ class ItemProductoViewModel: ObservableObject {
                         await MainActor.run {
                             itemProducto!.precioUnitario = precioResponse.precio
                             itemProducto!.precio = precioResponse.precio * Double(self.cantidad)
-                            //self.itemProducto = itemProducto
                         }
                     } catch {
                         print("Error calculando precio extra: \(error)")
                     }
+                }
+            }
+
+            if proceso == "50-off-segunda-unidad" {
+                let seleccionadosMultiples = productoSeleccionableState?.seleccionadosMultiples ?? [:]
+                let cantidadSeleccionada = seleccionadosMultiples.values.reduce(0, +)
+                let cantidadMinima = producto!.cantidadMinimaSeleccionables ?? 0
+                let precioCalculado = ProcesoExtraHelper.calcularPrecio50OffSegundaUnidad(
+                    seleccionadosMultiples: seleccionadosMultiples,
+                    comercio: comercio!,
+                    cantidadMinima: producto!.cantidadMinimaSeleccionables
+                )
+                if let precio = precioCalculado {
+                    itemProducto!.precioUnitario = precio
+                    itemProducto!.precio = precio
+                } else if cantidadSeleccionada < cantidadMinima {
+                    itemProducto!.precioUnitario = 0.0
+                    itemProducto!.precio = 0.0
+                }
+            }
+
+            if proceso == "dos-por-uno" {
+                let seleccionadosMultiples = productoSeleccionableState?.seleccionadosMultiples ?? [:]
+                let cantidadSeleccionada = seleccionadosMultiples.values.reduce(0, +)
+                let cantidadMinima = producto!.cantidadMinimaSeleccionables ?? 0
+                let precioCalculado = ProcesoExtraHelper.calcularPrecioDosPorUno(
+                    seleccionadosMultiples: seleccionadosMultiples,
+                    comercio: comercio!,
+                    cantidadMinima: producto!.cantidadMinimaSeleccionables
+                )
+                if let precio = precioCalculado {
+                    itemProducto!.precioUnitario = precio
+                    itemProducto!.precio = precio
+                } else if cantidadSeleccionada < cantidadMinima {
+                    itemProducto!.precioUnitario = 0.0
+                    itemProducto!.precio = 0.0
                 }
             }
         }

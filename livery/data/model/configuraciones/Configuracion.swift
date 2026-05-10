@@ -35,6 +35,7 @@ struct Configuracion: Codable {
     var palabrasClave: [String] = []
     let tarifaServicio: Double
     let limitePagoEfectivo: Double
+    let numeroWhatsappAutomatico: String?
     let configuracionIOS: ConfiguracionIOS
     let plataformas: ConfiguracionPlataformas
 }

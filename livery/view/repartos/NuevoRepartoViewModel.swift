@@ -2,8 +2,8 @@
 import CoreLocation
 import GooglePlaces
 
-enum EstadoEnvioCodigo {
-    case idle, enviando, enviado, error
+enum EstadoValidacionEfectivo {
+    case idle, cargandoCodigo, esperando, validado, error
 }
 
 @MainActor
@@ -43,17 +43,14 @@ class NuevoRepartoViewModel: ObservableObject {
     @Published var precioTotalProductos: String = ""
     @Published var limitePagoEfectivo: Double = 0
 
-    @Published var celularPais: String = "+54"
-    @Published var celularNumero: String = ""
-    @Published var estadoEnvioCodigo: EstadoEnvioCodigo = .idle
-    @Published var codigoVerificacion: String = ""
-    @Published var codigoVerificado: Bool = false
-    @Published var mostrarErrorTelefono: Bool = false
-    @Published var mostrarErrorCodigo: Bool = false
-    @Published var validandoCodigo: Bool = false
+    @Published var estadoValidacionEfectivo: EstadoValidacionEfectivo = .idle
+    @Published var codigoEfectivo: String = ""
+    @Published var urlWhatsapp: String? = nil
+    @Published var mostrarErrorValidacion: Bool = false
 
     private var costoEnvioDebounceTask: Task<Void, Never>? = nil
     private var geocodingTask: Task<Void, Never>? = nil
+    private var pollingTask: Task<Void, Never>? = nil
     private var coordenadasOrigen: CLLocationCoordinate2D? = nil
 
     init(perfilUsuarioState: PerfilUsuarioState) {
@@ -208,90 +205,89 @@ class NuevoRepartoViewModel: ObservableObject {
         precioTotalProductos = texto.filter { $0.isNumber }
     }
 
-    func onCelularPaisChange(_ codigo: String) {
-        celularPais = codigo
-    }
-
-    func onCelularNumeroChange(_ texto: String) {
-        let nuevo = String(texto.filter { $0.isNumber }.prefix(10))
-        guard nuevo != celularNumero else { return }
-        celularNumero = nuevo
-        if estadoEnvioCodigo == .enviado {
-            estadoEnvioCodigo = .idle
-            codigoVerificacion = ""
-            codigoVerificado = false
-        }
-    }
-
-    func onCodigoVerificacionChange(_ codigo: String) {
-        let soloDigitos = String(codigo.filter { $0.isNumber }.prefix(6))
-        codigoVerificacion = soloDigitos
-    }
-
-    func enviarCodigoVerificacion() {
+    func generarCodigoEfectivo() {
         Task {
-            let telefono = "\(celularPais)\(celularNumero.trimmingCharacters(in: .whitespaces))"
-            estadoEnvioCodigo = .enviando
-            codigoVerificacion = ""
-            codigoVerificado = false
+            estadoValidacionEfectivo = .cargandoCodigo
 
             do {
                 await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
                 let accessToken = TokenRepository.repository.accessToken ?? ""
                 let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
 
-                let exito = try await verificacionService.enviarCodigo(
+                guard let codigo = try await verificacionService.generarCodigoEfectivo(
                     token: accessToken,
-                    dispositivoID: dispositivoID,
-                    telefono: telefono
-                )
-
-                if exito {
-                    estadoEnvioCodigo = .enviado
-                } else {
-                    estadoEnvioCodigo = .error
-                    mostrarErrorTelefono = true
+                    dispositivoID: dispositivoID
+                ) else {
+                    estadoValidacionEfectivo = .error
+                    mostrarErrorValidacion = true
+                    return
                 }
+
+                codigoEfectivo = codigo
+
+                let numero = (perfilUsuarioState.configuracion?.numeroWhatsappAutomatico ?? "")
+                    .replacingOccurrences(of: "+", with: "")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                let email = perfilUsuarioState.usuario?.email ?? ""
+                let texto = "Hola Livery, mi código de validación es: \(codigo). \nMi usuario es: \(email)"
+                let encoded = texto.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+                urlWhatsapp = "https://wa.me/\(numero)?text=\(encoded)"
+
+                estadoValidacionEfectivo = .esperando
+                iniciarPolling()
             } catch {
-                estadoEnvioCodigo = .error
-                mostrarErrorTelefono = true
-                print("Error enviando código: \(error)")
+                estadoValidacionEfectivo = .error
+                mostrarErrorValidacion = true
+                print("Error generando código efectivo: \(error)")
             }
         }
     }
 
-    func validarCodigoVerificacion() async -> Bool {
-        let telefono = "\(celularPais)\(celularNumero.trimmingCharacters(in: .whitespaces))"
-        validandoCodigo = true
-        defer { validandoCodigo = false }
+    private func iniciarPolling() {
+        detenerPolling()
+        pollingTask = Task {
+            while estadoValidacionEfectivo == .esperando {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                guard estadoValidacionEfectivo == .esperando else { break }
 
-        do {
-            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
-            let accessToken = TokenRepository.repository.accessToken ?? ""
-            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+                do {
+                    await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+                    let accessToken = TokenRepository.repository.accessToken ?? ""
+                    let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
 
-            let valido = try await verificacionService.validarCodigo(
-                token: accessToken,
-                dispositivoID: dispositivoID,
-                telefono: telefono,
-                codigo: codigoVerificacion
-            )
+                    let validado = try await verificacionService.estadoCodigoEfectivo(
+                        token: accessToken,
+                        dispositivoID: dispositivoID
+                    )
 
-            if valido {
-                codigoVerificado = true
-            } else {
-                mostrarErrorCodigo = true
+                    if validado {
+                        estadoValidacionEfectivo = .validado
+                        detenerPolling()
+                        break
+                    }
+                } catch {
+                    print("Error consultando estado código efectivo: \(error)")
+                }
             }
-            return valido
-        } catch {
-            mostrarErrorCodigo = true
-            print("Error validando código: \(error)")
-            return false
         }
     }
 
-    func descartarErrorTelefono() { mostrarErrorTelefono = false }
-    func descartarErrorCodigo() { mostrarErrorCodigo = false }
+    func detenerPolling() {
+        pollingTask?.cancel()
+        pollingTask = nil
+    }
+
+    func limpiarUrlWhatsapp() { urlWhatsapp = nil }
+
+    func descartarErrorValidacion() { mostrarErrorValidacion = false }
+
+    func resetEfectivo() {
+        detenerPolling()
+        estadoValidacionEfectivo = .idle
+        codigoEfectivo = ""
+        urlWhatsapp = nil
+        mostrarErrorValidacion = false
+    }
 
     func obtenerNombreUsuario() -> String {
         return perfilUsuarioState.usuario?.obtenerNombreCompleto().trimmingCharacters(in: .whitespaces) ?? ""
@@ -375,11 +371,6 @@ class NuevoRepartoViewModel: ObservableObject {
     func crearReparto() async {
         guard !creandoReparto else { return }
 
-        if pagoTransferencia == false {
-            let valido = await validarCodigoVerificacion()
-            if !valido { return }
-        }
-
         guard let usuario = perfilUsuarioState.usuario,
               let idDireccion = idDireccionUsuarioSeleccionada,
               let direccionUsuario = direccionesUsuario.first(where: { $0.id == idDireccion }),
@@ -395,17 +386,13 @@ class NuevoRepartoViewModel: ObservableObject {
                 return ModalidadPago(
                     tipo: "EFECTIVO",
                     precioTotal: Double(precioTotalProductos) ?? 0,
-                    celular: "\(celularPais)\(celularNumero.trimmingCharacters(in: .whitespaces))",
-                    codigoVerificacion: codigoVerificacion
+                    celular: "",
+                    codigoVerificacion: codigoEfectivo
                 )
             default:
                 return nil
             }
         }()
-
-        let celularReparto: String? = pagoTransferencia == false
-            ? "\(celularPais)\(celularNumero.trimmingCharacters(in: .whitespaces))"
-            : nil
 
         let reparto = Reparto(
             idInterno: UUID().uuidString.lowercased(),
@@ -434,7 +421,7 @@ class NuevoRepartoViewModel: ObservableObject {
             envio: Double(costoEnvio ?? 0),
             indicaciones: nil,
             descripcion: descripcionEnvio.trimmingCharacters(in: .whitespacesAndNewlines),
-            celular: celularReparto,
+            celular: nil,
             modalidadPago: modalidad,
             estado: nil
         )
@@ -474,6 +461,7 @@ class NuevoRepartoViewModel: ObservableObject {
 
     func reiniciarFormulario() {
         costoEnvioDebounceTask?.cancel()
+        detenerPolling()
         coordenadasDestino = nil
         coordenadasOrigen = nil
         idDireccionUsuarioSeleccionada = nil
@@ -492,14 +480,8 @@ class NuevoRepartoViewModel: ObservableObject {
         comprobanteSeleccionado = nil
         cargandoComprobante = false
         pagoTransferencia = nil
+        resetEfectivo()
         precioTotalProductos = ""
-        celularPais = "+54"
-        celularNumero = ""
-        estadoEnvioCodigo = .idle
-        codigoVerificacion = ""
-        codigoVerificado = false
-        mostrarErrorTelefono = false
-        mostrarErrorCodigo = false
         inicializarDatos()
     }
 }

@@ -255,149 +255,119 @@ struct BottomSheetSeleccionProducto: View {
     var body: some View {
         VStack(spacing: 0) {
             let esPremio: Bool = producto.esPremio ?? false
+            let requiereSeleccionables = (producto.cantidadMinimaSeleccionables ?? 0) > 0 && categoria.seleccionables != nil
+            let tieneAlternativas = !producto.alternativas.isEmpty && !esPremio
+
             // 1. Portada (Ocupa 3/4 del ancho de pantalla)
             PortadaProducto(
                 producto: producto,
                 productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaParaDescripcion
             )
             
-            // 2. Bloque Central (Descripción + Seleccionables) - NO Scrolleable externamente
-            VStack(alignment: .leading, spacing: 0) {
-                Spacer().frame(height: 12)
-                
-                ProductoDescripcion(
-                    producto: producto,
-                    productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaParaDescripcion,
-                    descripcionesHorariosReducidos: DateUtils.obtenerDescripcionesHorariosReducidosProducto(producto: producto, comercio: comercio),
-                    fontSizeNombre: 20,
-                    fontSizePrecio: 22,
-                    fontSizeDescripcion: 16
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
-                
-                if let personalizables = producto.personalizables, !personalizables.isEmpty {
-                    Spacer().frame(height: 24)
+            // 2. Bloque Central scrolleable (Descripción + configuraciones)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer().frame(height: 12)
 
-                    PersonalizablesSelector(
-                        personalizables: personalizables,
-                        opcionesSeleccionadas: itemProductoViewModel.opcionesPersonalizablesSeleccionadas,
-                        onSeleccionarOpcion: { idPersonalizable, idOpcion in
-                            itemProductoViewModel.seleccionarOpcionPersonalizable(
-                                idPersonalizable: idPersonalizable,
-                                idOpcion: idOpcion
-                            )
-                        }
+                    ProductoDescripcion(
+                        producto: producto,
+                        productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaParaDescripcion,
+                        descripcionesHorariosReducidos: DateUtils.obtenerDescripcionesHorariosReducidosProducto(producto: producto, comercio: comercio),
+                        fontSizeNombre: 20,
+                        fontSizePrecio: 22,
+                        fontSizeDescripcion: 16
                     )
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    let tieneAlternativas = !producto.alternativas.isEmpty && !esPremio
-                    let tieneSeleccionables = (producto.cantidadMinimaSeleccionables ?? 0) > 0 && categoria.seleccionables != nil
-                    if tieneAlternativas || tieneSeleccionables {
-                        Divider()
-                            .frame(height: 3)
-                            .overlay(Color.gray.opacity(0.3))
-                            .padding(.top, 8)
+                    if let personalizables = producto.personalizables, !personalizables.isEmpty {
+                        Spacer().frame(height: 24)
+
+                        PersonalizablesSelector(
+                            personalizables: personalizables,
+                            opcionesSeleccionadas: itemProductoViewModel.opcionesPersonalizablesSeleccionadas,
+                            onSeleccionarOpcion: { idPersonalizable, idOpcion in
+                                itemProductoViewModel.seleccionarOpcionPersonalizable(
+                                    idPersonalizable: idPersonalizable,
+                                    idOpcion: idOpcion
+                                )
+                            }
+                        )
+
+                        if tieneAlternativas || requiereSeleccionables {
+                            Divider()
+                                .frame(height: 3)
+                                .overlay(Color.gray.opacity(0.3))
+                                .padding(.top, 8)
+                        }
                     }
-                }
 
-                Spacer().frame(height: 12)
-                
-                if let min = producto.cantidadMinimaSeleccionables, min > 0, categoria.seleccionables != nil {
-                    Seleccionables(
-                        categoria: categoria,
-                        producto: producto,
-                        seleccionadosUnitarios: itemProductoViewModel.seleccionadosUnitarios,
-                        seleccionadosMultiples: itemProductoViewModel.seleccionadosMultiples,
-                        onCambiarSeleccionadoUnitario: { id, valor in
-                            itemProductoViewModel.cambiarSeleccionadoUnitario(
-                                perfilUsuarioState: perfilUsuarioState,
-                                id: id,
-                                seleccionadoUnitario: valor
-                            )
-                        },
-                        onCambiarSeleccionadoMultiple: { id, cant in
-                            itemProductoViewModel.cambiarSeleccionadoMultiple(
-                                perfilUsuarioState: perfilUsuarioState,
-                                id: id,
-                                cantidad: cant
-                            )
-                        }
-                    )
-                    Spacer()
-                    let item = itemProductoViewModel.itemProducto
-                    
-                    CantidadUnidadesYPrecio(
-                        cambioUnidadesHabilitado: false,
-                        cantidad: itemProductoViewModel.cantidad,
-                        precio: item?.precio,
-                        onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
-                        onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
-                    )
-                    Spacer().frame(height: 4)
-                    AgregarCarrito(
-                        enabled: calcularSiEstaHabilitado(),
-                        mostrarDialogoConflicto: $mostrarDialogoConflicto,
-                        onConfirmar: {
-                            agregarItemProducto(onClose: onClose)
-                        },
-                        onConfirmarConflicto: {
-                            limpiarYAgregarItemProducto(onClose: onClose)
-                        }
-                    )
-                } else if !producto.alternativas.isEmpty && !esPremio {
-                    Alternativas(
-                        producto: producto,
-                        alternativasSeleccionadas: itemProductoViewModel.alternativasSeleccionadas,
-                        onCambiarAlternativaSeleccionada: { alternativa in
-                            itemProductoViewModel.cambiarAlternativaSeleccionada(productoAlternativa: alternativa)
-                        }
-                    )
-                    
-                    Spacer()
-                    let item = itemProductoViewModel.itemProducto
+                    Spacer().frame(height: 12)
 
-                    let esMultiSelect = (producto.cantidadMaximaAlternativasSeleccionables ?? 1) > 1
-                    CantidadUnidadesYPrecio(
-                        cambioUnidadesHabilitado: true,
-                        cantidad: itemProductoViewModel.cantidad,
-                        precio: item?.precio,
-                        onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
-                        onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
-                    )
-                    Spacer().frame(height: 4)
-                    let minAlt = producto.cantidadMinimaAlternativasSeleccionables ?? 0
-                    let enabledAlt = !esMultiSelect || itemProductoViewModel.alternativasSeleccionadas.count >= minAlt
-                    AgregarCarrito(
-                        enabled: enabledAlt,
-                        mostrarDialogoConflicto: $mostrarDialogoConflicto,
-                        onConfirmar: {
-                            agregarItemProducto(onClose: onClose)
-                        },
-                        onConfirmarConflicto: {
-                            limpiarYAgregarItemProducto(onClose: onClose)
-                        }
-                    )
-                
-                } else {
-                    let item = itemProductoViewModel.itemProducto
-                    
-                    Spacer()
-                    CantidadUnidadesYPrecio(
-                        cambioUnidadesHabilitado: producto.esPremio != true,
-                        cantidad: itemProductoViewModel.cantidad,
-                        precio: item?.precio,
-                        onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
-                        onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
-                    )
-                    Spacer().frame(height: 4)
-                    AgregarCarrito(
-                        enabled: calcularSiEstaHabilitado(),
-                        mostrarDialogoConflicto: $mostrarDialogoConflicto,
-                        onConfirmar: { agregarItemProducto(onClose: onClose) },
-                        onConfirmarConflicto: { limpiarYAgregarItemProducto(onClose: onClose) }
-                    )
+                    if requiereSeleccionables {
+                        Seleccionables(
+                            categoria: categoria,
+                            producto: producto,
+                            seleccionadosUnitarios: itemProductoViewModel.seleccionadosUnitarios,
+                            seleccionadosMultiples: itemProductoViewModel.seleccionadosMultiples,
+                            onCambiarSeleccionadoUnitario: { id, valor in
+                                itemProductoViewModel.cambiarSeleccionadoUnitario(
+                                    perfilUsuarioState: perfilUsuarioState,
+                                    id: id,
+                                    seleccionadoUnitario: valor
+                                )
+                            },
+                            onCambiarSeleccionadoMultiple: { id, cant in
+                                itemProductoViewModel.cambiarSeleccionadoMultiple(
+                                    perfilUsuarioState: perfilUsuarioState,
+                                    id: id,
+                                    cantidad: cant
+                                )
+                            }
+                        )
+                    } else if tieneAlternativas {
+                        Alternativas(
+                            producto: producto,
+                            alternativasSeleccionadas: itemProductoViewModel.alternativasSeleccionadas,
+                            onCambiarAlternativaSeleccionada: { alternativa in
+                                itemProductoViewModel.cambiarAlternativaSeleccionada(productoAlternativa: alternativa)
+                            }
+                        )
+                    }
+
+                    Spacer().frame(height: 12)
                 }
+                .padding(.horizontal, 16)
+            }
+
+            Divider()
+                .overlay(Color.gray.opacity(0.2))
+
+            let item = itemProductoViewModel.itemProducto
+            let esMultiSelect = (producto.cantidadMaximaAlternativasSeleccionables ?? 1) > 1
+            let minAlt = producto.cantidadMinimaAlternativasSeleccionables ?? 0
+            let enabledAlt = !esMultiSelect || itemProductoViewModel.alternativasSeleccionadas.count >= minAlt
+            let cambioUnidadesHabilitado = requiereSeleccionables ? false : (tieneAlternativas ? true : producto.esPremio != true)
+            let botonHabilitado = requiereSeleccionables ? calcularSiEstaHabilitado() : (tieneAlternativas ? enabledAlt : calcularSiEstaHabilitado())
+
+            VStack(spacing: 4) {
+                CantidadUnidadesYPrecio(
+                    cambioUnidadesHabilitado: cambioUnidadesHabilitado,
+                    cantidad: itemProductoViewModel.cantidad,
+                    precio: item?.precio,
+                    onAumentarCantidad: { itemProductoViewModel.aumentarCantidad() },
+                    onDisminuirCantidad: { itemProductoViewModel.disminuirCantidad() }
+                )
+
+                AgregarCarrito(
+                    enabled: botonHabilitado,
+                    mostrarDialogoConflicto: $mostrarDialogoConflicto,
+                    onConfirmar: { agregarItemProducto(onClose: onClose) },
+                    onConfirmarConflicto: { limpiarYAgregarItemProducto(onClose: onClose) }
+                )
             }
             .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.blanco)
@@ -411,8 +381,8 @@ struct BottomSheetSeleccionProducto: View {
             .presentationDetents([.fraction(0.75)])
         }
         .overlay {
-            if mostrarDialogoComplementos, let itemPendienteAgregar {
-                let precioBase = itemPendienteAgregar.precio
+            if mostrarDialogoComplementos, let itemPendiente = itemPendienteAgregar {
+                let precioBase = itemPendiente.precio
                 let precioTotal = precioBase + calcularPrecioExtraComplementos(
                     grupos: gruposComplementos,
                     selecciones: seleccionesComplementos,

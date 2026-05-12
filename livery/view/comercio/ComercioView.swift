@@ -293,6 +293,7 @@ struct InformacionExtra: View {
                             .scaledToFit()
                             .frame(width: 18, height: 18)
                             .foregroundColor(.negro)
+                            .padding(.leading, 2)
 
                         Text(horarioReducido.descripcion)
                             .font(.custom("Barlow", size: 14))
@@ -334,24 +335,33 @@ struct SelectorCategoriasComercio: View {
     }
 
     var body: some View {
-        HStack {
+        ZStack {
             Text(categoriaSeleccionadaNombre)
                 .font(.custom("Barlow", size: 14))
                 .bold()
                 .foregroundColor(Color.grisSecundario)
-            Spacer()
-            Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
-                .foregroundColor(Color.grisSecundario)
-                .font(.custom("Barlow", size: 14))
-                .bold()
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal, 32)
+
+            HStack {
+                Spacer()
+                Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
+                    .foregroundColor(Color.grisSecundario)
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .padding(.trailing, 20)
+            }
         }
-        .padding(.horizontal, 20)
         .frame(height: 44)
         .background(Color.blanco)
         .clipShape(RoundedCorners(
             radius: 32,
             corners: estaExpandido ? [.topLeft, .topRight] : .allCorners
         ))
+        .overlay(
+            RoundedCorners(radius: 32, corners: estaExpandido ? [.topLeft, .topRight] : .allCorners)
+                .stroke(Color.negro, lineWidth: 1)
+        )
         .onTapGesture {
             withAnimation(.spring()) {
                 estaExpandido.toggle()

@@ -39,6 +39,7 @@ struct ComercioView: View {
                     .allowsHitTesting(!categoriaDropdownExpandido)
                 }
                 .background(Color.blanco)
+                .ignoresSafeArea(edges: .top)
 
                 BannerAviso(comercioViewModel: comercioViewModel)
                     .padding(.horizontal, 16)

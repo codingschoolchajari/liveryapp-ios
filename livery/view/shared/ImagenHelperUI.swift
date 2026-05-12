@@ -85,22 +85,44 @@ struct RemoteImage: View {
                 return
             }
 
-            if let (data, _) = try? await URLSession.shared.data(from: url),
-               let loaded = UIImage(data: data) {
+            // Descargar y decodificar fuera del main thread
+            let loaded = await Task.detached(priority: .userInitiated) {
+                guard let (data, _) = try? await URLSession.imageSession.data(from: url) else { return UIImage?.none }
+                return UIImage(data: data)
+            }.value
+
+            if let loaded {
                 ImageCache.shared.set(loaded, for: url)
                 uiImage = loaded
-            } else if let fallbackURL {
-                if let cached = ImageCache.shared.get(fallbackURL) {
-                    uiImage = cached
-                    return
-                }
-                guard let (data, _) = try? await URLSession.shared.data(from: fallbackURL),
-                      let loaded = UIImage(data: data) else { return }
-                ImageCache.shared.set(loaded, for: fallbackURL)
-                uiImage = loaded
+                return
+            }
+
+            // Fallback
+            guard let fallbackURL else { return }
+            if let cached = ImageCache.shared.get(fallbackURL) {
+                uiImage = cached
+                return
+            }
+            let fallback = await Task.detached(priority: .userInitiated) {
+                guard let (data, _) = try? await URLSession.imageSession.data(from: fallbackURL) else { return UIImage?.none }
+                return UIImage(data: data)
+            }.value
+            if let fallback {
+                ImageCache.shared.set(fallback, for: fallbackURL)
+                uiImage = fallback
             }
         }
     }
+}
+
+private extension URLSession {
+    static let imageSession: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.httpMaximumConnectionsPerHost = 10
+        config.timeoutIntervalForRequest = 15
+        config.urlCache = nil // usamos NSCache propio
+        return URLSession(configuration: config)
+    }()
 }
 
 final class ImageCache {
@@ -117,7 +139,8 @@ final class ImageCache {
     }
 
     func set(_ image: UIImage, for url: URL) {
-        let cost = image.jpegData(compressionQuality: 1)?.count ?? 0
+        // Estimar tamaño sin recomprimir: ancho × alto × 4 bytes por pixel
+        let cost = Int(image.size.width * image.scale) * Int(image.size.height * image.scale) * 4
         cache.setObject(image, forKey: url as NSURL, cost: cost)
     }
 

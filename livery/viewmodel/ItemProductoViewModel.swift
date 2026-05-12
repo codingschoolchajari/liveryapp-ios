@@ -71,7 +71,8 @@ class ItemProductoViewModel: ObservableObject {
             esPremio: producto.esPremio ?? false,
             idPremio: producto.idPremio,
             contieneAlcohol: producto.contieneAlcohol,
-            disponibleParaDelivery: buildDisponibleParaDelivery()
+            disponibleParaDelivery: buildDisponibleParaDelivery(),
+            horariosReducidos: producto.horariosReducidos
         )
     }
     
@@ -199,7 +200,8 @@ class ItemProductoViewModel: ObservableObject {
                 esPremio: prod.esPremio ?? false,
                 idPremio: prod.idPremio,
                 contieneAlcohol: prod.contieneAlcohol,
-                disponibleParaDelivery: buildDisponibleParaDelivery()
+                disponibleParaDelivery: buildDisponibleParaDelivery(),
+                horariosReducidos: prod.horariosReducidos
             )
         }
     }

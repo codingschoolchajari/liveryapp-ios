@@ -6,6 +6,13 @@
 //
 import Foundation
 
+struct ProductoComplemento: Codable, Identifiable {
+    let idInterno: String
+    let nombre: String
+
+    var id: String { idInterno }
+}
+
 struct Producto: Codable, Identifiable {
     let idInterno: String
     let nombre: String
@@ -23,6 +30,9 @@ struct Producto: Codable, Identifiable {
     var procesosExtras: [String] = []
     var alternativas: [ProductoAlternativa] = []
     var personalizables: [ProductoPersonalizables]? = []
+    var horariosReducidos: [String]? = []
+    var complementos: [ProductoComplemento]? = []
+    var esComplemento: Bool? = false
     var esPremio: Bool? = nil
     var idPremio: String? = nil
     var contieneAlcohol: Bool? = false

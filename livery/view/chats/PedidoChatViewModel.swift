@@ -169,6 +169,7 @@ class PedidoChatViewModel: ObservableObject {
         self.idComercio = idComercio
         self.idRepartidor = idRepartidor
         self.refreshCounter += 1
+
     }
     
     func limpiarError() {
@@ -178,6 +179,7 @@ class PedidoChatViewModel: ObservableObject {
     func limpiarChat() {
         self.mensajes = []
         self.ultimoTimestamp = nil
+        self.idPedido = nil
         self.idComercio = nil
         self.idRepartidor = nil
     }

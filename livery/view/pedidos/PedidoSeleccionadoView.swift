@@ -34,6 +34,7 @@ struct BottomSheetPedidoDescripcion: View {
         VStack(spacing: 0) {
             if(pedidosViewModel.pedidoSeleccionado != nil){
                 let estadoPedido = EstadoPedido.desdeString(pedidosViewModel.pedidoSeleccionado!.estado?.nombre ?? "")
+                let badgesFila2 = [0, pedidosViewModel.mensajesNoLeidosComercio, pedidosViewModel.mensajesNoLeidosRepartidor]
                 
                 VStack(spacing: 0) {
                     Spacer().frame(height: 16)
@@ -58,7 +59,8 @@ struct BottomSheetPedidoDescripcion: View {
                     TabsConBoxes(
                         tabsFila1: tabsFila1,
                         tabsFila2: tabsFila2,
-                        selectedTabIndex: $selectedTabIndex
+                        selectedTabIndex: $selectedTabIndex,
+                        badgesFila2: badgesFila2
                     )
                     Spacer().frame(height: 4)
                     Divider()
@@ -105,6 +107,13 @@ struct BottomSheetPedidoDescripcion: View {
         .onChange(of: selectedTabIndex) { oldValue, newValue in
             let isChatTab = (newValue == 4 || newValue == 5)
             pedidoChatViewModel.setChatTabActive(active: isChatTab)
+
+            if newValue == 4 {
+                pedidosViewModel.limpiarMensajesNoLeidosComercio()
+            }
+            if newValue == 5 {
+                pedidosViewModel.limpiarMensajesNoLeidosRepartidor()
+            }
             
             let isRecorridoTab = (newValue == 2)
             pedidosViewModel.setRecorridoTabActive(active: isRecorridoTab)
@@ -123,6 +132,7 @@ struct TabsConBoxes: View {
     let tabsFila1: [String]
     let tabsFila2: [String]
     @Binding var selectedTabIndex: Int
+    let badgesFila2: [Int]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -136,23 +146,39 @@ struct TabsConBoxes: View {
             HStack(spacing: 0) {
                 ForEach(0..<tabsFila2.count, id: \.self) { index in
                     let realIndex = index + tabsFila1.count
-                    tabButton(title: tabsFila2[index], index: realIndex)
+                    tabButton(title: tabsFila2[index], index: realIndex, badgeCount: badgesFila2.indices.contains(index) ? badgesFila2[index] : 0)
                 }
             }
         }
         .padding(.horizontal, 4)
     }
     
-    func tabButton(title: String, index: Int) -> some View {
+    func tabButton(title: String, index: Int, badgeCount: Int = 0) -> some View {
         Button(action: { selectedTabIndex = index }) {
-            Text(title)
-                .font(.custom("Barlow", size: 14))
-                .bold()
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity)
-                .foregroundColor(selectedTabIndex == index ? .blanco : .grisTerciario)
-                .background(selectedTabIndex == index ? .verdePrincipal : .blanco)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+            ZStack(alignment: .topTrailing) {
+                Text(title)
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .foregroundColor(selectedTabIndex == index ? .blanco : .grisTerciario)
+                    .background(selectedTabIndex == index ? .verdePrincipal : .blanco)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                if badgeCount > 0 && selectedTabIndex != index {
+                    ZStack {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 20, height: 20)
+
+                        Text(badgeCount > 99 ? "99+" : "\(badgeCount)")
+                            .font(.custom("Barlow", size: 10))
+                            .bold()
+                            .foregroundColor(.white)
+                    }
+                    .offset(x: -2, y: -8)
+                }
+            }
         }
         .buttonStyle(PlainButtonStyle())
     }

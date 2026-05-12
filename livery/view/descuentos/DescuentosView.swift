@@ -107,15 +107,17 @@ struct FilaComercioDescuento: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(comercioDescuentos.productos) { producto in
-                        ProductoMiniatura(producto: producto) {
-                            Task {
-                                await descuentosViewModel.inicializarProductoSeleccionado(
-                                    idComercio: comercio.idInterno,
-                                    idProducto: producto.idInterno
-                                )
+                        if producto.disponible && producto.esComplemento != true {
+                            ProductoMiniatura(producto: producto) {
+                                Task {
+                                    await descuentosViewModel.inicializarProductoSeleccionado(
+                                        idComercio: comercio.idInterno,
+                                        idProducto: producto.idInterno
+                                    )
+                                }
                             }
+                            .frame(height: 190)
                         }
-                        .frame(height: 190)
                     }
                 }
                 .padding(.horizontal, 12)

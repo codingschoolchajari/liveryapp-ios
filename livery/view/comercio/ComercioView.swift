@@ -249,6 +249,12 @@ struct InformacionExtra: View {
     let comercio: Comercio
     @Binding var categoriaSeleccionadaId: String?
 
+    private var horariosReducidos: [ComercioHorarioReducido] {
+        (comercio.horariosReducidos ?? []).filter {
+            !$0.descripcion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+    }
+
     var body: some View {
         VStack(spacing: 4) {
             HStack(alignment: .center, spacing: 8) {
@@ -273,6 +279,35 @@ struct InformacionExtra: View {
             }
             .padding(.horizontal, 40)
             .frame(maxWidth: .infinity)
+
+            if !horariosReducidos.isEmpty {
+                ForEach(horariosReducidos, id: \.idInterno) { horarioReducido in
+                    Divider()
+                        .padding(.horizontal, 40)
+
+                    HStack(alignment: .center, spacing: 8) {
+                        Image(systemName: "clock")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(.negro)
+
+                        Text(horarioReducido.descripcion)
+                            .font(.custom("Barlow", size: 14))
+                            .foregroundColor(.negro)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Text(DateUtils.obtenerHorariosReducidosHoy(horarioReducido: horarioReducido))
+                            .font(.custom("Barlow", size: 12))
+                            .bold()
+                            .foregroundColor(.grisTerciario)
+                    }
+                    .padding(.horizontal, 40)
+                    .frame(maxWidth: .infinity)
+                }
+
+                Spacer().frame(height: 4)
+            }
             
             SelectorCategoriasComercio(
                 categorias: comercio.categorias,
@@ -406,12 +441,13 @@ struct Productos: View {
                         }
 
                         ForEach(comercio.categorias) { categoria in
-                            VStack(spacing: 0) {
-                                TituloSeccionComercio(titulo: categoria.nombre)
-                                    .id(categoria.idInterno)
+                            let productosDisponibles = categoria.productos.filter { $0.disponible && $0.esComplemento != true }
+                            if !productosDisponibles.isEmpty {
+                                VStack(spacing: 0) {
+                                    TituloSeccionComercio(titulo: categoria.nombre)
+                                        .id(categoria.idInterno)
 
-                                ForEach(categoria.productos) { producto in
-                                    if producto.disponible {
+                                    ForEach(productosDisponibles) { producto in
                                         ProductoTitulo(
                                             comercioViewModel: comercioViewModel,
                                             producto: producto,

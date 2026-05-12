@@ -534,15 +534,17 @@ struct ListaComerciosProductos: View {
                             
                             // Items de Productos
                             ForEach(comercioProductos.productos) { producto in
-                                ProductoMiniatura(producto: producto) {
-                                    Task {
-                                        await homeViewModel.inicializarProductoSeleccionado(
-                                            idComercio: comercioProductos.idComercio,
-                                            idProducto: producto.idInterno
-                                        )
+                                if producto.disponible && producto.esComplemento != true {
+                                    ProductoMiniatura(producto: producto) {
+                                        Task {
+                                            await homeViewModel.inicializarProductoSeleccionado(
+                                                idComercio: comercioProductos.idComercio,
+                                                idProducto: producto.idInterno
+                                            )
+                                        }
                                     }
+                                    .frame(height: 190)
                                 }
-                                .frame(height: 190)
                             }
                         }
                         .padding(.horizontal, 12)

@@ -18,6 +18,9 @@ struct ProductoTitulo: View {
     
     var body: some View {
         let comercio = comercioViewModel.comercio
+        let descripcionesHorariosReducidos = comercio != nil
+            ? DateUtils.obtenerDescripcionesHorariosReducidosProducto(producto: producto, comercio: comercio!)
+            : []
         let idFavorito = perfilUsuarioState.usuario?.obtenerIdProductoFavorito(
             idComercio: comercio?.idInterno,
             idProducto: producto.idInterno
@@ -27,7 +30,8 @@ struct ProductoTitulo: View {
             HStack(spacing: 8) {
                 ProductoDescripcion(
                     producto: producto,
-                    productoAlternativa: !producto.alternativas.isEmpty && (producto.cantidadMinimaAlternativasSeleccionables ?? 1) <= 1 ? producto.alternativas.first : nil
+                    productoAlternativa: !producto.alternativas.isEmpty && (producto.cantidadMinimaAlternativasSeleccionables ?? 1) <= 1 ? producto.alternativas.first : nil,
+                    descripcionesHorariosReducidos: descripcionesHorariosReducidos
                 )
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
@@ -134,6 +138,7 @@ struct ProductoTitulo: View {
 struct ProductoDescripcion: View {
     let producto: Producto
     let productoAlternativa: ProductoAlternativa?
+    var descripcionesHorariosReducidos: [String] = []
     
     // Valores por defecto
     var fontSizeNombre: CGFloat = 16
@@ -192,6 +197,15 @@ struct ProductoDescripcion: View {
                     }
                 }
             }
+
+            if !descripcionesHorariosReducidos.isEmpty {
+                Text("Disponible en \(descripcionesHorariosReducidos.joined(separator: " / "))")
+                    .font(.custom("Barlow", size: 12))
+                    .bold()
+                    .foregroundColor(.orange)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
         }
     }
 }
@@ -229,6 +243,14 @@ struct BottomSheetSeleccionProducto: View {
     @State private var mostrarDialogoConflicto = false
     @State private var mensajeToast: String? = nil
     @State private var mostrarLoginRequerido = false
+    @State private var mostrarDialogoComplementos = false
+    @State private var mostrarDialogoHorarioReducido = false
+    @State private var mensajeDialogoHorarioReducido = ""
+    @State private var itemPendienteAgregar: ItemProducto? = nil
+    @State private var limpiarCarritoEnConfirmacion = false
+    @State private var gruposComplementos: [ComplementoPopupGrupo] = []
+    @State private var seleccionesComplementos: [String: [Int]] = [:]
+    @State private var nombresSeleccionablesComplementos: [String] = []
     
     var body: some View {
         VStack(spacing: 0) {
@@ -246,6 +268,7 @@ struct BottomSheetSeleccionProducto: View {
                 ProductoDescripcion(
                     producto: producto,
                     productoAlternativa: esPremio ? nil : itemProductoViewModel.alternativaParaDescripcion,
+                    descripcionesHorariosReducidos: DateUtils.obtenerDescripcionesHorariosReducidosProducto(producto: producto, comercio: comercio),
                     fontSizeNombre: 20,
                     fontSizePrecio: 22,
                     fontSizeDescripcion: 16
@@ -387,7 +410,97 @@ struct BottomSheetSeleccionProducto: View {
             }
             .presentationDetents([.fraction(0.75)])
         }
+        .overlay {
+            if mostrarDialogoComplementos, let itemPendienteAgregar {
+                let precioBase = itemPendienteAgregar.precio
+                let precioTotal = precioBase + calcularPrecioExtraComplementos(
+                    grupos: gruposComplementos,
+                    selecciones: seleccionesComplementos,
+                    procesosExtras: producto.procesosExtras
+                )
+
+                DialogoSeleccionComplementos(
+                    nombreProducto: producto.nombre,
+                    nombresSeleccionablesPorFila: nombresSeleccionablesComplementos,
+                    grupos: gruposComplementos,
+                    selecciones: seleccionesComplementos,
+                    precioTotal: precioTotal,
+                    personalizables: producto.personalizables,
+                    opcionesPersonalizablesSeleccionadas: itemProductoViewModel.opcionesPersonalizablesSeleccionadas,
+                    onSeleccionar: { idGrupo, indiceFila, indiceOpcion in
+                        guard var seleccionActual = seleccionesComplementos[idGrupo], seleccionActual.indices.contains(indiceFila) else {
+                            return
+                        }
+                        seleccionActual[indiceFila] = indiceOpcion
+                        seleccionesComplementos[idGrupo] = seleccionActual
+                    },
+                    onDismiss: {
+                        mostrarDialogoComplementos = false
+                        itemPendienteAgregar = nil
+                    },
+                    onConfirmar: {
+                        if !validarHorarioReducido() {
+                            return
+                        }
+
+                        guard let itemOriginal = itemPendienteAgregar else {
+                            return
+                        }
+
+                        let resumenComplementos = construirResumenComplementos(
+                            grupos: gruposComplementos,
+                            selecciones: seleccionesComplementos,
+                            nombresSeleccionablesPorFila: nombresSeleccionablesComplementos
+                        )
+                        let resumenPreciosComplementos = construirResumenPreciosComplementos(
+                            grupos: gruposComplementos,
+                            selecciones: seleccionesComplementos,
+                            procesosExtras: producto.procesosExtras
+                        )
+                        let precioFinal = precioBase + calcularPrecioExtraComplementos(
+                            grupos: gruposComplementos,
+                            selecciones: seleccionesComplementos,
+                            procesosExtras: producto.procesosExtras
+                        )
+
+                        var itemActualizado = itemOriginal
+                        itemActualizado.precio = precioFinal
+                        itemActualizado.precioUnitario = itemOriginal.precioUnitario
+                        itemActualizado.complementos = resumenComplementos
+                        itemActualizado.preciosComplementos = resumenPreciosComplementos
+
+                        guard let direccion = perfilUsuarioState.obtenerUsuarioDireccion() else {
+                            return
+                        }
+
+                        if limpiarCarritoEnConfirmacion {
+                            carritoViewModel.limpiarYAgregarItemProducto(
+                                perfilUsuarioState: perfilUsuarioState,
+                                itemProducto: itemActualizado,
+                                comercio: comercio,
+                                direccion: direccion
+                            )
+                        } else {
+                            carritoViewModel.agregarItemProducto(
+                                perfilUsuarioState: perfilUsuarioState,
+                                itemProducto: itemActualizado,
+                                direccion: direccion
+                            )
+                        }
+
+                        mostrarDialogoComplementos = false
+                        itemPendienteAgregar = nil
+                        onClose()
+                    }
+                )
+            }
+        }
         .overlay(ToastView(mensaje: $mensajeToast))
+        .alert("Producto fuera de horario", isPresented: $mostrarDialogoHorarioReducido) {
+            Button("Aceptar", role: .cancel) {}
+        } message: {
+            Text(mensajeDialogoHorarioReducido)
+        }
     }
     
     // --- Lógica de Validación (Cálculo de 'enabled') ---
@@ -422,18 +535,28 @@ struct BottomSheetSeleccionProducto: View {
             mostrarLoginRequerido = true
             return
         }
+
+        if !validarHorarioReducido() {
+            return
+        }
         
         let direccion = perfilUsuarioState.obtenerUsuarioDireccion()
         let ciudad = perfilUsuarioState.ciudadSeleccionada
         
         if direccion != nil && ciudad != nil && !ciudad!.isEmpty {
             if carritoViewModel.validacionComercio(comercio: comercio) {
-                carritoViewModel.agregarItemProducto(
-                    perfilUsuarioState: perfilUsuarioState,
-                    itemProducto: itemProductoViewModel.itemProducto!,
-                    direccion: direccion!
+                let mostrarDialogo = prepararDialogoComplementos(
+                    item: itemProductoViewModel.itemProducto!,
+                    limpiarCarrito: false
                 )
-                onClose()
+                if !mostrarDialogo {
+                    carritoViewModel.agregarItemProducto(
+                        perfilUsuarioState: perfilUsuarioState,
+                        itemProducto: itemProductoViewModel.itemProducto!,
+                        direccion: direccion!
+                    )
+                    onClose()
+                }
             } else {
                 mostrarDialogoConflicto = true
             }
@@ -452,15 +575,89 @@ struct BottomSheetSeleccionProducto: View {
         if(itemProductoViewModel.itemProducto == nil
            || perfilUsuarioState.obtenerUsuarioDireccion() == nil) { return }
 
-        carritoViewModel.limpiarYAgregarItemProducto(
-            perfilUsuarioState: perfilUsuarioState,
-            itemProducto: itemProductoViewModel.itemProducto!,
-            comercio: comercio,
-            direccion: perfilUsuarioState.obtenerUsuarioDireccion()!
-        )
+        if !validarHorarioReducido() {
+            return
+        }
+
         mostrarDialogoConflicto = false
-        
-        onClose()
+
+        let mostrarDialogo = prepararDialogoComplementos(
+            item: itemProductoViewModel.itemProducto!,
+            limpiarCarrito: true
+        )
+        if !mostrarDialogo {
+            carritoViewModel.limpiarYAgregarItemProducto(
+                perfilUsuarioState: perfilUsuarioState,
+                itemProducto: itemProductoViewModel.itemProducto!,
+                comercio: comercio,
+                direccion: perfilUsuarioState.obtenerUsuarioDireccion()!
+            )
+            onClose()
+        }
+    }
+
+    private func prepararDialogoComplementos(item: ItemProducto, limpiarCarrito: Bool) -> Bool {
+        let grupos = construirGruposComplementos(producto: producto, comercio: comercio)
+        if grupos.isEmpty {
+            return false
+        }
+
+        let tieneSeleccionables = (producto.cantidadMinimaSeleccionables ?? 0) > 0 && categoria.seleccionables != nil
+        let cantidadSeleccionablesUnitarios = itemProductoViewModel.seleccionadosUnitarios.values.filter { $0 }.count
+        let cantidadSeleccionablesMultiples = itemProductoViewModel.seleccionadosMultiples.values.reduce(0, +)
+
+        let cantidadFilasComplementos: Int
+        if tieneSeleccionables {
+            cantidadFilasComplementos = max(
+                cantidadSeleccionablesUnitarios,
+                max(
+                    cantidadSeleccionablesMultiples,
+                    producto.cantidadMinimaSeleccionables ?? 1
+                )
+            )
+        } else {
+            cantidadFilasComplementos = item.cantidad
+        }
+
+        gruposComplementos = grupos
+        seleccionesComplementos = Dictionary(uniqueKeysWithValues: grupos.map { grupo in
+            (grupo.idInterno, Array(repeating: 0, count: cantidadFilasComplementos))
+        })
+
+        let nombresSeleccionables = item.seleccionables.flatMap { seleccionable in
+            Array(repeating: seleccionable.nombreSeleccionable, count: seleccionable.cantidad ?? 1)
+        }
+
+        if !nombresSeleccionables.isEmpty {
+            if nombresSeleccionables.count >= cantidadFilasComplementos {
+                nombresSeleccionablesComplementos = Array(nombresSeleccionables.prefix(cantidadFilasComplementos))
+            } else {
+                nombresSeleccionablesComplementos = nombresSeleccionables + Array(repeating: producto.nombre, count: cantidadFilasComplementos - nombresSeleccionables.count)
+            }
+        } else {
+            nombresSeleccionablesComplementos = Array(repeating: producto.nombre, count: cantidadFilasComplementos)
+        }
+
+        itemPendienteAgregar = item
+        limpiarCarritoEnConfirmacion = limpiarCarrito
+        mostrarDialogoComplementos = true
+        return true
+    }
+
+    private func validarHorarioReducido() -> Bool {
+        let estaDisponible = DateUtils.productoDisponibleEnHorarioReducido(producto: producto, comercio: comercio)
+        if estaDisponible {
+            return true
+        }
+
+        let descripciones = DateUtils.obtenerDescripcionesHorariosReducidosProducto(producto: producto, comercio: comercio)
+        let descripcionTexto = descripciones.isEmpty
+            ? "el horario definido del producto"
+            : descripciones.joined(separator: " / ")
+
+        mensajeDialogoHorarioReducido = "Este producto solo está disponible en \(descripcionTexto)."
+        mostrarDialogoHorarioReducido = true
+        return false
     }
 }
 

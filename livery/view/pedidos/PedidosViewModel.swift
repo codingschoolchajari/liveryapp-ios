@@ -15,6 +15,7 @@ class PedidosViewModel: ObservableObject {
     private let comerciosService = ComerciosService()
     private let comentariosService = ComentariosService()
     private let recorridosService = RecorridosService()
+    private let chatsService = ChatsService()
     private let perfilUsuarioState: PerfilUsuarioState
     
     // Propiedades Publicadas (@Published equivale a StateFlow)
@@ -26,6 +27,8 @@ class PedidosViewModel: ObservableObject {
     @Published var comprobanteSeleccionado: Comprobante = Comprobante()
     @Published var mostrarBottomSheet: Bool = false
     @Published var recorridoTick: Int = 0 // Fuerza actualización de mapas en la UI
+    @Published var mensajesNoLeidosComercio: Int = 0
+    @Published var mensajesNoLeidosRepartidor: Int = 0
     
     // Variables de paginación y control
     private var paginaActual = 0
@@ -152,6 +155,11 @@ class PedidosViewModel: ObservableObject {
             self.pedidoSeleccionado = pedidoInfo
             self.comercioSeleccionado = comercioInfo
             self.recorridoSeleccionado = recorridoInfo
+            await actualizarMensajesNoLeidos(
+                idPedido: pedido.idInterno,
+                idComercio: pedido.idComercio,
+                idRepartidor: pedido.idRepartidor
+            )
         } catch {
             print("Error al refrescar pedido seleccionado: \(error)")
         }
@@ -192,10 +200,64 @@ class PedidosViewModel: ObservableObject {
             self.pedidoSeleccionado = pedidoInfo
             self.comercioSeleccionado = comercioInfo
             self.recorridoSeleccionado = recorridoInfo
+            await actualizarMensajesNoLeidos(
+                idPedido: pedidoInfo.idInterno,
+                idComercio: pedidoInfo.idComercio,
+                idRepartidor: pedidoInfo.idRepartidor
+            )
             onMostrarBottomSheetChange(mostrar: true)
         } catch {
             print("Error al buscar pedido seleccionado: \(error)")
         }
+    }
+
+    func actualizarMensajesNoLeidos(idPedido: String, idComercio: String, idRepartidor: String?) async {
+        guard let emailUsuario = perfilUsuarioState.usuario?.email else { return }
+
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+
+            let resultadoComercio = try await chatsService.contarMensajesNoLeidos(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                idPedido: idPedido,
+                solicitante: emailUsuario,
+                idUsuario: emailUsuario,
+                idComercio: idComercio
+            )
+            self.mensajesNoLeidosComercio = resultadoComercio.cantidadMensajesNoLeidos
+
+            if let idRepartidor, !idRepartidor.isEmpty {
+                let resultadoRepartidor = try await chatsService.contarMensajesNoLeidos(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    idPedido: idPedido,
+                    solicitante: emailUsuario,
+                    idUsuario: emailUsuario,
+                    idRepartidor: idRepartidor
+                )
+                self.mensajesNoLeidosRepartidor = resultadoRepartidor.cantidadMensajesNoLeidos
+            } else {
+                self.mensajesNoLeidosRepartidor = 0
+            }
+        } catch {
+            print("Error al contar mensajes no leidos: \(error)")
+        }
+    }
+
+    func limpiarMensajesNoLeidos() {
+        self.mensajesNoLeidosComercio = 0
+        self.mensajesNoLeidosRepartidor = 0
+    }
+
+    func limpiarMensajesNoLeidosComercio() {
+        self.mensajesNoLeidosComercio = 0
+    }
+
+    func limpiarMensajesNoLeidosRepartidor() {
+        self.mensajesNoLeidosRepartidor = 0
     }
     
     func enviarComentario(

@@ -7,6 +7,18 @@
 import Foundation
 
 struct DateUtils {
+
+    private static let diasSemanaNormalizados: [String: String] = [
+        "domingo": "Domingo",
+        "lunes": "Lunes",
+        "martes": "Martes",
+        "miercoles": "Miércoles",
+        "miércoles": "Miércoles",
+        "jueves": "Jueves",
+        "viernes": "Viernes",
+        "sabado": "Sábado",
+        "sábado": "Sábado"
+    ]
     
     static func obtenerHorariosHoy(horarios: [ComercioHorario]) -> String {
         
@@ -121,5 +133,121 @@ struct DateUtils {
             // Si el formato es distinto o falla, devolvemos el string original
             return fecha
         }
+    }
+
+    static func obtenerHorariosReducidosHoy(horarioReducido: ComercioHorarioReducido) -> String {
+        let intervalos = obtenerIntervalosHoy(horarioReducido: horarioReducido)
+
+        if intervalos.isEmpty {
+            return "Cerrado"
+        }
+
+        return intervalos
+            .map { "\($0.inicio) a \($0.fin)" }
+            .joined(separator: "  -  ")
+    }
+
+    static func obtenerDescripcionesHorariosReducidosProducto(producto: Producto, comercio: Comercio) -> [String] {
+        let ids = producto.horariosReducidos ?? []
+        let horariosReducidos = comercio.horariosReducidos ?? []
+
+        if ids.isEmpty || horariosReducidos.isEmpty {
+            return []
+        }
+
+        return horariosReducidos
+            .filter { ids.contains($0.idInterno) }
+            .map { $0.descripcion.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    static func productoDisponibleEnHorarioReducido(producto: Producto, comercio: Comercio) -> Bool {
+        let ids = producto.horariosReducidos ?? []
+        if ids.isEmpty {
+            return true
+        }
+
+        let horariosReducidos = comercio.horariosReducidos ?? []
+        if horariosReducidos.isEmpty {
+            return true
+        }
+
+        let horariosAplicables = horariosReducidos.filter { ids.contains($0.idInterno) }
+        if horariosAplicables.isEmpty {
+            return true
+        }
+
+        let minutosActuales = obtenerMinutosActuales()
+        let diaActual = normalizarTextoDia(obtenerNombreDiaActual())
+
+        for horarioReducido in horariosAplicables {
+            let intervalosHoy = horarioReducido.horarios
+                .filter { normalizarTextoDia($0.dia) == diaActual }
+                .flatMap { $0.intervalos }
+
+            for intervalo in intervalosHoy {
+                if estaDentroDelIntervalo(minutosActuales: minutosActuales, inicio: intervalo.inicio, fin: intervalo.fin) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    private static func obtenerIntervalosHoy(horarioReducido: ComercioHorarioReducido) -> [ComercioIntervalo] {
+        let diaActual = normalizarTextoDia(obtenerNombreDiaActual())
+
+        return horarioReducido.horarios
+            .filter { normalizarTextoDia($0.dia) == diaActual }
+            .flatMap { $0.intervalos }
+    }
+
+    private static func obtenerNombreDiaActual() -> String {
+        let numeroDia = Calendar.current.component(.weekday, from: Date())
+        return ListUtils.diasSemana[numeroDia - 1]
+    }
+
+    private static func obtenerMinutosActuales() -> Int {
+        let componentes = Calendar.current.dateComponents([.hour, .minute], from: Date())
+        return (componentes.hour ?? 0) * 60 + (componentes.minute ?? 0)
+    }
+
+    private static func convertirHoraAMinutosSeguro(_ hora: String) -> Int? {
+        let partes = hora.split(separator: ":").compactMap { Int($0) }
+        guard partes.count == 2 else { return nil }
+
+        let horas = partes[0]
+        let minutos = partes[1]
+
+        guard (0...23).contains(horas), (0...59).contains(minutos) else {
+            return nil
+        }
+
+        return horas * 60 + minutos
+    }
+
+    private static func estaDentroDelIntervalo(minutosActuales: Int, inicio: String, fin: String) -> Bool {
+        guard
+            let inicioMin = convertirHoraAMinutosSeguro(inicio),
+            let finMin = convertirHoraAMinutosSeguro(fin)
+        else {
+            return false
+        }
+
+        if inicioMin <= finMin {
+            return minutosActuales >= inicioMin && minutosActuales <= finMin
+        }
+
+        return minutosActuales >= inicioMin || minutosActuales <= finMin
+    }
+
+    private static func normalizarTextoDia(_ valor: String) -> String {
+        let base = valor
+            .folding(options: .diacriticInsensitive, locale: .current)
+            .lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return diasSemanaNormalizados[base] ?? valor
     }
 }

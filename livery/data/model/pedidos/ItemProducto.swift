@@ -29,6 +29,9 @@ struct ItemProducto: Codable, Identifiable {
     var idPremio: String? = nil
     var contieneAlcohol: Bool? = false
     var disponibleParaDelivery: Bool? = nil
+    var horariosReducidos: [String]? = []
+    var complementos: [String] = []
+    var preciosComplementos: [String] = []
     
     var id: String { idInterno }
 }

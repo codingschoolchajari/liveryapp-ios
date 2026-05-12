@@ -140,4 +140,49 @@ class ChatsService {
             throw URLError(.badServerResponse)
         }
     }
+
+    func contarMensajesNoLeidos(
+        token: String,
+        dispositivoID: String,
+        idPedido: String,
+        solicitante: String,
+        idUsuario: String? = nil,
+        idComercio: String? = nil,
+        idRepartidor: String? = nil
+    ) async throws -> MensajesNoLeidosResponse {
+
+        var components = URLComponents(string: chatsURL + "/contarMensajesNoLeidos")!
+
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "idPedido", value: idPedido),
+            URLQueryItem(name: "solicitante", value: solicitante)
+        ]
+
+        if let idUsuario {
+            queryItems.append(URLQueryItem(name: "idUsuario", value: idUsuario))
+        }
+
+        if let idComercio {
+            queryItems.append(URLQueryItem(name: "idComercio", value: idComercio))
+        }
+
+        if let idRepartidor {
+            queryItems.append(URLQueryItem(name: "idRepartidor", value: idRepartidor))
+        }
+
+        components.queryItems = queryItems
+
+        guard let url = components.url else {
+            fatalError("URL incorrecta")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+
+        return try JSONDecoder().decode(MensajesNoLeidosResponse.self, from: data)
+    }
 }

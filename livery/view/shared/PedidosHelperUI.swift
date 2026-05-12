@@ -39,7 +39,10 @@ struct ItemProductoDescripcion: View {
             
             // Descripción de seleccionables
             OpcionesPersonalizablesDescripcion(opcionesPersonalizables: itemProducto.opcionesPersonalizables)
-            SeleccionablesDescripcion(seleccionables: itemProducto.seleccionables)
+            ComplementosDescripcion(complementos: itemProducto.complementos)
+            if itemProducto.complementos.isEmpty {
+                SeleccionablesDescripcion(seleccionables: itemProducto.seleccionables)
+            }
             
             AlternativaDescripcion(nombreAlternativaProducto: itemProducto.nombreAlternativaProducto)
             
@@ -48,10 +51,13 @@ struct ItemProductoDescripcion: View {
             // Cantidad y Precio
             HStack {
                 Spacer()
-                Text("\(itemProducto.cantidad)  x  \(DoubleUtils.formatearPrecio(valor: itemProducto.precioUnitario))")
-                    .font(.custom("Barlow", size: 16))
-                    .bold()
-                    .foregroundColor(.negro)
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text("\(itemProducto.cantidad)  x  \(DoubleUtils.formatearPrecio(valor: itemProducto.precioUnitario))")
+                        .font(.custom("Barlow", size: 16))
+                        .bold()
+                        .foregroundColor(.negro)
+                    PreciosComplementosDescripcion(preciosComplementos: itemProducto.preciosComplementos)
+                }
             }
         }
     }
@@ -188,6 +194,43 @@ struct OpcionesPersonalizablesDescripcion: View {
             Text(opcionesPersonalizables)
                 .font(.custom("Barlow", size: 14))
                 .foregroundColor(.negro)
+        }
+    }
+}
+
+struct ComplementosDescripcion: View {
+    let complementos: [String]
+
+    var body: some View {
+        if !complementos.isEmpty {
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(Array(complementos.enumerated()), id: \.offset) { _, complemento in
+                    if !complemento.isEmpty {
+                        Text(complemento)
+                            .font(.custom("Barlow", size: 14))
+                            .foregroundColor(.negro)
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct PreciosComplementosDescripcion: View {
+    let preciosComplementos: [String]
+
+    var body: some View {
+        if !preciosComplementos.isEmpty {
+            VStack(alignment: .trailing, spacing: 0) {
+                ForEach(Array(preciosComplementos.enumerated()), id: \.offset) { _, lineaPrecio in
+                    if !lineaPrecio.isEmpty {
+                        Text(lineaPrecio)
+                            .font(.custom("Barlow", size: 16))
+                            .bold()
+                            .foregroundColor(.negro)
+                    }
+                }
+            }
         }
     }
 }

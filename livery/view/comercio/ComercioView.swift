@@ -48,6 +48,8 @@ struct ComercioView: View {
                 ProgressView()
                     .tint(.verdePrincipal)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.blanco)
+                    .ignoresSafeArea()
             }
         }
         .onChange(of: scenePhase) { _, newPhase in

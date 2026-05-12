@@ -25,7 +25,7 @@ struct ComercioView: View {
                         print("[DEBUG Portada] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
                         return Color.clear
                     })
-                    Spacer().frame(height: 8)
+                    Spacer().frame(height: 2)
                     InformacionExtra(
                         comercio: comercio,
                         categoriaSeleccionadaId: $categoriaSeleccionadaId

@@ -9,6 +9,7 @@ import SwiftUI
 @main
 struct liveryApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @Environment(\.scenePhase) var scenePhase
     
     @StateObject var navManager = NavigationManager()
     @StateObject var perfilUsuarioState = PerfilUsuarioState()
@@ -30,6 +31,11 @@ struct liveryApp: App {
                     delegate.perfilUsuarioState = perfilUsuarioState
                     NotificationManager.shared.perfilUsuarioState = perfilUsuarioState
                 }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                ImageCache.shared.clearAll()
+            }
         }
     }
 }

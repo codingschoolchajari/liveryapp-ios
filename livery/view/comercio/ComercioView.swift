@@ -12,6 +12,7 @@ struct ComercioView: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @State private var categoriaSeleccionadaId: String? = nil
     @State private var mostrarComentarios = false
+    @State private var categoriaDropdownExpandido = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -24,7 +25,8 @@ struct ComercioView: View {
                     Spacer().frame(height: 2)
                     InformacionExtra(
                         comercio: comercio,
-                        categoriaSeleccionadaId: $categoriaSeleccionadaId
+                        categoriaSeleccionadaId: $categoriaSeleccionadaId,
+                        dropdownExpandido: $categoriaDropdownExpandido
                     )
                     .zIndex(1)
                     Spacer().frame(height: 8)
@@ -34,6 +36,7 @@ struct ComercioView: View {
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .clipped()
+                    .allowsHitTesting(!categoriaDropdownExpandido)
                 }
                 .background(Color.blanco)
 
@@ -249,6 +252,7 @@ struct ComercioTitulo: View {
 struct InformacionExtra: View {
     let comercio: Comercio
     @Binding var categoriaSeleccionadaId: String?
+    @Binding var dropdownExpandido: Bool
 
     private var horariosReducidos: [ComercioHorarioReducido] {
         (comercio.horariosReducidos ?? []).filter {
@@ -313,7 +317,8 @@ struct InformacionExtra: View {
             
             SelectorCategoriasComercio(
                 categorias: comercio.categorias,
-                categoriaSeleccionadaId: $categoriaSeleccionadaId
+                categoriaSeleccionadaId: $categoriaSeleccionadaId,
+                estaExpandido: $dropdownExpandido
             )
         }
     }
@@ -322,7 +327,7 @@ struct InformacionExtra: View {
 struct SelectorCategoriasComercio: View {
     let categorias: [Categoria]
     @Binding var categoriaSeleccionadaId: String?
-    @State private var estaExpandido = false
+    @Binding var estaExpandido: Bool
 
     private var categoriaSeleccionadaNombre: String {
         guard let categoriaSeleccionadaId,

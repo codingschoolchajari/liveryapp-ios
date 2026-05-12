@@ -78,18 +78,50 @@ struct RemoteImage: View {
         .task(id: url) {
             uiImage = nil
             guard let url else { return }
-            var request = URLRequest(url: url)
-            request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-            if let (data, _) = try? await URLSession.shared.data(for: request),
+
+            // Revisar caché en memoria primero
+            if let cached = ImageCache.shared.get(url) {
+                uiImage = cached
+                return
+            }
+
+            if let (data, _) = try? await URLSession.shared.data(from: url),
                let loaded = UIImage(data: data) {
+                ImageCache.shared.set(loaded, for: url)
                 uiImage = loaded
             } else if let fallbackURL {
-                var fallbackRequest = URLRequest(url: fallbackURL)
-                fallbackRequest.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-                guard let (data, _) = try? await URLSession.shared.data(for: fallbackRequest),
+                if let cached = ImageCache.shared.get(fallbackURL) {
+                    uiImage = cached
+                    return
+                }
+                guard let (data, _) = try? await URLSession.shared.data(from: fallbackURL),
                       let loaded = UIImage(data: data) else { return }
+                ImageCache.shared.set(loaded, for: fallbackURL)
                 uiImage = loaded
             }
         }
+    }
+}
+
+private final class ImageCache {
+    static let shared = ImageCache()
+    private let cache = NSCache<NSURL, UIImage>()
+
+    private init() {
+        cache.countLimit = 200
+        cache.totalCostLimit = 100 * 1024 * 1024 // 100 MB
+    }
+
+    func get(_ url: URL) -> UIImage? {
+        cache.object(forKey: url as NSURL)
+    }
+
+    func set(_ image: UIImage, for url: URL) {
+        let cost = image.jpegData(compressionQuality: 1)?.count ?? 0
+        cache.setObject(image, forKey: url as NSURL, cost: cost)
+    }
+
+    func clearAll() {
+        cache.removeAllObjects()
     }
 }

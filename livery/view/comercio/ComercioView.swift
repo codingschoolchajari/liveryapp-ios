@@ -322,6 +322,7 @@ struct InformacionExtra: View {
 struct SelectorCategoriasComercio: View {
     let categorias: [Categoria]
     @Binding var categoriaSeleccionadaId: String?
+    @State private var estaExpandido = false
 
     private var categoriaSeleccionadaNombre: String {
         guard let categoriaSeleccionadaId,
@@ -333,50 +334,78 @@ struct SelectorCategoriasComercio: View {
     }
 
     var body: some View {
-        Menu {
-            Button {
-                categoriaSeleccionadaId = nil
-            } label: {
-                Text("Todas las categorías")
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-
-            ForEach(categorias) { categoria in
-                Button {
-                    categoriaSeleccionadaId = categoria.idInterno
-                } label: {
-                    Text(categoria.nombre)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                }
-            }
-        } label: {
-            ZStack {
-                Text(categoriaSeleccionadaNombre)
-                    .font(.custom("Barlow", size: 14))
-                    .foregroundColor(.negro)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 28)
-
-                HStack {
-                    Spacer()
-                    Image("icono_flecha_abajo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
-                }
-                .padding(.trailing, 8)
-            }
-            .frame(height: 30)
-            .padding(.horizontal, 10)
-            .background(Color.blanco)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color.grisSecundario, lineWidth: 1)
-            )
+        HStack {
+            Text(categoriaSeleccionadaNombre)
+                .font(.custom("Barlow", size: 14))
+                .bold()
+                .foregroundColor(Color.grisSecundario)
+            Spacer()
+            Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
+                .foregroundColor(Color.grisSecundario)
+                .font(.custom("Barlow", size: 14))
+                .bold()
         }
+        .padding(.horizontal, 20)
+        .frame(height: 44)
+        .background(Color.blanco)
+        .clipShape(RoundedCorners(
+            radius: 32,
+            corners: estaExpandido ? [.topLeft, .topRight] : .allCorners
+        ))
+        .onTapGesture {
+            withAnimation(.spring()) {
+                estaExpandido.toggle()
+            }
+        }
+        .overlay(alignment: .top) {
+            if estaExpandido {
+                VStack(spacing: 0) {
+                    Color.clear.frame(height: 44)
+
+                    VStack(spacing: 0) {
+                        Divider().background(Color.grisSecundario)
+
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 0) {
+                                Button(action: {
+                                    categoriaSeleccionadaId = nil
+                                    withAnimation { estaExpandido = false }
+                                }) {
+                                    Text("Todas las categorías")
+                                        .font(.custom("Barlow", size: 14))
+                                        .bold()
+                                        .foregroundColor(.negro)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 12)
+                                        .padding(.horizontal, 20)
+                                }
+
+                                ForEach(categorias) { categoria in
+                                    Button(action: {
+                                        categoriaSeleccionadaId = categoria.idInterno
+                                        withAnimation { estaExpandido = false }
+                                    }) {
+                                        Text(categoria.nombre)
+                                            .font(.custom("Barlow", size: 14))
+                                            .bold()
+                                            .foregroundColor(.negro)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.vertical, 12)
+                                            .padding(.horizontal, 20)
+                                    }
+                                }
+                            }
+                        }
+                        .frame(maxHeight: 200)
+                    }
+                    .background(Color.blanco)
+                    .clipShape(RoundedCorners(radius: 22, corners: [.bottomLeft, .bottomRight]))
+                    .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .zIndex(100)
         .padding(.horizontal, 80)
         .padding(.vertical, 2)
     }

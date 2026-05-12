@@ -344,7 +344,7 @@ struct SelectorCategoriasComercio: View {
     var body: some View {
         ZStack {
             Text(categoriaSeleccionadaNombre)
-                .font(.custom("Barlow", size: 14))
+                .font(.custom("Barlow", size: 12))
                 .bold()
                 .foregroundColor(Color.grisSecundario)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -354,12 +354,12 @@ struct SelectorCategoriasComercio: View {
                 Spacer()
                 Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
                     .foregroundColor(Color.grisSecundario)
-                    .font(.custom("Barlow", size: 14))
+                    .font(.custom("Barlow", size: 12))
                     .bold()
                     .padding(.trailing, 20)
             }
         }
-        .frame(height: 34)
+        .frame(height: 24)
         .background(Color.blanco)
         .clipShape(RoundedCorners(
             radius: 32,

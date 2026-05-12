@@ -528,6 +528,7 @@ struct Productos: View {
                     }
                 }
                 .clipped()
+                .contentMargins(.top, 0, for: .scrollContent)
                 .background(GeometryReader { geo -> Color in
                     print("[DEBUG ScrollView] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
                     return Color.clear

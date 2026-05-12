@@ -350,22 +350,25 @@ struct SelectorCategoriasComercio: View {
                 }
             }
         } label: {
-            HStack(spacing: 8) {
+            ZStack {
                 Text(categoriaSeleccionadaNombre)
                     .font(.custom("Barlow", size: 14))
                     .foregroundColor(.negro)
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 28)
 
-                Image("icono_flecha_abajo")
-                    .resizable()
-                    .frame(width: 16, height: 16)
-                    .foregroundColor(.negro)
+                HStack {
+                    Spacer()
+                    Image("icono_flecha_abajo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                }
+                .padding(.trailing, 8)
             }
             .frame(height: 30)
-            .padding(.leading, 12)
-            .padding(.trailing, 10)
             .padding(.horizontal, 10)
             .background(Color.blanco)
             .clipShape(RoundedRectangle(cornerRadius: 24))

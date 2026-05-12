@@ -10,6 +10,7 @@ struct BottomSheetRepartoDescripcion: View {
 
     let tabsFila1 = ["Descripcion", "Pago"]
     let tabsFila2 = ["Recorrido", "Chat Repartidor", "Cancelacion"]
+    let badgesFila2 = [0, 0, 0]
 
     init(perfilUsuarioState: PerfilUsuarioState, repartosViewModel: RepartosViewModel, onClose: @escaping () -> Void) {
         self.repartosViewModel = repartosViewModel
@@ -39,7 +40,8 @@ struct BottomSheetRepartoDescripcion: View {
                     TabsConBoxes(
                         tabsFila1: tabsFila1,
                         tabsFila2: tabsFila2,
-                        selectedTabIndex: $selectedTabIndex
+                        selectedTabIndex: $selectedTabIndex,
+                        badgesFila2: badgesFila2
                     )
 
                     Spacer().frame(height: 4)

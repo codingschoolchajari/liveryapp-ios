@@ -21,7 +21,10 @@ struct ComercioView: View {
                         comercio: comercio,
                         onComentariosTap: { mostrarComentarios = true }
                     )
-                    .ignoresSafeArea(edges: .top)
+                    .background(GeometryReader { geo -> Color in
+                        print("[DEBUG Portada] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
+                        return Color.clear
+                    })
                     Spacer().frame(height: 8)
                     InformacionExtra(
                         comercio: comercio,
@@ -34,7 +37,17 @@ struct ComercioView: View {
                         categoriaSeleccionadaId: categoriaSeleccionadaId
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .clipped()
+                    .background(GeometryReader { geo -> Color in
+                        print("[DEBUG Productos] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
+                        return Color.clear
+                    })
                 }
+                .ignoresSafeArea(edges: .top)
+                .background(GeometryReader { geo -> Color in
+                    print("[DEBUG VStack] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
+                    return Color.clear
+                })
                 .background(Color.blanco)
 
                 BannerAviso(comercioViewModel: comercioViewModel)
@@ -351,7 +364,7 @@ struct SelectorCategoriasComercio: View {
                     .padding(.trailing, 20)
             }
         }
-        .frame(height: 44)
+        .frame(height: 34)
         .background(Color.blanco)
         .clipShape(RoundedCorners(
             radius: 32,
@@ -369,7 +382,7 @@ struct SelectorCategoriasComercio: View {
         .overlay(alignment: .top) {
             if estaExpandido {
                 VStack(spacing: 0) {
-                    Color.clear.frame(height: 44)
+                    Color.clear.frame(height: 34)
 
                     VStack(spacing: 0) {
                         Divider().background(Color.grisSecundario)
@@ -514,6 +527,10 @@ struct Productos: View {
                     }
                 }
                 .clipped()
+                .background(GeometryReader { geo -> Color in
+                    print("[DEBUG ScrollView] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
+                    return Color.clear
+                })
                 .onChange(of: categoriaSeleccionadaId) { _, newValue in
                     if let newValue {
                         proxy.scrollTo(newValue, anchor: .top)

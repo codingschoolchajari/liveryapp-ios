@@ -475,14 +475,15 @@ struct Productos: View {
                             VStack(spacing: 0) {
                                 TituloPromociones()
 
-                                ForEach(comercio.promociones) { promocion in
+                                ForEach(Array(comercio.promociones.enumerated()), id: \.element.id) { promoIndex, promocion in
                                     if promocion.disponible {
                                         PromocionTitulo(
                                             comercioViewModel: comercioViewModel,
                                             promocion: promocion,
                                             onSelect: {
                                                 comercioViewModel.seleccionarPromocion(promocion: promocion)
-                                            }
+                                            },
+                                            displayIndex: -(comercio.promociones.count - promoIndex)
                                         )
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 4)
@@ -491,28 +492,40 @@ struct Productos: View {
                             }
                         }
 
-                        ForEach(comercio.categorias) { categoria in
-                            let productosDisponibles = categoria.productos.filter { $0.disponible && $0.esComplemento != true }
-                            if !productosDisponibles.isEmpty {
-                                VStack(spacing: 0) {
-                                    TituloSeccionComercio(titulo: categoria.nombre)
-                                        .id(categoria.idInterno)
+                        let categoriaProductos: [(Categoria, [(Int, Producto)])] = {
+                            var idx = 0
+                            var result: [(Categoria, [(Int, Producto)])] = []
+                            for cat in comercio.categorias {
+                                let disponibles = cat.productos.filter { $0.disponible && $0.esComplemento != true }
+                                guard !disponibles.isEmpty else { continue }
+                                let indexados = disponibles.map { p -> (Int, Producto) in
+                                    let i = idx; idx += 1; return (i, p)
+                                }
+                                result.append((cat, indexados))
+                            }
+                            return result
+                        }()
 
-                                    ForEach(productosDisponibles) { producto in
-                                        ProductoTitulo(
-                                            comercioViewModel: comercioViewModel,
-                                            producto: producto,
-                                            categoria: categoria,
-                                            onSelect: {
-                                                comercioViewModel.seleccionarProducto(
-                                                    producto: producto,
-                                                    categoria: categoria
-                                                )
-                                            }
-                                        )
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 4)
-                                    }
+                        ForEach(categoriaProductos, id: \.0.id) { categoria, productosIndexados in
+                            VStack(spacing: 0) {
+                                TituloSeccionComercio(titulo: categoria.nombre)
+                                    .id(categoria.idInterno)
+
+                                ForEach(productosIndexados, id: \.1.id) { index, producto in
+                                    ProductoTitulo(
+                                        comercioViewModel: comercioViewModel,
+                                        producto: producto,
+                                        categoria: categoria,
+                                        onSelect: {
+                                            comercioViewModel.seleccionarProducto(
+                                                producto: producto,
+                                                categoria: categoria
+                                            )
+                                        },
+                                        displayIndex: index
+                                    )
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 4)
                                 }
                             }
                         }

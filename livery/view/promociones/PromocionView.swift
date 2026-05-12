@@ -10,6 +10,7 @@ struct PromocionTitulo: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
     let promocion: Promocion
     let onSelect: () -> Void
+    var displayIndex: Int = 0
     
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     
@@ -30,7 +31,8 @@ struct PromocionTitulo: View {
                 ZStack(alignment: .topTrailing) {
                     RemoteImage(
                         url: URL(string: API.baseURL + "/" + promocion.imagenURL),
-                        fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(promocion.imagenURL))
+                        fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(promocion.imagenURL)),
+                        displayIndex: displayIndex
                     )
                     .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 24))

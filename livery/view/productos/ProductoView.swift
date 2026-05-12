@@ -11,6 +11,7 @@ struct ProductoTitulo: View {
     let producto: Producto
     let categoria: Categoria
     let onSelect: () -> Void
+    var displayIndex: Int = 0
     
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     
@@ -38,7 +39,8 @@ struct ProductoTitulo: View {
                 ZStack(alignment: .center) {
                     RemoteImage(
                         url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")),
-                        fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(producto.imagenURL))
+                        fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(producto.imagenURL)),
+                        displayIndex: displayIndex
                     )
                     .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 24))

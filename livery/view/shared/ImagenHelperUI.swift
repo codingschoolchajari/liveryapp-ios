@@ -62,6 +62,7 @@ struct ZoomableContainer<Content: View>: UIViewRepresentable {
 struct RemoteImage: View {
     let url: URL?
     var fallbackURL: URL? = nil
+    var displayIndex: Int = 0  // menor = mayor prioridad de descarga
 
     @State private var uiImage: UIImage? = nil
 
@@ -85,8 +86,8 @@ struct RemoteImage: View {
                 return
             }
 
-            // Limitar descargas concurrentes: máximo 6 a la vez
-            await DownloadSemaphore.shared.wait()
+            // Limitar descargas concurrentes: máximo 6 a la vez, por orden de posición
+            await DownloadSemaphore.shared.wait(index: displayIndex)
             defer { DownloadSemaphore.shared.signal() }
 
             // Verificar caché de nuevo tras esperar el semáforo
@@ -132,18 +133,20 @@ actor DownloadSemaphore {
 
     private let maxConcurrent: Int
     private var running = 0
-    private var waiters: [CheckedContinuation<Void, Never>] = []
+    private var waiters: [(index: Int, continuation: CheckedContinuation<Void, Never>)] = []
 
     init(maxConcurrent: Int) {
         self.maxConcurrent = maxConcurrent
     }
 
-    func wait() async {
+    // Cola de prioridad: inserta ordenado por index ascendente (menor index = antes)
+    func wait(index: Int) async {
         if running < maxConcurrent {
             running += 1
         } else {
             await withCheckedContinuation { continuation in
-                waiters.append(continuation)
+                let pos = waiters.firstIndex(where: { $0.index > index }) ?? waiters.endIndex
+                waiters.insert((index: index, continuation: continuation), at: pos)
             }
         }
     }
@@ -151,7 +154,7 @@ actor DownloadSemaphore {
     func signal() {
         if let next = waiters.first {
             waiters.removeFirst()
-            next.resume()
+            next.continuation.resume()
         } else {
             running -= 1
         }

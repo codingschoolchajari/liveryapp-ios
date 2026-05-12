@@ -43,7 +43,6 @@ struct ComercioView: View {
                         return Color.clear
                     })
                 }
-                .ignoresSafeArea(edges: .top)
                 .background(GeometryReader { geo -> Color in
                     print("[DEBUG VStack] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
                     return Color.clear
@@ -59,6 +58,8 @@ struct ComercioView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .ignoresSafeArea(edges: .top)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 comercioViewModel.refreshCategoriasYPromociones()

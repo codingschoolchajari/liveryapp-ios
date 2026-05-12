@@ -16,7 +16,7 @@ struct ComercioView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             if let comercio = comercioViewModel.comercio {
-                VStack {
+                VStack(spacing: 0) {
                     Portada(
                         comercio: comercio,
                         onComentariosTap: { mostrarComentarios = true }
@@ -31,7 +31,8 @@ struct ComercioView: View {
                         comercioViewModel: comercioViewModel,
                         categoriaSeleccionadaId: categoriaSeleccionadaId
                     )
-                    Spacer()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .clipped()
                 }
                 .background(Color.blanco)
                 .ignoresSafeArea(edges: .top)
@@ -471,6 +472,7 @@ struct Productos: View {
                         }
                     }
                 }
+                .clipped()
                 .onChange(of: categoriaSeleccionadaId) { _, newValue in
                     if let newValue {
                         proxy.scrollTo(newValue, anchor: .top)

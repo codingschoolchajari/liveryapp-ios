@@ -21,6 +21,7 @@ struct ComercioView: View {
                         comercio: comercio,
                         onComentariosTap: { mostrarComentarios = true }
                     )
+                    .ignoresSafeArea(edges: .top)
                     Spacer().frame(height: 8)
                     InformacionExtra(
                         comercio: comercio,
@@ -35,7 +36,7 @@ struct ComercioView: View {
                     .clipped()
                 }
                 .background(Color.blanco)
-                .ignoresSafeArea(edges: .top)
+                .clipped()
 
                 BannerAviso(comercioViewModel: comercioViewModel)
                     .padding(.horizontal, 16)

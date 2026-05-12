@@ -471,7 +471,7 @@ struct Productos: View {
 
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
-                    LazyVStack(spacing: 0) {
+                    VStack(spacing: 0) {
                         Color.clear
                             .frame(height: 0)
                             .id("top")

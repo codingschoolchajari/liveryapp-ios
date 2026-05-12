@@ -40,7 +40,7 @@ struct ItemProductoDescripcion: View {
             // Descripción de seleccionables
             OpcionesPersonalizablesDescripcion(opcionesPersonalizables: itemProducto.opcionesPersonalizables)
             ComplementosDescripcion(complementos: itemProducto.complementos)
-            if itemProducto.complementos.isEmpty {
+            if (itemProducto.complementos ?? []).isEmpty {
                 SeleccionablesDescripcion(seleccionables: itemProducto.seleccionables)
             }
             
@@ -199,10 +199,10 @@ struct OpcionesPersonalizablesDescripcion: View {
 }
 
 struct ComplementosDescripcion: View {
-    let complementos: [String]
+    let complementos: [String]?
 
     var body: some View {
-        if !complementos.isEmpty {
+        if let complementos, !complementos.isEmpty {
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(Array(complementos.enumerated()), id: \.offset) { _, complemento in
                     if !complemento.isEmpty {
@@ -217,10 +217,10 @@ struct ComplementosDescripcion: View {
 }
 
 struct PreciosComplementosDescripcion: View {
-    let preciosComplementos: [String]
+    let preciosComplementos: [String]?
 
     var body: some View {
-        if !preciosComplementos.isEmpty {
+        if let preciosComplementos, !preciosComplementos.isEmpty {
             VStack(alignment: .trailing, spacing: 0) {
                 ForEach(Array(preciosComplementos.enumerated()), id: \.offset) { _, lineaPrecio in
                     if !lineaPrecio.isEmpty {

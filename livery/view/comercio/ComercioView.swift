@@ -291,7 +291,7 @@ struct InformacionExtra: View {
                         Image(systemName: "clock")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 20, height: 20)
+                            .frame(width: 18, height: 18)
                             .foregroundColor(.negro)
 
                         Text(horarioReducido.descripcion)
@@ -350,23 +350,22 @@ struct SelectorCategoriasComercio: View {
                 }
             }
         } label: {
-            ZStack {
+            HStack(spacing: 8) {
                 Text(categoriaSeleccionadaNombre)
-                    .font(.custom("Barlow", size: 12))
+                    .font(.custom("Barlow", size: 14))
                     .foregroundColor(.negro)
-                    .multilineTextAlignment(.center)
                     .lineLimit(1)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 18)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .center)
 
-                HStack {
-                    Spacer()
-                    Image("icono_flecha_abajo")
-                        .resizable()
-                        .frame(width: 16, height: 16)
-                }
+                Image("icono_flecha_abajo")
+                    .resizable()
+                    .frame(width: 16, height: 16)
+                    .foregroundColor(.negro)
             }
             .frame(height: 30)
+            .padding(.leading, 12)
+            .padding(.trailing, 10)
             .padding(.horizontal, 10)
             .background(Color.blanco)
             .clipShape(RoundedRectangle(cornerRadius: 24))

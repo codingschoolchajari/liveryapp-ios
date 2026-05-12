@@ -30,8 +30,8 @@ struct ItemProducto: Codable, Identifiable {
     var contieneAlcohol: Bool? = false
     var disponibleParaDelivery: Bool? = nil
     var horariosReducidos: [String]? = []
-    var complementos: [String]? = []
-    var preciosComplementos: [String]? = []
+    var complementos: [String]? = nil
+    var preciosComplementos: [String]? = nil
     
     var id: String { idInterno }
 }

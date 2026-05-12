@@ -339,9 +339,6 @@ struct BottomSheetSeleccionProducto: View {
                 .padding(.horizontal, 16)
             }
 
-            Divider()
-                .overlay(Color.gray.opacity(0.2))
-
             let item = itemProductoViewModel.itemProducto
             let esMultiSelect = (producto.cantidadMaximaAlternativasSeleccionables ?? 1) > 1
             let minAlt = producto.cantidadMinimaAlternativasSeleccionables ?? 0

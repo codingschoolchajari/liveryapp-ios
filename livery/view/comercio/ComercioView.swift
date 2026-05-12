@@ -27,16 +27,15 @@ struct ComercioView: View {
                         comercio: comercio,
                         categoriaSeleccionadaId: $categoriaSeleccionadaId
                     )
+                    .zIndex(1)
                     Spacer().frame(height: 8)
                     Productos(
                         comercioViewModel: comercioViewModel,
                         categoriaSeleccionadaId: categoriaSeleccionadaId
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .clipped()
                 }
                 .background(Color.blanco)
-                .clipped()
 
                 BannerAviso(comercioViewModel: comercioViewModel)
                     .padding(.horizontal, 16)

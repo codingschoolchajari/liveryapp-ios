@@ -62,6 +62,7 @@ struct ZoomableContainer<Content: View>: UIViewRepresentable {
 struct RemoteImage: View {
     let url: URL?
     var fallbackURL: URL? = nil
+    var priority: TaskPriority = .userInitiated
 
     @State private var uiImage: UIImage? = nil
 
@@ -86,7 +87,7 @@ struct RemoteImage: View {
             }
 
             // Descargar y decodificar fuera del main thread
-            let loaded = await Task.detached(priority: .userInitiated) {
+            let loaded = await Task.detached(priority: priority) {
                 guard let (data, _) = try? await URLSession.imageSession.data(from: url) else { return UIImage?.none }
                 return UIImage(data: data)
             }.value
@@ -103,7 +104,7 @@ struct RemoteImage: View {
                 uiImage = cached
                 return
             }
-            let fallback = await Task.detached(priority: .userInitiated) {
+            let fallback = await Task.detached(priority: priority) {
                 guard let (data, _) = try? await URLSession.imageSession.data(from: fallbackURL) else { return UIImage?.none }
                 return UIImage(data: data)
             }.value

@@ -200,7 +200,7 @@ struct ProductoDescripcion: View {
 
             if !descripcionesHorariosReducidos.isEmpty {
                 Text("Disponible en \(descripcionesHorariosReducidos.joined(separator: " / "))")
-                    .font(.custom("Barlow", size: 12))
+                    .font(.custom("Barlow", size: 16))
                     .bold()
                     .foregroundColor(.orange)
                     .lineLimit(1)

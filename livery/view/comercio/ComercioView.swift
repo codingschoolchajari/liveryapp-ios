@@ -289,7 +289,7 @@ struct InformacionExtra: View {
                         Image(systemName: "clock")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 24, height: 24)
+                            .frame(width: 20, height: 20)
                             .foregroundColor(.negro)
 
                         Text(horarioReducido.descripcion)
@@ -298,7 +298,7 @@ struct InformacionExtra: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         Text(DateUtils.obtenerHorariosReducidosHoy(horarioReducido: horarioReducido))
-                            .font(.custom("Barlow", size: 12))
+                            .font(.custom("Barlow", size: 14))
                             .bold()
                             .foregroundColor(.grisTerciario)
                     }

@@ -21,10 +21,6 @@ struct ComercioView: View {
                         comercio: comercio,
                         onComentariosTap: { mostrarComentarios = true }
                     )
-                    .background(GeometryReader { geo -> Color in
-                        print("[DEBUG Portada] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
-                        return Color.clear
-                    })
                     Spacer().frame(height: 2)
                     InformacionExtra(
                         comercio: comercio,
@@ -38,15 +34,7 @@ struct ComercioView: View {
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .clipped()
-                    .background(GeometryReader { geo -> Color in
-                        print("[DEBUG Productos] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
-                        return Color.clear
-                    })
                 }
-                .background(GeometryReader { geo -> Color in
-                    print("[DEBUG VStack] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
-                    return Color.clear
-                })
                 .background(Color.blanco)
 
                 BannerAviso(comercioViewModel: comercioViewModel)
@@ -58,8 +46,6 @@ struct ComercioView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea(edges: .top)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 comercioViewModel.refreshCategoriasYPromociones()
@@ -420,6 +406,7 @@ struct SelectorCategoriasComercio: View {
                             }
                         }
                         .frame(maxHeight: 200)
+                        .gesture(DragGesture(minimumDistance: 0))
                     }
                     .background(Color.blanco)
                     .clipShape(RoundedCorners(radius: 22, corners: [.bottomLeft, .bottomRight]))
@@ -528,11 +515,6 @@ struct Productos: View {
                     }
                 }
                 .clipped()
-                .contentMargins(.top, 0, for: .scrollContent)
-                .background(GeometryReader { geo -> Color in
-                    print("[DEBUG ScrollView] height=\(geo.size.height) globalY=\(geo.frame(in: .global).origin.y)")
-                    return Color.clear
-                })
                 .onChange(of: categoriaSeleccionadaId) { _, newValue in
                     if let newValue {
                         proxy.scrollTo(newValue, anchor: .top)

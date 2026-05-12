@@ -62,7 +62,6 @@ struct ZoomableContainer<Content: View>: UIViewRepresentable {
 struct RemoteImage: View {
     let url: URL?
     var fallbackURL: URL? = nil
-    var priority: TaskPriority = .userInitiated
 
     @State private var uiImage: UIImage? = nil
 
@@ -86,13 +85,18 @@ struct RemoteImage: View {
                 return
             }
 
-            // Descargar y decodificar fuera del main thread
-            let loaded = await Task.detached(priority: priority) {
-                guard let (data, _) = try? await URLSession.imageSession.data(from: url) else { return UIImage?.none }
-                return UIImage(data: data)
-            }.value
+            // Limitar descargas concurrentes: máximo 6 a la vez
+            await DownloadSemaphore.shared.wait()
+            defer { DownloadSemaphore.shared.signal() }
 
-            if let loaded {
+            // Verificar caché de nuevo tras esperar el semáforo
+            if let cached = ImageCache.shared.get(url) {
+                uiImage = cached
+                return
+            }
+
+            if let (data, _) = try? await URLSession.imageSession.data(from: url),
+               let loaded = UIImage(data: data) {
                 ImageCache.shared.set(loaded, for: url)
                 uiImage = loaded
                 return
@@ -104,13 +108,10 @@ struct RemoteImage: View {
                 uiImage = cached
                 return
             }
-            let fallback = await Task.detached(priority: priority) {
-                guard let (data, _) = try? await URLSession.imageSession.data(from: fallbackURL) else { return UIImage?.none }
-                return UIImage(data: data)
-            }.value
-            if let fallback {
-                ImageCache.shared.set(fallback, for: fallbackURL)
-                uiImage = fallback
+            if let (data, _) = try? await URLSession.imageSession.data(from: fallbackURL),
+               let loaded = UIImage(data: data) {
+                ImageCache.shared.set(loaded, for: fallbackURL)
+                uiImage = loaded
             }
         }
     }
@@ -124,6 +125,37 @@ private extension URLSession {
         config.urlCache = nil // usamos NSCache propio
         return URLSession(configuration: config)
     }()
+}
+
+actor DownloadSemaphore {
+    static let shared = DownloadSemaphore(maxConcurrent: 6)
+
+    private let maxConcurrent: Int
+    private var running = 0
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    init(maxConcurrent: Int) {
+        self.maxConcurrent = maxConcurrent
+    }
+
+    func wait() async {
+        if running < maxConcurrent {
+            running += 1
+        } else {
+            await withCheckedContinuation { continuation in
+                waiters.append(continuation)
+            }
+        }
+    }
+
+    func signal() {
+        if let next = waiters.first {
+            waiters.removeFirst()
+            next.resume()
+        } else {
+            running -= 1
+        }
+    }
 }
 
 final class ImageCache {

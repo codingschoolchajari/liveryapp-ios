@@ -11,7 +11,6 @@ struct ProductoTitulo: View {
     let producto: Producto
     let categoria: Categoria
     let onSelect: () -> Void
-    var imagePriority: TaskPriority = .utility
     
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     
@@ -39,8 +38,7 @@ struct ProductoTitulo: View {
                 ZStack(alignment: .center) {
                     RemoteImage(
                         url: URL(string: API.baseURL + "/" + (producto.imagenURL ?? "")),
-                        fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(producto.imagenURL)),
-                        priority: imagePriority
+                        fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(producto.imagenURL))
                     )
                     .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 24))

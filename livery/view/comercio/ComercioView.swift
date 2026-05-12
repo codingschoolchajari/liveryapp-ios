@@ -498,8 +498,7 @@ struct Productos: View {
                                     TituloSeccionComercio(titulo: categoria.nombre)
                                         .id(categoria.idInterno)
 
-                                    ForEach(Array(productosDisponibles.enumerated()), id: \.element.id) { index, producto in
-                                        let prioridad: TaskPriority = index < 6 ? .userInitiated : .utility
+                                    ForEach(productosDisponibles) { producto in
                                         ProductoTitulo(
                                             comercioViewModel: comercioViewModel,
                                             producto: producto,
@@ -509,8 +508,7 @@ struct Productos: View {
                                                     producto: producto,
                                                     categoria: categoria
                                                 )
-                                            },
-                                            imagePriority: prioridad
+                                            }
                                         )
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 4)

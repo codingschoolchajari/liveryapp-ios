@@ -332,6 +332,6 @@ class ItemProductoViewModel: ObservableObject {
     }
 
     private func buildDisponibleParaDelivery() -> Bool? {
-        return alternativasSeleccionadas.contains(where: { $0.disponibleParaDelivery == false }) ? false : nil
+        return (producto?.disponibleParaDelivery == false || alternativasSeleccionadas.contains(where: { $0.disponibleParaDelivery == false })) ? false : nil
     }
 }

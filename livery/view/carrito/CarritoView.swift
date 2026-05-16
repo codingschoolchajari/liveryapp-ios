@@ -156,7 +156,7 @@ struct ItemProductoRow: View {
                 Text("No disponible para delivery")
                     .font(.custom("Barlow", size: 12))
                     .bold()
-                    .foregroundColor(.rojoError)
+                    .foregroundColor(.naranjaPrincipal)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.top, 8)
             }
@@ -279,9 +279,9 @@ struct TipoEntregaView: View {
             // MARK: Advertencia no disponible para delivery
             if hayNoDisponiblesParaDelivery {
                 Text("Contiene uno o más productos no disponibles para delivery")
-                    .font(.custom("Barlow", size: 14))
+                    .font(.custom("Barlow", size: 12))
                     .bold()
-                    .foregroundColor(.rojoError)
+                    .foregroundColor(.naranjaPrincipal)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
                     .lineLimit(2)

@@ -20,6 +20,19 @@ struct DateUtils {
         "sábado": "Sábado"
     ]
     
+    static func comercioEstaAbierto(horarios: [ComercioHorario]?) -> Bool {
+        guard let horarios = horarios, !horarios.isEmpty else { return false }
+
+        let nombreDia = obtenerNombreDiaActual()
+        let minutosActuales = obtenerMinutosActuales()
+
+        guard let horariosHoy = horarios.first(where: { $0.dia == nombreDia }) else { return false }
+
+        return horariosHoy.intervalos.contains { intervalo in
+            estaDentroDelIntervalo(minutosActuales: minutosActuales, inicio: intervalo.inicio, fin: intervalo.fin)
+        }
+    }
+
     static func obtenerHorariosHoy(horarios: [ComercioHorario]) -> String {
         
         let fechaActual = Date()

@@ -469,13 +469,28 @@ struct ListaComercios: View {
 struct TarjetaComercio: View {
     let comercio: Comercio
 
+    private var estaAbierto: Bool {
+        DateUtils.comercioEstaAbierto(horarios: comercio.horarios)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Mitad Superior: Imagen
-            RemoteImage(url: URL(string: API.baseURL + "/" + comercio.imagenURL))
-            .frame(height: 90)
-            .frame(maxWidth: .infinity)
-            .clipped()
+            ZStack(alignment: .topTrailing) {
+                RemoteImage(url: URL(string: API.baseURL + "/" + comercio.imagenURL))
+                    .frame(height: 90)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+
+                Text(estaAbierto ? "Abierto" : "Cerrado")
+                    .font(.custom("Barlow", size: 11).bold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(estaAbierto ? Color.verdePrincipal : Color.naranjaPrincipal)
+                    .clipShape(Capsule())
+                    .padding(8)
+            }
 
             // Mitad Inferior:
             ComercioTitulo(comercio: comercio, mostrarEncabezado: true)

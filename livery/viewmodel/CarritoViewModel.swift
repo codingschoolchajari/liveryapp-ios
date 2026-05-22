@@ -194,9 +194,9 @@ class CarritoViewModel: ObservableObject {
         direccion: UsuarioDireccion
     ) {
         if itemsProductos.isEmpty {
-            calcularCostoEnvio(
+            refrescarCostoEnvio(
                 perfilUsuarioState: perfilUsuarioState,
-                direccion: direccion
+                usuarioDireccion: direccion
             )
         }
         itemsProductos.append(itemProducto)
@@ -228,9 +228,9 @@ class CarritoViewModel: ObservableObject {
         direccion: UsuarioDireccion
     ) {
         if itemsPromociones.isEmpty {
-            calcularCostoEnvio(
+            refrescarCostoEnvio(
                 perfilUsuarioState: perfilUsuarioState,
-                direccion: direccion
+                usuarioDireccion: direccion
             )
         }
         itemsPromociones.append(itemPromocion)

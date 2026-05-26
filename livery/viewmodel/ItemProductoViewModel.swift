@@ -104,6 +104,7 @@ class ItemProductoViewModel: ObservableObject {
 
         opcionesPersonalizablesSeleccionadas = personalizables.reduce(into: [:]) { result, personalizable in
             guard
+                personalizable.deshabilitado != true,
                 let opciones = personalizable.opciones,
                 let opcionDisponible = opciones.first(where: { $0.disponible })
             else {

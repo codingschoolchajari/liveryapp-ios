@@ -45,7 +45,7 @@ class HomeViewModel: ObservableObject {
     init(perfilUsuarioState: PerfilUsuarioState) {
         self.perfilUsuarioState = perfilUsuarioState
         
-        self.categoriaSeleccionada = perfilUsuarioState.categoriaSeleccionadaHome ?? ListUtils.categorias.randomElement()?.idInterno
+        self.categoriaSeleccionada = perfilUsuarioState.categoriaSeleccionadaHome ?? "todos"
         
         configurarObservers()
     }

@@ -27,6 +27,8 @@ class DireccionViewModel: ObservableObject {
     @Published var celularNumero: String = ""
     @Published var modoManual: Bool = false
     @Published var mostrarAdvertencia: Bool = false
+    @Published var modoUbicacionActual: Bool = false
+    @Published var mostrarAvisoUbicacionActual: Bool = false
 
     private var yaFijoUbicacionInicial = false
     private var geocodingTask: Task<Void, Never>? = nil
@@ -104,6 +106,29 @@ class DireccionViewModel: ObservableObject {
             return nil
         }
         
+        // En modo Ubicación Actual saltamos la validación geográfica
+        if modoUbicacionActual {
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            let idDireccion = UUID().uuidString.lowercased()
+            do {
+                return try await guardarDireccionInterno(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    email: email,
+                    idDireccion: idDireccion,
+                    coords: coords
+                )
+            } catch {
+                print("Error al guardar dirección (ubicación actual): \(error.localizedDescription)")
+                return nil
+            }
+        }
+        
+        guard let coords = self.coordenadas else {
+            print("Error: El objeto coordenadas es nulo")
+            return nil
+        }
+        
         do {
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
 
@@ -174,12 +199,25 @@ class DireccionViewModel: ObservableObject {
     }
 
     func seleccionarModo(manual: Bool) {
-        if manual == modoManual { return }
+        if manual == modoManual && !modoUbicacionActual { return }
+        modoUbicacionActual = false
         modoManual = manual
         calle = ""
         numero = ""
         if manual {
             mostrarAdvertencia = true
+        }
+    }
+
+    func seleccionarModoUbicacionActual() {
+        if modoUbicacionActual { return }
+        modoManual = false
+        modoUbicacionActual = true
+        calle = "S/C"
+        numero = "S/N"
+        mostrarAvisoUbicacionActual = true
+        if let gps = coordenadasInicialesGPS {
+            coordenadas = gps
         }
     }
 

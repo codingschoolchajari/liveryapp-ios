@@ -81,40 +81,59 @@ struct FormularioDireccionView: View {
 
                     MapaView(direccionViewModel: direccionViewModel)
 
-                    // Toggle: Buscar Dirección / Cargar Manualmente
+                    // Toggle: Buscar Dirección / Cargar Manualmente / Ubicación Actual
                     HStack(spacing: 0) {
                         Button {
                             direccionViewModel.seleccionarModo(manual: false)
                         } label: {
                             Text("Buscar Dirección")
-                                .font(.custom("Barlow", size: 11))
+                                .font(.custom("Barlow", size: 10))
                                 .bold()
-                                .foregroundColor(!direccionViewModel.modoManual ? Color.blanco : Color.grisSecundario)
-                                .frame(maxWidth: .infinity, minHeight: 30, maxHeight: 30)
-                                .background(!direccionViewModel.modoManual ? Color.verdePrincipal : Color.blanco)
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(!direccionViewModel.modoManual && !direccionViewModel.modoUbicacionActual ? Color.blanco : Color.grisSecundario)
+                                .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36)
+                                .background(!direccionViewModel.modoManual && !direccionViewModel.modoUbicacionActual ? Color.verdePrincipal : Color.blanco)
                         }
+                        Rectangle()
+                            .fill(Color.grisSecundario)
+                            .frame(width: 1, height: 36)
                         Button {
                             direccionViewModel.seleccionarModo(manual: true)
                         } label: {
                             Text("Cargar Manualmente")
-                                .font(.custom("Barlow", size: 11))
+                                .font(.custom("Barlow", size: 10))
                                 .bold()
+                                .multilineTextAlignment(.center)
                                 .foregroundColor(direccionViewModel.modoManual ? Color.blanco : Color.grisSecundario)
-                                .frame(maxWidth: .infinity, minHeight: 30, maxHeight: 30)
+                                .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36)
                                 .background(direccionViewModel.modoManual ? Color.verdePrincipal : Color.blanco)
+                        }
+                        Rectangle()
+                            .fill(Color.grisSecundario)
+                            .frame(width: 1, height: 36)
+                        Button {
+                            direccionViewModel.seleccionarModoUbicacionActual()
+                        } label: {
+                            Text("Ubicación Actual")
+                                .font(.custom("Barlow", size: 10))
+                                .bold()
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(direccionViewModel.modoUbicacionActual ? Color.blanco : Color.grisSecundario)
+                                .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36)
+                                .background(direccionViewModel.modoUbicacionActual ? Color.verdePrincipal : Color.blanco)
                         }
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.grisSecundario, lineWidth: 1))
-                    .padding(.horizontal, 30)
+                    .padding(.horizontal, 8)
 
                     // Buscador (solo en modo Buscar Dirección)
                     // zIndex alto para que el dropdown flotante aparezca sobre los campos del formulario
                     PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in
                         direccionViewModel.actualizarDesdePlace(place)
                     }
-                    .opacity(direccionViewModel.modoManual ? 0 : 1)
-                    .allowsHitTesting(!direccionViewModel.modoManual)
+                    .opacity((direccionViewModel.modoManual || direccionViewModel.modoUbicacionActual) ? 0 : 1)
+                    .allowsHitTesting(!direccionViewModel.modoManual && !direccionViewModel.modoUbicacionActual)
                     .zIndex(999)
 
                     // Calle | Número | Dpto (proporciones 2:1:1)
@@ -123,7 +142,7 @@ struct FormularioDireccionView: View {
                         HStack(alignment: .top, spacing: 8) {
 
                             // Calle
-                            let calleHabilitado = direccionViewModel.modoManual ? camposDireccionHabilitados : false
+                            let calleHabilitado = direccionViewModel.modoUbicacionActual ? false : (direccionViewModel.modoManual ? camposDireccionHabilitados : false)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Calle")
                                     .font(.custom("Barlow", size: 12))
@@ -153,7 +172,7 @@ struct FormularioDireccionView: View {
                             .frame(width: unit * 2)
 
                             // Número
-                            let numHabilitado = direccionViewModel.modoManual ? camposDireccionHabilitados : !direccionViewModel.calle.isEmpty
+                            let numHabilitado = direccionViewModel.modoUbicacionActual ? false : (direccionViewModel.modoManual ? camposDireccionHabilitados : !direccionViewModel.calle.isEmpty)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Número")
                                     .font(.custom("Barlow", size: 12))
@@ -214,10 +233,10 @@ struct FormularioDireccionView: View {
 
                     // Indicaciones
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Indicaciones de Entrega")
+                        Text(direccionViewModel.modoUbicacionActual ? "Indicaciones de Entrega (obligatorio)" : "Indicaciones de Entrega")
                             .font(.custom("Barlow", size: 12))
                             .bold()
-                            .foregroundColor(.negro)
+                            .foregroundColor(direccionViewModel.modoUbicacionActual ? .naranjaPrincipal : .negro)
                         TextEditor(text: $direccionViewModel.indicaciones)
                             .focused($campoEnFoco, equals: .indicaciones)
                             .id(Campos.indicaciones)
@@ -309,6 +328,13 @@ struct FormularioDireccionView: View {
             } message: {
                 Text("La Ubicación en el Mapa debe coincidir con la Dirección Cargada.\n\nMover el Pin en el mapa para ajustarlo.")
             }
+            .alert("Importante - Ubicación Actual", isPresented: $direccionViewModel.mostrarAvisoUbicacionActual) {
+                Button("Entendido") {
+                    direccionViewModel.mostrarAvisoUbicacionActual = false
+                }
+            } message: {
+                Text("Usar esta opción solamente en barrios cerrados cuyas calles aún no están en Google Maps (como el Parque Termal, Barrio Militar o similares).")
+            }
         }
     }
     
@@ -326,11 +352,13 @@ struct FormularioDireccionView: View {
                                 .stroke(.verdePrincipal, lineWidth: 2)
                         )
                 }
-                // 📍 PIN CENTRADO
-                Image("icono_ubicacion_mapa")
-                    .resizable()
-                    .frame(width: 60, height: 60)
-                    .zIndex(1)
+                // 📍 PIN CENTRADO (solo en modo normal y manual, no en Ubicación Actual)
+                if !direccionViewModel.modoUbicacionActual {
+                    Image("icono_ubicacion_mapa")
+                        .resizable()
+                        .frame(width: 60, height: 60)
+                        .zIndex(1)
+                }
             }
             .padding(8)
             .frame(height: 300)
@@ -344,6 +372,7 @@ struct FormularioDireccionView: View {
             && !direccionViewModel.numero.isEmpty
             && !direccionViewModel.celularNumero.isEmpty
             && direccionViewModel.coordenadas != nil
+            && (!direccionViewModel.modoUbicacionActual || !direccionViewModel.indicaciones.isEmpty)
     }
     
     private func guardarDireccion(

@@ -322,8 +322,9 @@ struct PersonalizablesSelector: View {
     var onSeleccionarOpcion: (String, String) -> Void
 
     var body: some View {
+        let personalizablesActivos = personalizables.filter { $0.deshabilitado != true }
         VStack(alignment: .leading, spacing: 16) {
-            ForEach(personalizables) { personalizable in
+            ForEach(personalizablesActivos) { personalizable in
                 let opcionesDisponibles = (personalizable.opciones ?? []).filter { $0.disponible }
 
                 if !opcionesDisponibles.isEmpty {

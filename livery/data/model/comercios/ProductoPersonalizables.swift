@@ -19,6 +19,7 @@ struct ProductoPersonalizables: Codable, Identifiable {
     let idInterno: String
     let titulo: String
     var opciones: [OpcionPersonalizable]? = []
+    var deshabilitado: Bool? = nil
 
     var id: String { idInterno }
 }

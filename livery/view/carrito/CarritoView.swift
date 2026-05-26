@@ -425,6 +425,8 @@ struct ConfirmacionView: View {
     @State private var mostrarAlerta = false
     @State private var tituloError = ""
     @State private var textoError = ""
+    @State private var mostrarAvisoEnvio = false
+    @State private var mostrarAvisoRetiro = false
     
     var body: some View {
         Button {
@@ -446,6 +448,16 @@ struct ConfirmacionView: View {
             Button("Aceptar", role: .cancel) { }
         } message: {
             Text(textoError)
+        }
+        .alert("IMPORTANTE", isPresented: $mostrarAvisoEnvio) {
+            Button("Aceptar") { mostrarBottomSheetPago = true }
+        } message: {
+            Text("Recordar que el **envío** se debe abonar **siempre directamente al repartidor**, ya sea que abones por transferencia o en efectivo.")
+        }
+        .alert("IMPORTANTE - RETIRO EN COMERCIO", isPresented: $mostrarAvisoRetiro) {
+            Button("Aceptar") { mostrarBottomSheetPago = true }
+        } message: {
+            Text("Esta opción significa que **debés pasar a buscar tu pedido por el comercio**, ya que no hay opciones de envío disponibles.")
         }
         .sheet(isPresented: $mostrarBottomSheetPago) {
             BottomSheetPagoCarrito(
@@ -495,8 +507,10 @@ struct ConfirmacionView: View {
             tituloError = StringUtils.tituloPedidoPendiente
             textoError = StringUtils.textoPedidoPendiente
             mostrarAlerta = true
+        } else if carritoViewModel.tipoEntregaSeleccionada == .envioPropio || carritoViewModel.tipoEntregaSeleccionada == .envioLivery {
+            mostrarAvisoEnvio = true
         } else {
-            mostrarBottomSheetPago = true
+            mostrarAvisoRetiro = true
         }
     }
 

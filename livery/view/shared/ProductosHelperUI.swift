@@ -322,17 +322,17 @@ struct PersonalizablesSelector: View {
     var onSeleccionarOpcion: (String, String) -> Void
 
     var body: some View {
-        let personalizablesActivos = personalizables.filter { $0.deshabilitado != true }
         VStack(alignment: .leading, spacing: 16) {
-            ForEach(personalizablesActivos) { personalizable in
+            ForEach(personalizables) { personalizable in
                 let opcionesDisponibles = (personalizable.opciones ?? []).filter { $0.disponible }
+                let soloLectura = personalizable.deshabilitado == true
 
                 if !opcionesDisponibles.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(personalizable.titulo)
                             .font(.custom("Barlow", size: 15))
                             .bold()
-                            .foregroundColor(.verdePrincipal)
+                            .foregroundColor(soloLectura ? .grisTerciario : .verdePrincipal)
 
                         ForEach(opcionesDisponibles) { opcion in
                             let seleccionada = opcionesSeleccionadas[personalizable.idInterno] == opcion.idInterno
@@ -340,18 +340,22 @@ struct PersonalizablesSelector: View {
                             HStack(alignment: .center, spacing: 0) {
                                 Text(opcion.nombre)
                                     .font(.custom("Barlow", size: 14))
-                                    .foregroundColor(.negro)
+                                    .foregroundColor(soloLectura ? .grisSecundario : .negro)
                                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                                RadioButtonCompacto(
-                                    seleccionado: seleccionada,
-                                    color: seleccionada ? .verdePrincipal : .grisTerciario
-                                )
-                                .frame(width: 40, height: 28, alignment: .center)
+                                if !soloLectura {
+                                    RadioButtonCompacto(
+                                        seleccionado: seleccionada,
+                                        color: seleccionada ? .verdePrincipal : .grisTerciario
+                                    )
+                                    .frame(width: 40, height: 28, alignment: .center)
+                                }
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                onSeleccionarOpcion(personalizable.idInterno, opcion.idInterno)
+                                if !soloLectura {
+                                    onSeleccionarOpcion(personalizable.idInterno, opcion.idInterno)
+                                }
                             }
                         }
                     }

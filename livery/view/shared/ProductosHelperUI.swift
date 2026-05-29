@@ -720,7 +720,7 @@ struct SelectorComplementoPorUnidad: View {
     var body: some View {
         let opcionSeleccionada = opciones.indices.contains(indiceSeleccionado) ? opciones[indiceSeleccionado] : opciones.first
 
-        HStack(spacing: 8, alignment: .top) {
+        HStack(alignment: .top, spacing: 8) {
             Text(nombreProductoConPersonalizable)
                 .font(.custom("Barlow", size: 13))
                 .foregroundColor(.negro)

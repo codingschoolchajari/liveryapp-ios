@@ -792,7 +792,7 @@ struct SelectorComplementoPorUnidad: View {
                     .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .zIndex(estaExpandido ? 10 : 0)
         }
+        .zIndex(estaExpandido ? 10 : 0)
     }
 }

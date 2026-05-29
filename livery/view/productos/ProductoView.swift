@@ -346,7 +346,9 @@ struct BottomSheetSeleccionProducto: View {
             let minAlt = producto.cantidadMinimaAlternativasSeleccionables ?? 0
             let enabledAlt = !esMultiSelect || itemProductoViewModel.alternativasSeleccionadas.count >= minAlt
             let cambioUnidadesHabilitado = requiereSeleccionables ? false : (tieneAlternativas ? true : producto.esPremio != true)
-            let botonHabilitado = requiereSeleccionables ? calcularSiEstaHabilitado() : (tieneAlternativas ? enabledAlt : calcularSiEstaHabilitado())
+            let tienePersonalizables = !(producto.personalizables ?? []).isEmpty
+            let personalizablesValidos = !tienePersonalizables || !itemProductoViewModel.opcionesPersonalizablesSeleccionadas.isEmpty
+            let botonHabilitado = personalizablesValidos && (requiereSeleccionables ? calcularSiEstaHabilitado() : (tieneAlternativas ? enabledAlt : calcularSiEstaHabilitado()))
 
             VStack(spacing: 4) {
                 CantidadUnidadesYPrecio(
@@ -484,11 +486,18 @@ struct BottomSheetSeleccionProducto: View {
             return precioValido
         }
         
+        // Si no hay ningún seleccionable disponible (ej: menú del mediodía fuera de horario), deshabilitar
+        let haySeleccionablesDisponibles = (categoria.seleccionables ?? []).contains { $0.disponible }
+        if !haySeleccionablesDisponibles {
+            return false
+        }
+        
         let totalUnitarios = itemProductoViewModel.seleccionadosUnitarios.values.count { $0 == true }
         let totalMultiples = itemProductoViewModel.seleccionadosMultiples.values.reduce(0, +)
         
+        // Nota: si cantidadMaximaSeleccionables es nil, la condición de múltiples es false (igual que Android)
         let seleccionValida = totalUnitarios >= min ||
-                              totalMultiples == (producto.cantidadMaximaSeleccionables ?? 0)
+                              (producto.cantidadMaximaSeleccionables != nil && totalMultiples == producto.cantidadMaximaSeleccionables!)
         
         return precioValido && seleccionValida
     }
@@ -590,7 +599,8 @@ struct BottomSheetSeleccionProducto: View {
 
         gruposComplementos = grupos
         seleccionesComplementos = Dictionary(uniqueKeysWithValues: grupos.map { grupo in
-            (grupo.idInterno, Array(repeating: 0, count: cantidadFilasComplementos))
+            let filas = grupo.porProducto == true ? 1 : cantidadFilasComplementos
+            return (grupo.idInterno, Array(repeating: 0, count: filas))
         })
 
         let nombresSeleccionables = item.seleccionables.flatMap { seleccionable in

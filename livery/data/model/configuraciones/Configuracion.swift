@@ -38,4 +38,5 @@ struct Configuracion: Codable {
     let numeroWhatsappAutomatico: String?
     let configuracionIOS: ConfiguracionIOS
     let plataformas: ConfiguracionPlataformas
+    let mensajeEnviosLivery: String?
 }

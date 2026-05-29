@@ -245,6 +245,20 @@ struct TipoEntregaView: View {
     var body: some View {
         VStack(spacing: 8) {
 
+            // MARK: Mensaje envíos Livery
+            if let mensaje = perfilUsuarioState.configuracion?.mensajeEnviosLivery, !mensaje.isEmpty,
+               !opciones.contains(.envioLivery) {
+                Text(mensaje)
+                    .font(.custom("Barlow", size: 12))
+                    .bold()
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.naranjaPrincipal)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+
             // MARK: Segmented buttons
             HStack(spacing: 0) {
                 ForEach(opciones.indices, id: \.self) { index in

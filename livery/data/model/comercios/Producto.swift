@@ -9,6 +9,7 @@ import Foundation
 struct ProductoComplemento: Codable, Identifiable {
     let idInterno: String
     let nombre: String
+    var porProducto: Bool? = nil
 
     var id: String { idInterno }
 }

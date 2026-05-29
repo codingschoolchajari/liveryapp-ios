@@ -396,6 +396,7 @@ struct ComplementoPopupGrupo: Identifiable {
     let idInterno: String
     let nombre: String
     let opciones: [ComplementoPopupOpcion]
+    var porProducto: Bool? = nil
 
     var id: String { idInterno }
 }
@@ -450,7 +451,8 @@ func construirGruposComplementos(producto: Producto, comercio: Comercio) -> [Com
             return ComplementoPopupGrupo(
                 idInterno: complemento.idInterno,
                 nombre: complemento.nombre,
-                opciones: opciones
+                opciones: opciones,
+                porProducto: complemento.porProducto
             )
         }
 
@@ -492,34 +494,41 @@ func construirResumenComplementos(
     selecciones: [String: [Int]],
     nombresSeleccionablesPorFila: [String] = []
 ) -> [String] {
-    let cantidadFilas = grupos
-        .map { selecciones[$0.idInterno]?.count ?? 0 }
-        .max() ?? 0
+    let gruposNormales = grupos.filter { $0.porProducto != true }
+    let gruposPorProducto = grupos.filter { $0.porProducto == true }
 
-    return (0..<cantidadFilas).compactMap { indiceFila in
+    let cantidadFilas = max(
+        gruposNormales.map { selecciones[$0.idInterno]?.count ?? 0 }.max() ?? 0,
+        nombresSeleccionablesPorFila.count
+    )
+
+    let lineasSeleccionables: [String] = (0..<cantidadFilas).compactMap { indiceFila in
         let nombreSeleccionable = nombresSeleccionablesPorFila.indices.contains(indiceFila)
             ? nombresSeleccionablesPorFila[indiceFila]
             : nil
 
-        let descripcionesComplementos = grupos.compactMap { grupo -> String? in
+        let descripcionesComplementos = gruposNormales.compactMap { grupo -> String? in
             guard let indiceOpcion = selecciones[grupo.idInterno]?[safe: indiceFila],
-                  grupo.opciones.indices.contains(indiceOpcion) else {
-                return nil
-            }
-
+                  grupo.opciones.indices.contains(indiceOpcion) else { return nil }
             let opcion = grupo.opciones[indiceOpcion]
-            if indiceOpcion == 0 {
-                return "sin \(grupo.nombre)"
-            }
+            if indiceOpcion == 0 { return "sin \(grupo.nombre)" }
             return "con \(opcion.nombre)"
         }
 
         let partes = [nombreSeleccionable, descripcionesComplementos.isEmpty ? nil : descripcionesComplementos.joined(separator: ", ")]
             .compactMap { $0 }
-
         let linea = partes.joined(separator: " ")
         return linea.isEmpty ? nil : linea
     }
+
+    let lineasPorProducto: [String] = gruposPorProducto.compactMap { grupo in
+        guard let indiceOpcion = selecciones[grupo.idInterno]?[safe: 0],
+              indiceOpcion > 0,
+              grupo.opciones.indices.contains(indiceOpcion) else { return nil }
+        return grupo.opciones[indiceOpcion].nombre
+    }
+
+    return lineasSeleccionables + lineasPorProducto
 }
 
 func construirResumenPreciosComplementos(
@@ -592,9 +601,14 @@ struct DialogoSeleccionComplementos: View {
 
                             let seleccionGrupo = selecciones[grupo.idInterno] ?? []
                             ForEach(Array(seleccionGrupo.enumerated()), id: \ .offset) { indiceFila, indiceOpcion in
-                                let nombreFila = nombresSeleccionablesPorFila.indices.contains(indiceFila)
-                                    ? nombresSeleccionablesPorFila[indiceFila]
-                                    : nombreProducto
+                                let nombreFila: String
+                                if grupo.porProducto == true {
+                                    nombreFila = nombreProducto
+                                } else {
+                                    nombreFila = nombresSeleccionablesPorFila.indices.contains(indiceFila)
+                                        ? nombresSeleccionablesPorFila[indiceFila]
+                                        : nombreProducto
+                                }
                                 SelectorComplementoPorUnidad(
                                     nombreProducto: nombreFila,
                                     personalizables: personalizables,

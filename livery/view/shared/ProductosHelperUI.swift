@@ -585,64 +585,19 @@ struct DialogoSeleccionComplementos: View {
         ZStack {
             Color.black.opacity(0.5)
                 .ignoresSafeArea()
-                .onTapGesture {
-                    onDismiss()
-                }
+                .onTapGesture { onDismiss() }
 
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 8) {
-                        ForEach(Array(grupos.enumerated()), id: \ .element.idInterno) { indiceGrupo, grupo in
-                            Text("¿Querés agregarle \(grupo.nombre)?")
-                                .font(.custom("Barlow", size: 14))
-                                .bold()
-                                .foregroundColor(.negro)
-                                .frame(maxWidth: .infinity, alignment: .center)
-
-                            let seleccionGrupo = selecciones[grupo.idInterno] ?? []
-                            ForEach(Array(seleccionGrupo.enumerated()), id: \ .offset) { indiceFila, indiceOpcion in
-                                let nombreFila: String
-                                if grupo.porProducto == true {
-                                    nombreFila = nombreProducto
-                                } else {
-                                    nombreFila = nombresSeleccionablesPorFila.indices.contains(indiceFila)
-                                        ? nombresSeleccionablesPorFila[indiceFila]
-                                        : nombreProducto
-                                }
-                                SelectorComplementoPorUnidad(
-                                    nombreProducto: nombreFila,
-                                    personalizables: personalizables,
-                                    opcionesPersonalizablesSeleccionadas: opcionesPersonalizablesSeleccionadas,
-                                    opciones: grupo.opciones,
-                                    indiceSeleccionado: indiceOpcion,
-                                    onSeleccionar: { nuevoIndice in
-                                        onSeleccionar(grupo.idInterno, indiceFila, nuevoIndice)
-                                    }
-                                )
-                            }
-
-                            if indiceGrupo < grupos.count - 1 {
-                                Divider()
-                                    .background(Color.grisSecundario)
-                                    .padding(.vertical, 6)
-                            }
+                        ForEach(Array(grupos.enumerated()), id: \.element.idInterno) { indiceGrupo, grupo in
+                            grupoView(indiceGrupo: indiceGrupo, grupo: grupo)
                         }
                     }
                 }
 
                 Spacer().frame(height: 12)
-
-                ZStack {
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(Color.grisSurface)
-                        .frame(height: 45)
-
-                    Text(DoubleUtils.formatearPrecio(valor: precioTotal))
-                        .font(.custom("Barlow", size: 18))
-                        .bold()
-                        .foregroundColor(.negro)
-                }
-
+                precioTotalView
                 Spacer().frame(height: 10)
 
                 HStack(spacing: 8) {
@@ -678,6 +633,52 @@ struct DialogoSeleccionComplementos: View {
             .background(Color.blanco)
             .cornerRadius(18)
             .onTapGesture { }
+        }
+    }
+
+    @ViewBuilder
+    private func grupoView(indiceGrupo: Int, grupo: ComplementoPopupGrupo) -> some View {
+        Text("¿Querés agregarle \(grupo.nombre)?")
+            .font(.custom("Barlow", size: 14))
+            .bold()
+            .foregroundColor(.negro)
+            .frame(maxWidth: .infinity, alignment: .center)
+
+        let seleccionGrupo = selecciones[grupo.idInterno] ?? []
+        ForEach(Array(seleccionGrupo.enumerated()), id: \.offset) { indiceFila, indiceOpcion in
+            let nombreFila: String = grupo.porProducto == true
+                ? nombreProducto
+                : (nombresSeleccionablesPorFila.indices.contains(indiceFila)
+                    ? nombresSeleccionablesPorFila[indiceFila]
+                    : nombreProducto)
+            SelectorComplementoPorUnidad(
+                nombreProducto: nombreFila,
+                personalizables: personalizables,
+                opcionesPersonalizablesSeleccionadas: opcionesPersonalizablesSeleccionadas,
+                opciones: grupo.opciones,
+                indiceSeleccionado: indiceOpcion,
+                onSeleccionar: { nuevoIndice in
+                    onSeleccionar(grupo.idInterno, indiceFila, nuevoIndice)
+                }
+            )
+        }
+
+        if indiceGrupo < grupos.count - 1 {
+            Divider()
+                .background(Color.grisSecundario)
+                .padding(.vertical, 6)
+        }
+    }
+
+    private var precioTotalView: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.grisSurface)
+                .frame(height: 45)
+            Text(DoubleUtils.formatearPrecio(valor: precioTotal))
+                .font(.custom("Barlow", size: 18))
+                .bold()
+                .foregroundColor(.negro)
         }
     }
 }

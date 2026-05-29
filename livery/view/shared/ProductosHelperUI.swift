@@ -720,76 +720,79 @@ struct SelectorComplementoPorUnidad: View {
     var body: some View {
         let opcionSeleccionada = opciones.indices.contains(indiceSeleccionado) ? opciones[indiceSeleccionado] : opciones.first
 
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .center, spacing: 8) {
             Text(nombreProductoConPersonalizable)
                 .font(.custom("Barlow", size: 13))
                 .foregroundColor(.negro)
                 .lineLimit(1)
-                .padding(.top, 9)
 
             Spacer(minLength: 8)
 
-            VStack(spacing: 0) {
-                // Botón trigger
-                HStack(spacing: 6) {
-                    Text(opcionSeleccionada?.nombre ?? "")
-                        .font(.custom("Barlow", size: 12))
-                        .bold()
-                        .foregroundColor(.negro)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 6) {
+                Text(opcionSeleccionada?.nombre ?? "")
+                    .font(.custom("Barlow", size: 12))
+                    .bold()
+                    .foregroundColor(.negro)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.negro)
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(Color.blanco)
-                .clipShape(RoundedCorners(
-                    radius: 12,
-                    corners: estaExpandido ? [.topLeft, .topRight] : .allCorners
-                ))
-                .overlay(
-                    RoundedCorners(radius: 12, corners: estaExpandido ? [.topLeft, .topRight] : .allCorners)
-                        .stroke(Color.grisSecundario, lineWidth: 1)
-                )
-                .onTapGesture {
-                    withAnimation(.spring()) { estaExpandido.toggle() }
-                }
-
-                // Lista desplegada
+                Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.negro)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .frame(width: 160)
+            .background(Color.blanco)
+            .clipShape(RoundedCorners(
+                radius: 12,
+                corners: estaExpandido ? [.topLeft, .topRight] : .allCorners
+            ))
+            .overlay(
+                RoundedCorners(radius: 12, corners: estaExpandido ? [.topLeft, .topRight] : .allCorners)
+                    .stroke(Color.grisSecundario, lineWidth: 1)
+            )
+            .onTapGesture {
+                withAnimation(.spring()) { estaExpandido.toggle() }
+            }
+            .overlay(alignment: .top) {
                 if estaExpandido {
                     VStack(spacing: 0) {
-                        Divider().background(Color.grisSecundario)
-                        ForEach(Array(opciones.enumerated()), id: \.offset) { index, opcion in
-                            Button(action: {
-                                onSeleccionar(index)
-                                withAnimation(.spring()) { estaExpandido = false }
-                            }) {
-                                let textoPrecio = opcion.precio > 0 ? " (+\(DoubleUtils.formatearPrecio(valor: opcion.precio)))" : ""
-                                Text("\(opcion.nombre)\(textoPrecio)")
-                                    .font(.custom("Barlow", size: 13))
-                                    .bold()
-                                    .foregroundColor(.negro)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 12)
-                            }
-                            if index < opciones.count - 1 {
-                                Divider().background(Color.grisSecundario.opacity(0.4))
+                        Color.clear.frame(height: 34)
+
+                        VStack(spacing: 0) {
+                            Divider().background(Color.grisSecundario)
+                            ForEach(Array(opciones.enumerated()), id: \.offset) { index, opcion in
+                                Button(action: {
+                                    onSeleccionar(index)
+                                    withAnimation(.spring()) { estaExpandido = false }
+                                }) {
+                                    let textoPrecio = opcion.precio > 0 ? " (+\(DoubleUtils.formatearPrecio(valor: opcion.precio)))" : ""
+                                    Text("\(opcion.nombre)\(textoPrecio)")
+                                        .font(.custom("Barlow", size: 13))
+                                        .bold()
+                                        .foregroundColor(.negro)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 12)
+                                }
+                                if index < opciones.count - 1 {
+                                    Divider().background(Color.grisSecundario.opacity(0.4))
+                                }
                             }
                         }
+                        .background(Color.blanco)
+                        .clipShape(RoundedCorners(radius: 12, corners: [.bottomLeft, .bottomRight]))
+                        .overlay(
+                            RoundedCorners(radius: 12, corners: [.bottomLeft, .bottomRight])
+                                .stroke(Color.grisSecundario, lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
                     }
-                    .background(Color.blanco)
-                    .clipShape(RoundedCorners(radius: 12, corners: [.bottomLeft, .bottomRight]))
-                    .overlay(
-                        RoundedCorners(radius: 12, corners: [.bottomLeft, .bottomRight])
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
+                    .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .frame(width: 160)
+            .zIndex(estaExpandido ? 10 : 0)
         }
     }
 }

@@ -32,11 +32,8 @@ struct RepartosView: View {
                 HStack {
                     Spacer()
                     Button {
-                        Task {
-                            let permitido = await repartosViewModel.crecionMandadosPermitita()
-                            if permitido {
-                                mostrarNuevoReparto = true
-                            }
+                        repartosViewModel.verificarYAbrirNuevoReparto {
+                            mostrarNuevoReparto = true
                         }
                     } label: {
                         Image(systemName: "plus")
@@ -100,6 +97,13 @@ struct RepartosView: View {
             }
         } message: {
             Text(repartosViewModel.mensajeMandadosPendientes)
+        }
+        .alert("Servicio de Mandados Inactivo", isPresented: $repartosViewModel.mostrarServicioInactivo) {
+            Button("Aceptar") {
+                repartosViewModel.mostrarServicioInactivo = false
+            }
+        } message: {
+            Text("El servicio de mandados no se encuentra activo en este momento.\n\nPodés consultar los horarios de funcionamiento en nuestro instagram.")
         }
     }
 }

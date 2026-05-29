@@ -7,6 +7,7 @@ class RepartosViewModel: ObservableObject {
     private let perfilUsuarioState: PerfilUsuarioState
     private let repartosService = RepartosService()
     private let recorridosService = RecorridosService()
+    private let enviosService = EnviosService()
 
     @Published var repartos: [Reparto] = []
     @Published var estadoSeleccionado: EstadosRepartos = .todos
@@ -17,6 +18,7 @@ class RepartosViewModel: ObservableObject {
     @Published var recorridoTick: Int = 0
     @Published var mostrarMandadosPendientes: Bool = false
     @Published var mensajeMandadosPendientes: String = "No es posible crear nuevos mandados porque tenés mandados pendientes."
+    @Published var mostrarServicioInactivo: Bool = false
 
     private var paginaActual = 0
     private let tamanoPagina = 10
@@ -198,6 +200,37 @@ class RepartosViewModel: ObservableObject {
 
     func onEstadoSeleccionadoChange(estado: EstadosRepartos) {
         estadoSeleccionado = estado
+    }
+
+    func verificarYAbrirNuevoReparto(onActivo: @escaping () -> Void) {
+        Task {
+            let localidad = perfilUsuarioState.ciudadSeleccionada ?? ""
+            do {
+                await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+                let accessToken = TokenRepository.repository.accessToken ?? ""
+                let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+
+                let booleanResponse = try await enviosService.enviosLiveryActivo(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    localidad: localidad
+                )
+
+                if !booleanResponse.valor {
+                    mostrarServicioInactivo = true
+                    return
+                }
+            } catch {
+                print("Error verificando envíos Livery activo: \(error)")
+                mostrarServicioInactivo = true
+                return
+            }
+
+            let permitido = await crecionMandadosPermitita()
+            if permitido {
+                onActivo()
+            }
+        }
     }
 
     func crecionMandadosPermitita() async -> Bool {

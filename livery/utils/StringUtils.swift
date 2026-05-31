@@ -5,6 +5,27 @@
 //  Created by Nicolas Matias Garay on 16/12/2025.
 //
 import Foundation
+import SwiftUI
+
+/// Parsea texto con marcadores **negrita** y retorna un AttributedString.
+/// Las partes entre ** se renderizan en bold con la fuente Barlow.
+/// Ejemplo: "Texto normal **en negrita** texto normal"
+func parsearTextoFormateado(_ texto: String, fontSize: CGFloat) -> AttributedString {
+    var resultado = AttributedString()
+    let partes = texto.components(separatedBy: "**")
+
+    for (index, parte) in partes.enumerated() {
+        guard !parte.isEmpty else { continue }
+        var segmento = AttributedString(parte)
+        if index % 2 == 1 {
+            segmento.font = .custom("Barlow", size: fontSize).bold()
+        } else {
+            segmento.font = .custom("Barlow", size: fontSize)
+        }
+        resultado += segmento
+    }
+    return resultado
+}
 
 struct StringUtils {
     

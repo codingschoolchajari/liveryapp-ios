@@ -23,7 +23,8 @@ struct ListUtils {
         Categoria(idInterno: "picadas", nombre: "Picadas", imagenGenerica: "categoria_picadas"),
         Categoria(idInterno: "pizzas", nombre: "Pizzas", imagenGenerica: "categoria_pizzas"),
         Categoria(idInterno: "postres", nombre: "Postres", imagenGenerica: "categoria_postres"),
-        Categoria(idInterno: "sandwiches", nombre: "Sándwiches", imagenGenerica: "categoria_sandwiches")
+        Categoria(idInterno: "sandwiches", nombre: "Sándwiches", imagenGenerica: "categoria_sandwiches"),
+        Categoria(idInterno: "sushi", nombre: "Sushi", imagenGenerica: "categoria_sushi")
     ]
     
     static let diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]

@@ -38,6 +38,7 @@ struct Producto: Codable, Identifiable {
     var idPremio: String? = nil
     var contieneAlcohol: Bool? = false
     var disponibleParaDelivery: Bool? = nil
+    var descripcionDetallada: String? = nil
     
     var id: String { idInterno }
 }

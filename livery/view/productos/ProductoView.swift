@@ -281,6 +281,14 @@ struct BottomSheetSeleccionProducto: View {
                     )
                     .frame(maxWidth: .infinity, alignment: .leading)
 
+                    if let desc = producto.descripcionDetallada, !desc.isEmpty {
+                        Spacer().frame(height: 8)
+                        Text(parsearTextoFormateado(desc, fontSize: 16))
+                            .font(.custom("Barlow", size: 16))
+                            .foregroundColor(.negro)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
                     if let personalizables = producto.personalizables, !personalizables.isEmpty {
                         Spacer().frame(height: 24)
 

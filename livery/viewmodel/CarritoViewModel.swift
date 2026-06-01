@@ -57,8 +57,12 @@ class CarritoViewModel: ObservableObject {
             .assign(to: &$precioTotal)
         
         // Lógica de tarifa de servicio
-        Publishers.CombineLatest($itemsProductos, $itemsPromociones)
-            .map { productos, promociones in
+        Publishers.CombineLatest3($itemsProductos, $itemsPromociones, $tipoEntregaSeleccionada)
+            .map { productos, promociones, tipoEntrega in
+                if tipoEntrega == .retiroEnComercio {
+                    return false
+                }
+
                 let hayProductosConPremio = productos.contains { $0.esPremio }
                 let hayProductosSinPremio = productos.contains { !$0.esPremio }
                 

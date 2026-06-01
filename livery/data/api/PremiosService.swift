@@ -61,15 +61,9 @@ class PremiosService {
     func obtenerPremiosDisponibles(
         token: String,
         dispositivoID: String,
-        localidad: String,
-        skip: Int
+        localidad: String
     ) async throws -> [PremioDisponible] {
-        var components = URLComponents(string: "\(premiosURL)/premiosDisponibles")!
-        components.queryItems = [
-            URLQueryItem(name: "skip", value: "\(skip)"),
-            URLQueryItem(name: "limit", value: "10")
-        ]
-        guard let url = components.url else { throw URLError(.badURL) }
+        guard let url = URL(string: "\(premiosURL)/premiosDisponibles") else { throw URLError(.badURL) }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

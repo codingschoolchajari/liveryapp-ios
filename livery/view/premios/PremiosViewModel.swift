@@ -28,8 +28,6 @@ class PremiosViewModel: ObservableObject {
     // Premios Disponibles (tab Pendientes)
     @Published var premiosDisponibles: [PremioDisponible] = []
     @Published var cargandoPremiosDisponibles: Bool = false
-    @Published var hayMasPremiosDisponibles: Bool = true
-    private var skipPremiosDisponibles = 0
     
     var comercio: Comercio? = nil
     var categoria: Categoria? = nil
@@ -160,25 +158,18 @@ class PremiosViewModel: ObservableObject {
     }
 
     func cargarPremiosDisponibles() async {
-        guard !cargandoPremiosDisponibles && hayMasPremiosDisponibles else { return }
+        guard !cargandoPremiosDisponibles else { return }
         cargandoPremiosDisponibles = true
         do {
             await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
             let accessToken = TokenRepository.repository.accessToken ?? ""
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             let localidad = perfilUsuarioState.ciudadSeleccionada ?? ""
-            let nuevos = try await premiosService.obtenerPremiosDisponibles(
+            premiosDisponibles = try await premiosService.obtenerPremiosDisponibles(
                 token: accessToken,
                 dispositivoID: dispositivoID,
-                localidad: localidad,
-                skip: skipPremiosDisponibles
+                localidad: localidad
             )
-            if nuevos.isEmpty {
-                hayMasPremiosDisponibles = false
-            } else {
-                skipPremiosDisponibles += nuevos.count
-                premiosDisponibles += nuevos
-            }
         } catch {
             print("Error al cargar premios disponibles: \(error)")
         }
@@ -187,7 +178,5 @@ class PremiosViewModel: ObservableObject {
 
     func resetPremiosDisponibles() {
         premiosDisponibles = []
-        skipPremiosDisponibles = 0
-        hayMasPremiosDisponibles = true
     }
 }

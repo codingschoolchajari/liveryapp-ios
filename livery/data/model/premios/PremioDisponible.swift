@@ -13,5 +13,5 @@ struct PremioDisponible: Codable, Identifiable {
     var logoComercioURL: String? = nil
     var nombreProducto: String? = nil
 
-    var id: String { idInterno }
+    var id: String { "\(idComercio)_\(idInterno)" }
 }

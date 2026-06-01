@@ -308,7 +308,7 @@ struct ListaPremios: View {
         
         ScrollView {
             LazyVStack(spacing: 12) {
-                ForEach(listaFiltrada, id: \.idInterno) { premio in
+                ForEach(listaFiltrada, id: \.id) { premio in
                     HStack(alignment: .top) {
                         // Imagen Logo (con URL base)
                         RemoteImage(url: URL(string: API.baseURL + "/" + premio.logoComercioURL))
@@ -661,11 +661,6 @@ struct ListaPremiosPendientes: View {
                     .padding(12)
                     .background(Color.grisSurface)
                     .cornerRadius(12)
-                    .onAppear {
-                        if premio.id == premiosViewModel.premiosDisponibles.last?.id {
-                            Task { await premiosViewModel.cargarPremiosDisponibles() }
-                        }
-                    }
                 }
 
                 if premiosViewModel.cargandoPremiosDisponibles {

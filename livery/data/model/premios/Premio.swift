@@ -22,6 +22,6 @@ struct Premio: Codable, Equatable, Identifiable {
     var nombreUsuario: String? = nil
     
     var id: String {
-        idInterno
+        "\(idComercio)_\(idInterno)"
     }
 }

@@ -379,7 +379,8 @@ struct ResumenView: View {
             .foregroundColor(.negro)
 
             // En Envío Livery la tarifa se suma al envío, no se muestra acá
-            if !esLivery {
+            // En Retiro en Comercio no aplica tarifa de servicio
+            if !esLivery && carritoViewModel.tipoEntregaSeleccionada != .retiroEnComercio {
                 HStack {
                     Text("Impuesto de Aplicación")
                     Spacer()

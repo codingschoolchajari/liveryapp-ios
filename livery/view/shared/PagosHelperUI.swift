@@ -25,6 +25,7 @@ func obtenerSubtotal(
 struct MontoAPagarView: View {
     let subtotal: String
     let tipoEntrega: TipoEntrega?
+    var envioGratisParaCliente: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -41,7 +42,7 @@ struct MontoAPagarView: View {
                         .stroke(Color.rojoError, lineWidth: 2)
                 )
 
-            if tipoEntrega != .retiroEnComercio {
+            if tipoEntrega != .retiroEnComercio && !envioGratisParaCliente {
                 Spacer().frame(height: 4)
 
                 Text("El envío se abona directamente al repartidor.")

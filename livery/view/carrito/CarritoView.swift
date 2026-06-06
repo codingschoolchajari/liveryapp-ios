@@ -415,7 +415,11 @@ struct ResumenView: View {
                 HStack {
                     Text("Envío")
                     Spacer()
-                    if carritoViewModel.envio > 0 {
+                    if carritoViewModel.comercio?.envios.envioGratisParaCliente == true {
+                        Text("Gratis")
+                            .fontWeight(.bold)
+                            .foregroundColor(.verdePrincipal)
+                    } else if carritoViewModel.envio > 0 {
                         // En Envío Livery la tarifa se suma al costo del envío
                         let envioMostrado = esLivery
                             ? carritoViewModel.envio + tarifaServicio
@@ -609,7 +613,8 @@ struct BottomSheetPagoCarrito: View {
                             tarifaServicio: tarifaServicio,
                             totalDescuentos: carritoViewModel.calcularTotalDescuentosSeleccionPago()
                         ),
-                        tipoEntrega: carritoViewModel.tipoEntregaSeleccionada
+                        tipoEntrega: carritoViewModel.tipoEntregaSeleccionada,
+                        envioGratisParaCliente: carritoViewModel.comercio?.envios.envioGratisParaCliente ?? false
                     )
 
                     Spacer().frame(height: 8)

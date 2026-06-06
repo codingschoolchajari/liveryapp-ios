@@ -11,6 +11,7 @@ struct ComercioDescuentos: Codable, Identifiable {
     var localidadComercio: String = ""
     var nombreComercio: String = ""
     var logoComercioURL: String = ""
+    var distanciaUsuario: Int? = nil
     var productos: [Producto] = []
     
     var id: String {

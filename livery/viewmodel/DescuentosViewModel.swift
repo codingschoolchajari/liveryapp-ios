@@ -11,6 +11,7 @@ import Combine
 @MainActor
 class DescuentosViewModel: ObservableObject {
     private let perfilUsuarioState: PerfilUsuarioState
+    private let coordenadasPorDefecto: [Double] = [-30.7586722, -57.980121000000004]
     
     @Published var productoSeleccionado: Producto? = nil
     @Published var comerciosDescuentos: [ComercioDescuentos] = []
@@ -85,13 +86,18 @@ class DescuentosViewModel: ObservableObject {
             let accessToken = TokenRepository.repository.accessToken ?? ""
             
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            let coordenadasUsuario = perfilUsuarioState.obtenerUsuarioDireccion()?.coordenadas.coordinates ?? coordenadasPorDefecto
+            let latitudUsuario = coordenadasUsuario.first ?? coordenadasPorDefecto[0]
+            let longitudUsuario = coordenadasUsuario.count > 1 ? coordenadasUsuario[1] : coordenadasPorDefecto[1]
             
             let nuevosComercios = try await comerciosService.buscarDescuentos(
                 token: accessToken,
                 dispositivoID: dispositivoID,
                 localidad: ciudad,
                 skip: paginaActual * tamanoPagina,
-                limit: tamanoPagina
+                limit: tamanoPagina,
+                latitudUsuario: latitudUsuario,
+                longitudUsuario: longitudUsuario
             )
             
             if nuevosComercios.isEmpty {

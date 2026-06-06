@@ -25,7 +25,8 @@ struct PagoTab: View {
                         tarifaServicio: pedido.tarifaServicio,
                         totalDescuentos: totalDescuentos
                     ),
-                    tipoEntrega: TipoEntrega.desdeString(pedido.tipoEntrega)
+                    tipoEntrega: TipoEntrega.desdeString(pedido.tipoEntrega),
+                    envioGratisParaCliente: pedido.envioGratisParaCliente ?? false
                 )
 
                 Spacer().frame(height: 8)

@@ -296,7 +296,8 @@ class CarritoViewModel: ObservableObject {
             descuentos: descuentosPedido,
             modalidadPago: modalidadPago,
             itemsProductos: itemsProductos,
-            itemsPromociones: itemsPromociones
+            itemsPromociones: itemsPromociones,
+            envioGratisParaCliente: comercioActual.envios.envioGratisParaCliente ?? false
         )
         
         do {

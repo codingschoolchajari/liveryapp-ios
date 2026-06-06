@@ -243,9 +243,11 @@ struct ResumenPedidoView: View {
                 
                 row(
                     label: "Envío",
-                    value: DoubleUtils.formatearPrecio(
-                        valor: esLivery ? pedido.envio + pedido.tarifaServicio : pedido.envio
-                    ),
+                    value: pedido.envioGratisParaCliente == true
+                        ? "Gratis"
+                        : DoubleUtils.formatearPrecio(
+                            valor: esLivery ? pedido.envio + pedido.tarifaServicio : pedido.envio
+                          ),
                     isBoldValue: true
                 )
                 

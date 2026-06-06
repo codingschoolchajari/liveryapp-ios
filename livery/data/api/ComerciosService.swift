@@ -123,14 +123,18 @@ class ComerciosService {
         dispositivoID: String,
         localidad: String,
         skip: Int,
-        limit: Int
+        limit: Int,
+        latitudUsuario: Double,
+        longitudUsuario: Double
     ) async throws -> [ComercioDescuentos] {
         
-        guard var components = URLComponents(string: "\(comerciosURL)/buscarDescuentos") else { throw URLError(.badURL) }
+        guard var components = URLComponents(string: "\(comerciosURL)/buscarDescuentosPorDistancia") else { throw URLError(.badURL) }
 
         components.queryItems = [
             URLQueryItem(name: "skip", value: String(skip)),
-            URLQueryItem(name: "limit", value: String(limit))
+            URLQueryItem(name: "limit", value: String(limit)),
+            URLQueryItem(name: "latitudUsuario", value: String(latitudUsuario)),
+            URLQueryItem(name: "longitudUsuario", value: String(longitudUsuario))
         ]
 
         guard let url = components.url else { throw URLError(.badURL) }

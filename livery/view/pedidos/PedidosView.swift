@@ -142,7 +142,7 @@ struct PedidoRow: View {
                     
                     Spacer()
                     
-                    if (TipoEntrega.desdeString(pedido.tipoEntrega) != TipoEntrega.retiroEnComercio) {
+                    if (TipoEntrega.desdeString(pedido.tipoEntrega) != TipoEntrega.retiroEnComercio) && pedido.envioGratisParaCliente != true {
                         Text("+ envío")
                             .font(.custom("Barlow", size: 14))
                             .foregroundColor(Color.negro)

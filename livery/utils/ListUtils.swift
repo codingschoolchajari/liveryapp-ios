@@ -14,6 +14,7 @@ struct ListUtils {
         Categoria(idInterno: "carnes", nombre: "Carnes", imagenGenerica: "categoria_carnes"),
         Categoria(idInterno: "empanadas", nombre: "Empanadas", imagenGenerica: "categoria_empanadas"),
         Categoria(idInterno: "ensaladas", nombre: "Ensaladas", imagenGenerica: "categoria_ensaladas"),
+        Categoria(idInterno: "farmacias", nombre: "Farmacias", imagenGenerica: "categoria_farmacias"),
         Categoria(idInterno: "hamburguesas", nombre: "Hamburguesas", imagenGenerica: "categoria_hamburguesas"),
         Categoria(idInterno: "helados", nombre: "Helados", imagenGenerica: "categoria_helados"),
         Categoria(idInterno: "milanesas", nombre: "Milanesas", imagenGenerica: "categoria_milanesas"),

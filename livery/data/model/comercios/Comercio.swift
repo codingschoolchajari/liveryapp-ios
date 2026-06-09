@@ -83,6 +83,7 @@ struct Comercio: Codable, Identifiable {
     var datosBancarios: ComercioDatosBancarios = ComercioDatosBancarios()
     var imagenURL: String = ""
     var logoURL: String = ""
+    var colorBorde: String? = nil
     var categoriasPrincipales: [String] = []
     var categorias: [Categoria] = []
     var promociones: [Promocion] = []

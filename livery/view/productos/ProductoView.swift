@@ -44,6 +44,13 @@ struct ProductoTitulo: View {
                     )
                     .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .overlay {
+                        if let colorBordeStr = comercio?.colorBorde, !colorBordeStr.isEmpty,
+                           let borderColor = Color(hexString: colorBordeStr) {
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(borderColor, lineWidth: 1)
+                        }
+                    }
                     
                     VStack {
                         HStack {
@@ -146,6 +153,7 @@ struct ProductoDescripcion: View {
     var fontSizeNombre: CGFloat = 16
     var fontSizePrecio: CGFloat = 18
     var fontSizeDescripcion: CGFloat = 14
+    var maxDescripcionLines: Int = 2
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -158,7 +166,7 @@ struct ProductoDescripcion: View {
                 Text(producto.descripcion)
                     .font(.custom("Barlow", size: fontSizeDescripcion))
                     .foregroundColor(.negro)
-                    .lineLimit(2)
+                    .lineLimit(maxDescripcionLines)
                     .truncationMode(.tail)
             }
             
@@ -277,7 +285,8 @@ struct BottomSheetSeleccionProducto: View {
                         descripcionesHorariosReducidos: DateUtils.obtenerDescripcionesHorariosReducidosProducto(producto: producto, comercio: comercio),
                         fontSizeNombre: 20,
                         fontSizePrecio: 22,
-                        fontSizeDescripcion: 16
+                        fontSizeDescripcion: 16,
+                        maxDescripcionLines: 5
                     )
                     .frame(maxWidth: .infinity, alignment: .leading)
 

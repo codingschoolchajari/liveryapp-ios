@@ -288,10 +288,19 @@ struct Alternativas: View {
                     let seleccionada = alternativasSeleccionadas.contains { $0.idInterno == alternativa.idInterno }
                     VStack(spacing: 0) {
                         HStack {
-                            Text(alternativa.nombre)
-                                .font(.custom("Barlow", size: 16))
-                                .bold(seleccionada)
-                                .foregroundColor(.negro)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(alternativa.nombre)
+                                    .font(.custom("Barlow", size: 16))
+                                    .bold(seleccionada)
+                                    .foregroundColor(.negro)
+                                if let descripcion = alternativa.descripcion, !descripcion.isEmpty {
+                                    Text(descripcion)
+                                        .font(.custom("Barlow", size: 12))
+                                        .foregroundColor(.grisSecundario)
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                }
+                            }
                             Spacer()
                             Toggle("", isOn:
                                     Binding(

@@ -10,6 +10,7 @@ struct ProductoAlternativa: Codable, Identifiable {
     let idInterno: String
     let nombre: String
     let nombreAbreviado: String
+    var descripcion: String? = nil
     var precio: Double
     var precioSinDescuento: Double?
     var descuento: Int?

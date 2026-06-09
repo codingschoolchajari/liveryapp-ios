@@ -24,34 +24,33 @@ struct CarritoView: View {
                     DireccionFueraDeCobertura()
                 } else if !carritoViewModel.itemsProductos.isEmpty || !carritoViewModel.itemsPromociones.isEmpty {
                     
-                    VStack(spacing: 8) {
-                        TituloComercio(comercio: carritoViewModel.comercio!)
-                            .onTapGesture {
-                                navManager.carritoPath.append(NavigationManager.CarritoDestination.comercio(idComercio: carritoViewModel.comercio!.idInterno))
-                            }
-                        
-                        ItemsPedidoView()
-                            .frame(height: UIScreen.main.bounds.height * 0.35)
-                        
-                        // Notas
-                        NotasView()
-                            .padding(.horizontal, 16)
-                        
-                        // Tipo de Entrega
-                        TipoEntregaView()
-                        
-                        // Resumen de costos
-                        ResumenView()
-                            .padding(.horizontal, 16)
-                        
+                    ScrollView {
+                        VStack(spacing: 8) {
+                            TituloComercio(comercio: carritoViewModel.comercio!)
+                                .onTapGesture {
+                                    navManager.carritoPath.append(NavigationManager.CarritoDestination.comercio(idComercio: carritoViewModel.comercio!.idInterno))
+                                }
+                            
+                            ItemsPedidoView()
+                                .frame(height: UIScreen.main.bounds.height * 0.35)
+                            
+                            // Notas
+                            NotasView()
+                                .padding(.horizontal, 16)
+                            
+                            // Tipo de Entrega
+                            TipoEntregaView()
+                            
+                            // Resumen de costos
+                            ResumenView()
+                                .padding(.horizontal, 16)
+                            
+                            // Botón de confirmación al final
+                            ConfirmacionView()
+                                .padding(.horizontal, 60)
+                                .padding(.bottom, 10)
+                        }
                     }
-                    
-                    Spacer()
-                    
-                    // Botón de confirmación al final
-                    ConfirmacionView()
-                        .padding(.horizontal, 60)
-                        .padding(.bottom, 10)
                         
                 } else {
                     CarritoVacioView()

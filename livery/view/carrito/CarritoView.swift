@@ -31,7 +31,7 @@ struct CarritoView: View {
                             }
                         
                         ItemsPedidoView()
-                            .frame(height: UIScreen.main.bounds.height * 0.25)
+                            .frame(height: UIScreen.main.bounds.height * 0.28)
                         
                         // Notas
                         NotasView()

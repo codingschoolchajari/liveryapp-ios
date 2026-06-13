@@ -171,8 +171,12 @@ struct ResumenPedidoView: View {
         pedido.descuentos ?? []
     }
 
+    private var descuentosVisibles: [DescuentoPedido] {
+        descuentos.filter { $0.monto != 0.0 }
+    }
+
     private var totalDescuentos: Double {
-        descuentos.reduce(0) { $0 + $1.monto }
+        descuentosVisibles.reduce(0) { $0 + $1.monto }
     }
     
     private var esLivery: Bool {
@@ -188,34 +192,26 @@ struct ResumenPedidoView: View {
                 value: DoubleUtils.formatearPrecio(valor: pedido.precioTotal)
             )
 
-            // En Envío Livery la tarifa se suma al envío, no se muestra acá
-            if !esLivery {
-                row(
-                    label: "Impuesto de Aplicación",
-                    value: DoubleUtils.formatearPrecio(valor: pedido.tarifaServicio)
-                )
-            }
+            if !descuentosVisibles.isEmpty {
+                ForEach(Array(descuentosVisibles.enumerated()), id: \.offset) { _, descuento in
+                    row(
+                        label: descuento.descripcion,
+                        value: DoubleUtils.formatearPrecio(valor: descuento.monto),
+                        textColor: .naranjaIntentosRestantes
+                    )
+                }
 
-            ForEach(Array(descuentos.enumerated()), id: \.offset) { _, descuento in
                 row(
-                    label: descuento.descripcion,
-                    value: DoubleUtils.formatearPrecio(valor: descuento.monto),
-                    textColor: .naranjaIntentosRestantes
+                    label: "Subtotal",
+                    value: DoubleUtils.formatearPrecio(
+                        valor: pedido.precioTotal + totalDescuentos
+                    ),
+                    isBoldLabel: true,
+                    isBoldValue: true
                 )
+                
+                Divider()
             }
-
-            row(
-                label: "Subtotal",
-                value: DoubleUtils.formatearPrecio(
-                    valor: esLivery
-                        ? (pedido.precioTotal + totalDescuentos)
-                        : (pedido.precioTotal + pedido.tarifaServicio + totalDescuentos)
-                ),
-                isBoldLabel: true,
-                isBoldValue: true
-            )
-            
-            Divider()
             
             if (TipoEntrega.desdeString(pedido.tipoEntrega) == TipoEntrega.retiroEnComercio) {
                 Text("Retiro en Comercio")

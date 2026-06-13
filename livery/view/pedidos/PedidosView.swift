@@ -125,9 +125,7 @@ struct PedidoRow: View {
                         .bold()
                         .foregroundColor(Color.negro)
                     Spacer()
-                    Text(DoubleUtils.formatearPrecio(valor: TipoEntrega.desdeString(pedido.tipoEntrega) == .envioLivery
-                            ? pedido.precioTotal
-                            : pedido.precioTotal + pedido.tarifaServicio))
+                    Text(DoubleUtils.formatearPrecio(valor: pedido.precioTotal))
                         .font(.custom("Barlow", size: 18))
                         .bold()
                         .foregroundColor(Color.negro)

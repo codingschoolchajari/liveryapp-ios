@@ -22,7 +22,6 @@ struct PagoTab: View {
                     subtotal: obtenerSubtotal(
                         tipoEntrega: TipoEntrega.desdeString(pedido.tipoEntrega),
                         precioTotal: pedido.precioTotal,
-                        tarifaServicio: pedido.tarifaServicio,
                         totalDescuentos: totalDescuentos
                     ),
                     tipoEntrega: TipoEntrega.desdeString(pedido.tipoEntrega),

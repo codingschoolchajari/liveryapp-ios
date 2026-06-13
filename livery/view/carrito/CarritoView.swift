@@ -360,9 +360,7 @@ struct ResumenView: View {
         (perfilUsuarioState.configuracion?.tarifaServicio ?? StringUtils.tarifaServicioDefault) : 0.0
 
         let esLivery = carritoViewModel.tipoEntregaSeleccionada == .envioLivery
-        let subtotal = esLivery
-            ? carritoViewModel.precioTotal
-            : carritoViewModel.precioTotal + tarifaServicio
+        let subtotal = carritoViewModel.precioTotal
         
         VStack(alignment: .leading, spacing: 2) {
             Text("Resumen")
@@ -378,18 +376,6 @@ struct ResumenView: View {
             .font(.custom("Barlow", size: 16))
             .foregroundColor(.negro)
 
-            // En Envío Livery la tarifa se suma al envío, no se muestra acá
-            // En Retiro en Comercio no aplica tarifa de servicio
-            if !esLivery && carritoViewModel.tipoEntregaSeleccionada != .retiroEnComercio {
-                HStack {
-                    Text("Impuesto de Aplicación")
-                    Spacer()
-                    Text(DoubleUtils.formatearPrecio(valor: tarifaServicio))
-                }
-                .font(.custom("Barlow", size: 16))
-                .foregroundColor(.negro)
-            }
-            
             HStack {
                 Text("Subtotal")
                 Spacer()
@@ -479,9 +465,7 @@ struct ConfirmacionView: View {
             Text("Esta opción significa que **debés pasar a buscar tu pedido por el comercio**, ya que no hay opciones de envío disponibles.")
         }
         .sheet(isPresented: $mostrarBottomSheetPago) {
-            BottomSheetPagoCarrito(
-                tarifaServicio: tarifaServicio
-            ) {
+            BottomSheetPagoCarrito {
                 Task {
                     await confirmarPedido()
                 }
@@ -558,7 +542,6 @@ struct BottomSheetPagoCarrito: View {
     @EnvironmentObject var carritoViewModel: CarritoViewModel
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
 
-    let tarifaServicio: Double
     let onConfirmarPedido: () -> Void
 
     @State private var tabSeleccionado: Int = 0
@@ -571,10 +554,7 @@ struct BottomSheetPagoCarrito: View {
         guard limitePagoEfectivo > 0 else { return false }
         let descuento = carritoViewModel.calcularMontoDescuentoEfectivo()
         let base = carritoViewModel.precioTotal - descuento
-        let total = carritoViewModel.tipoEntregaSeleccionada == .envioLivery
-            ? base
-            : base + tarifaServicio
-        return total > limitePagoEfectivo
+        return base > limitePagoEfectivo
     }
 
     private var confirmarHabilitado: Bool {
@@ -610,7 +590,6 @@ struct BottomSheetPagoCarrito: View {
                         subtotal: obtenerSubtotal(
                             tipoEntrega: carritoViewModel.tipoEntregaSeleccionada,
                             precioTotal: carritoViewModel.precioTotal,
-                            tarifaServicio: tarifaServicio,
                             totalDescuentos: carritoViewModel.calcularTotalDescuentosSeleccionPago()
                         ),
                         tipoEntrega: carritoViewModel.tipoEntregaSeleccionada,

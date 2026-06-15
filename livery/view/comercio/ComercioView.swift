@@ -304,11 +304,14 @@ struct InformacionExtra: View {
                         Text(horarioReducido.descripcion)
                             .font(.custom("Barlow", size: 14))
                             .foregroundColor(.negro)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .layoutPriority(1)
 
                         Text(DateUtils.obtenerHorariosReducidosHoy(horarioReducido: horarioReducido))
                             .font(.custom("Barlow", size: 14))
                             .bold()
                             .foregroundColor(.grisTerciario)
+                            .fixedSize(horizontal: true, vertical: false)
                     }
                     .padding(.horizontal, 10)
                     .frame(maxWidth: .infinity)

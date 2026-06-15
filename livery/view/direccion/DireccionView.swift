@@ -39,8 +39,8 @@ struct DireccionView: View {
                 .padding()
 
             case .granted:
+                // Se removió .ignoresSafeArea(.keyboard, edges: .bottom)
                 FormularioDireccionView(direccionViewModel: direccionViewModel)
-                    .ignoresSafeArea(.keyboard, edges: .bottom)
             }
         }
         .background(Color.blanco)
@@ -71,7 +71,7 @@ struct FormularioDireccionView: View {
     }
 
     enum Campos {
-        case calle, numero, departamento, indicaciones
+        case calle, numero, departamento, indicaciones, celular
     }
     
     var body: some View {
@@ -128,7 +128,6 @@ struct FormularioDireccionView: View {
                     .padding(.horizontal, 8)
 
                     // Buscador (solo en modo Buscar Dirección)
-                    // zIndex alto para que el dropdown flotante aparezca sobre los campos del formulario
                     PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in
                         direccionViewModel.actualizarDesdePlace(place)
                     }
@@ -266,6 +265,8 @@ struct FormularioDireccionView: View {
                         onPaisChange: { direccionViewModel.onCelularPaisChange($0) },
                         onNumeroChange: { direccionViewModel.onCelularNumeroChange($0) }
                     )
+                    .focused($campoEnFoco, equals: .celular)
+                    .id(Campos.celular)
                     .padding(.horizontal, 30)
 
                     Text("Te contactaremos solo en caso de ser necesario.")
@@ -296,7 +297,7 @@ struct FormularioDireccionView: View {
                         .disabled(!esFormularioValido(direccionViewModel))
                         Spacer()
                     }
-                    .padding(.bottom, 8)
+                    .padding(.bottom, 20) // Un padding extra inferior para dar aire al teclado
                 }
                 .padding(.horizontal, 16)
             }
@@ -430,7 +431,6 @@ struct FormularioDireccionView: View {
         var body: some View {
             let paisActual = paises.first { $0.codigo == pais } ?? paises[0]
             HStack(spacing: 8) {
-                // Selector de país con dropdown custom
                 SelectorPais(
                     paises: paises,
                     paisActual: paisActual,
@@ -546,4 +546,3 @@ struct FormularioDireccionView: View {
         }
     }
 }
-

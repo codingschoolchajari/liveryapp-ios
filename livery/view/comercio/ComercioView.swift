@@ -293,7 +293,7 @@ struct InformacionExtra: View {
                     Divider()
                         .padding(.horizontal, 10)
 
-                    HStack(alignment: .center, spacing: 8) {
+                    HStack(alignment: .center, spacing: 4) {
                         Image(systemName: "clock")
                             .resizable()
                             .scaledToFit()
@@ -304,7 +304,6 @@ struct InformacionExtra: View {
                         Text(horarioReducido.descripcion)
                             .font(.custom("Barlow", size: 14))
                             .foregroundColor(.negro)
-                            .frame(maxWidth: .infinity, alignment: .leading)
 
                         Text(DateUtils.obtenerHorariosReducidosHoy(horarioReducido: horarioReducido))
                             .font(.custom("Barlow", size: 14))

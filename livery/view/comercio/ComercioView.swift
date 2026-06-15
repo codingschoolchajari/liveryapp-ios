@@ -285,13 +285,13 @@ struct InformacionExtra: View {
                         .foregroundColor(.grisTerciario)
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 10)
             .frame(maxWidth: .infinity)
 
             if !horariosReducidos.isEmpty {
                 ForEach(horariosReducidos, id: \.idInterno) { horarioReducido in
                     Divider()
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 10)
 
                     HStack(alignment: .center, spacing: 8) {
                         Image(systemName: "clock")
@@ -311,7 +311,7 @@ struct InformacionExtra: View {
                             .bold()
                             .foregroundColor(.grisTerciario)
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 10)
                     .frame(maxWidth: .infinity)
                 }
 

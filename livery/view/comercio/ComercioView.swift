@@ -293,7 +293,7 @@ struct InformacionExtra: View {
                     Divider()
                         .padding(.horizontal, 10)
 
-                    HStack(alignment: .center, spacing: 4) {
+                    HStack(alignment: .center, spacing: 8) {
                         Image(systemName: "clock")
                             .resizable()
                             .scaledToFit()

@@ -223,7 +223,7 @@ struct ComercioTitulo: View {
                         if let nombreComplemento = comercio.nombreComplemento?.trimmingCharacters(in: .whitespacesAndNewlines),
                            !nombreComplemento.isEmpty {
                             Text(nombreComplemento)
-                                .font(.custom("Barlow", size: 14))
+                                .font(.custom("Barlow", size: 18))
                                 .bold()
                                 .foregroundColor(.negro)
                                 .lineLimit(2)

@@ -103,7 +103,7 @@ struct Portada: View {
                     .padding(.horizontal, 16)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 80)
+                .frame(height: 84)
                 .background(Color.blanco)
                 .cornerRadius(24)
                 .overlay(

@@ -198,7 +198,7 @@ struct ComercioTitulo: View {
                     .cornerRadius(12)
                     .clipped()
                     
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 3) {
                         HStack(alignment: .center, spacing: 10) {
                             Text(comercio.nombre)
                                 .font(.custom("Barlow", size: 18))

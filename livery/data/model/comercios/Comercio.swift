@@ -74,6 +74,7 @@ struct Comercio: Codable, Identifiable {
     var idInterno: String = ""
     var localidad: String = ""
     var nombre: String = ""
+    var nombreComplemento: String? = nil
     var puntuacion: Double = 0.0
     var aviso: ComercioAviso = ComercioAviso()
     var direccion: ComercioDireccion = ComercioDireccion()

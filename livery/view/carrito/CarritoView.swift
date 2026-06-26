@@ -234,7 +234,7 @@ struct TipoEntregaView: View {
         if !hayNoDisponiblesParaDelivery && carritoViewModel.comercio?.envios.envioPropio == true {
             result.append(.envioPropio)
         }
-        if !hayNoDisponiblesParaDelivery && carritoViewModel.enviosLiveryActivo {
+        if !hayNoDisponiblesParaDelivery && carritoViewModel.enviosLiveryActivo && carritoViewModel.comercio?.envios.envioLivery == true {
             result.append(.envioLivery)
         }
         result.append(.retiroEnComercio)
@@ -247,7 +247,8 @@ struct TipoEntregaView: View {
 
             // MARK: Mensaje envíos Livery
             if let mensaje = perfilUsuarioState.configuracion?.mensajeEnviosLivery, !mensaje.isEmpty,
-               !opciones.contains(.envioLivery) {
+               !opciones.contains(.envioLivery),
+               carritoViewModel.comercio?.envios.envioLivery == true {
                 Text(mensaje)
                     .font(.custom("Barlow", size: 12))
                     .bold()

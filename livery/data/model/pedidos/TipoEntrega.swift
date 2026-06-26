@@ -12,7 +12,7 @@ enum TipoEntrega: String, CaseIterable {
     var descripcion: String {
         switch self {
         case .envioPropio:
-            return "Envío\nPrioritario"
+            return "Envío\nPropio"
         case .envioLivery:
             return "Envío\nLivery"
         case .retiroEnComercio:

@@ -103,7 +103,8 @@ struct Portada: View {
                     .padding(.horizontal, 16)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 80)
+                .frame(minHeight: 80)
+                .padding(.vertical, 6)
                 .background(Color.blanco)
                 .cornerRadius(24)
                 .overlay(
@@ -219,6 +220,16 @@ struct ComercioTitulo: View {
                             }
                         }
                         
+                        if let nombreComplemento = comercio.nombreComplemento?.trimmingCharacters(in: .whitespacesAndNewlines),
+                           !nombreComplemento.isEmpty {
+                            Text(nombreComplemento)
+                                .font(.custom("Barlow", size: 14))
+                                .bold()
+                                .foregroundColor(.negro)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+
                         if !comercio.categoriasPrincipales.isEmpty {
                             Text(comercio.categoriasPrincipalesToString())
                                 .font(.custom("Barlow", size: 14))

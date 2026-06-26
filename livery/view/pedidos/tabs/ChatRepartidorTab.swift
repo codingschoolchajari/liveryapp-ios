@@ -22,7 +22,7 @@ struct ChatRepartidorTab: View {
         
         VStack {
             if tipoEntrega == .retiroEnComercio || tipoEntrega == .envioPropio {
-                Text("Esta funcionalidad no está disponible para Retiro en Comercio o Envío Prioritario")
+                Text("Esta funcionalidad no está disponible para Retiro en Comercio o Envío Propio")
                     .font(.custom("Barlow", size: 14))
                     .bold()
                     .foregroundColor(.negro)

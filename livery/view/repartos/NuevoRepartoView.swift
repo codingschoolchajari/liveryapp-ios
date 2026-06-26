@@ -357,136 +357,159 @@ private struct PasoDireccionUsuarioView: View {
 
 private struct PasoComercioView: View {
     @ObservedObject var viewModel: NuevoRepartoViewModel
+    @FocusState private var campoEnFoco: Campos?
+
+    private enum Campos {
+        case calle, numero, nombreComercio
+    }
 
     var body: some View {
-        VStack(spacing: 8) {
-            // Toggle Buscar / Manual
-            HStack(spacing: 0) {
-                Button {
-                    viewModel.seleccionarModo(manual: false)
-                } label: {
-                    Text("Buscar Dirección")
-                        .font(.custom("Barlow", size: 11))
-                        .bold()
-                        .foregroundColor(!viewModel.modoManual ? .blanco : .grisSecundario)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 30)
-                        .background(!viewModel.modoManual ? Color.verdePrincipal : Color.blanco)
-                        .contentShape(Rectangle())
-                }
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 8) {
+                    // Toggle Buscar / Manual
+                    HStack(spacing: 0) {
+                        Button {
+                            viewModel.seleccionarModo(manual: false)
+                        } label: {
+                            Text("Buscar Dirección")
+                                .font(.custom("Barlow", size: 11))
+                                .bold()
+                                .foregroundColor(!viewModel.modoManual ? .blanco : .grisSecundario)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 30)
+                                .background(!viewModel.modoManual ? Color.verdePrincipal : Color.blanco)
+                                .contentShape(Rectangle())
+                        }
 
-                Button {
-                    viewModel.seleccionarModo(manual: true)
-                } label: {
-                    Text("Cargar Manualmente")
-                        .font(.custom("Barlow", size: 11))
-                        .bold()
-                        .foregroundColor(viewModel.modoManual ? .blanco : .grisSecundario)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 30)
-                        .background(viewModel.modoManual ? Color.verdePrincipal : Color.blanco)
-                        .contentShape(Rectangle())
-                }
-            }
-            .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color.grisSecundario, lineWidth: 1)
-            )
-            .cornerRadius(24)
-            .padding(.horizontal, 30)
-
-            // Buscador (solo en modo búsqueda)
-            PlacesSearchBar(
-                coordenadasInicialesGPS: viewModel.coordenadasDestino,
-                soloDirecciones: false,
-                placeholder: "Buscar Dirección / Comercio"
-            ) { place in
-                viewModel.actualizarDesdePlace(place)
-            }
-            .opacity(viewModel.modoManual ? 0 : 1)
-            .allowsHitTesting(!viewModel.modoManual)
-            .zIndex(999)
-
-            // Calle y Número
-            GeometryReader { geo in
-                HStack(spacing: 8) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Calle")
-                            .font(.custom("Barlow", size: 12))
-                            .bold()
-                            .foregroundColor(.negro)
-                        TextField(
-                            text: Binding(
-                                get: { viewModel.calle },
-                                set: { if viewModel.modoManual { viewModel.calle = $0 } }
-                            ),
-                            prompt: Text("").foregroundColor(.grisSecundario)
-                        ) { EmptyView() }
-                            .font(.custom("Barlow", size: 16))
-                            .foregroundColor(.negro)
-                            .disabled(!viewModel.modoManual)
-                            .padding(10)
-                            .background(viewModel.modoManual ? Color.blanco : Color.grisSecundario.opacity(0.15))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.grisSecundario, lineWidth: 1)
-                            )
-                            .cornerRadius(8)
+                        Button {
+                            viewModel.seleccionarModo(manual: true)
+                        } label: {
+                            Text("Cargar Manualmente")
+                                .font(.custom("Barlow", size: 11))
+                                .bold()
+                                .foregroundColor(viewModel.modoManual ? .blanco : .grisSecundario)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 30)
+                                .background(viewModel.modoManual ? Color.verdePrincipal : Color.blanco)
+                                .contentShape(Rectangle())
+                        }
                     }
-                    .frame(width: geo.size.width * 0.62)
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Número")
-                            .font(.custom("Barlow", size: 12))
-                            .bold()
-                            .foregroundColor(.negro)
-                        TextField(
-                            text: Binding(
-                                get: { viewModel.numero },
-                                set: { viewModel.onNumeroChange($0) }
-                            ),
-                            prompt: Text("").foregroundColor(.grisSecundario)
-                        ) { EmptyView() }
-                            .font(.custom("Barlow", size: 16))
-                            .foregroundColor(.negro)
-                            .disabled(viewModel.modoManual ? false : viewModel.calle.isEmpty)
-                            .padding(10)
-                            .background(
-                                (viewModel.modoManual || !viewModel.calle.isEmpty) ? Color.blanco : Color.grisSecundario.opacity(0.15)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.grisSecundario, lineWidth: 1)
-                            )
-                            .cornerRadius(8)
-                    }
-                    .frame(width: geo.size.width * 0.38 - 8)
-                }
-            }
-            .frame(height: 68)
-
-            // Nombre del Comercio
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Nombre del Comercio")
-                    .font(.custom("Barlow", size: 12))
-                    .bold()
-                    .foregroundColor(.negro)
-                TextField(
-                    text: $viewModel.nombreComercio,
-                    prompt: Text("").foregroundColor(.grisSecundario)
-                ) { EmptyView() }
-                    .font(.custom("Barlow", size: 16))
-                    .foregroundColor(.negro)
-                    .padding(10)
-                    .background(Color.blanco)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: 24)
                             .stroke(Color.grisSecundario, lineWidth: 1)
                     )
-                    .cornerRadius(8)
+                    .cornerRadius(24)
+                    .padding(.horizontal, 30)
+
+                    // Buscador (solo en modo búsqueda)
+                    PlacesSearchBar(
+                        coordenadasInicialesGPS: viewModel.coordenadasDestino,
+                        soloDirecciones: false,
+                        placeholder: "Buscar Dirección / Comercio"
+                    ) { place in
+                        viewModel.actualizarDesdePlace(place)
+                    }
+                    .opacity(viewModel.modoManual ? 0 : 1)
+                    .allowsHitTesting(!viewModel.modoManual)
+                    .zIndex(999)
+
+                    // Calle y Número
+                    GeometryReader { geo in
+                        HStack(spacing: 8) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Calle")
+                                    .font(.custom("Barlow", size: 12))
+                                    .bold()
+                                    .foregroundColor(.negro)
+                                TextField(
+                                    text: Binding(
+                                        get: { viewModel.calle },
+                                        set: { if viewModel.modoManual { viewModel.calle = $0 } }
+                                    ),
+                                    prompt: Text("").foregroundColor(.grisSecundario)
+                                ) { EmptyView() }
+                                    .focused($campoEnFoco, equals: .calle)
+                                    .id(Campos.calle)
+                                    .font(.custom("Barlow", size: 16))
+                                    .foregroundColor(.negro)
+                                    .disabled(!viewModel.modoManual)
+                                    .padding(10)
+                                    .background(viewModel.modoManual ? Color.blanco : Color.grisSecundario.opacity(0.15))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.grisSecundario, lineWidth: 1)
+                                    )
+                                    .cornerRadius(8)
+                            }
+                            .frame(width: geo.size.width * 0.62)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Número")
+                                    .font(.custom("Barlow", size: 12))
+                                    .bold()
+                                    .foregroundColor(.negro)
+                                TextField(
+                                    text: Binding(
+                                        get: { viewModel.numero },
+                                        set: { viewModel.onNumeroChange($0) }
+                                    ),
+                                    prompt: Text("").foregroundColor(.grisSecundario)
+                                ) { EmptyView() }
+                                    .focused($campoEnFoco, equals: .numero)
+                                    .id(Campos.numero)
+                                    .font(.custom("Barlow", size: 16))
+                                    .foregroundColor(.negro)
+                                    .disabled(viewModel.modoManual ? false : viewModel.calle.isEmpty)
+                                    .padding(10)
+                                    .background(
+                                        (viewModel.modoManual || !viewModel.calle.isEmpty) ? Color.blanco : Color.grisSecundario.opacity(0.15)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.grisSecundario, lineWidth: 1)
+                                    )
+                                    .cornerRadius(8)
+                            }
+                            .frame(width: geo.size.width * 0.38 - 8)
+                        }
+                    }
+                    .frame(height: 68)
+
+                    // Nombre del Comercio
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Nombre del Comercio")
+                            .font(.custom("Barlow", size: 12))
+                            .bold()
+                            .foregroundColor(.negro)
+                        TextField(
+                            text: $viewModel.nombreComercio,
+                            prompt: Text("").foregroundColor(.grisSecundario)
+                        ) { EmptyView() }
+                            .focused($campoEnFoco, equals: .nombreComercio)
+                            .id(Campos.nombreComercio)
+                            .font(.custom("Barlow", size: 16))
+                            .foregroundColor(.negro)
+                            .padding(10)
+                            .background(Color.blanco)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.grisSecundario, lineWidth: 1)
+                            )
+                            .cornerRadius(8)
+                    }
+                }
+                .padding(.top, 4)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .onChange(of: campoEnFoco) { _, nuevoCampo in
+                if let campo = nuevoCampo {
+                    withAnimation {
+                        proxy.scrollTo(campo, anchor: .center)
+                    }
+                }
             }
         }
-        .padding(.top, 4)
     }
 }
 

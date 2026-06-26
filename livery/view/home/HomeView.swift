@@ -494,7 +494,7 @@ struct TarjetaComercio: View {
 
             // Mitad Inferior:
             ComercioTitulo(comercio: comercio, mostrarEncabezado: true)
-                .frame(height: 80)
+                .frame(height: 84)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 8)
                 .background(Color.grisSurface)

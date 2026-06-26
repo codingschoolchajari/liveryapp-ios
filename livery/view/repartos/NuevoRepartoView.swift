@@ -118,29 +118,28 @@ struct NuevoRepartoView: View {
 
             Spacer().frame(height: 12)
 
-            // Mapa fuera del scroll — solo visible en PASO_COMERCIO
-            if pasoActual == PASO_COMERCIO {
-                ZStack {
-                    GoogleMapView(coordenadas: $viewModel.coordenadasDestino)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.verdePrincipal, lineWidth: 2)
-                        )
-
-                    Image("icono_ubicacion_mapa")
-                        .resizable()
-                        .frame(width: 50, height: 50)
-                }
-                .padding(.horizontal, 8)
-                .frame(height: UIScreen.main.bounds.height * 0.28)
-
-                Spacer().frame(height: 12)
-            }
-
             // Contenido scrollable del paso
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
+                    if pasoActual == PASO_COMERCIO {
+                        ZStack {
+                            GoogleMapView(coordenadas: $viewModel.coordenadasDestino)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.verdePrincipal, lineWidth: 2)
+                                )
+
+                            Image("icono_ubicacion_mapa")
+                                .resizable()
+                                .frame(width: 50, height: 50)
+                        }
+                        .padding(.horizontal, 8)
+                        .frame(height: 180)
+
+                        Spacer().frame(height: 12)
+                    }
+
                     switch pasoActual {
                     case PASO_DIRECCION_USUARIO:
                         PasoDireccionUsuarioView(viewModel: viewModel, onNuevaDireccion: onNuevaDireccion)

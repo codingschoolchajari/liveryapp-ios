@@ -22,7 +22,7 @@ struct TituloComercio: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 60)
+        .frame(height: 70)
         .background(Color.blanco)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .overlay(

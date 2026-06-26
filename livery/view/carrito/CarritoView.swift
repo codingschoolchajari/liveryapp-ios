@@ -548,7 +548,7 @@ struct BottomSheetPagoCarrito: View {
     @State private var tabSeleccionado: Int = 0
 
     private var limitePagoEfectivo: Double {
-        perfilUsuarioState.configuracion?.limitePagoEfectivo ?? 0.0
+        carritoViewModel.comercio?.limitePagoEfectivo ?? perfilUsuarioState.configuracion?.limitePagoEfectivo ?? 0.0
     }
 
     private var superaLimiteEfectivo: Bool {

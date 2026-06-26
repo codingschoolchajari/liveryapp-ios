@@ -76,6 +76,7 @@ struct Comercio: Codable, Identifiable {
     var nombre: String = ""
     var nombreComplemento: String? = nil
     var puntuacion: Double = 0.0
+    var limitePagoEfectivo: Double? = nil
     var aviso: ComercioAviso = ComercioAviso()
     var direccion: ComercioDireccion = ComercioDireccion()
     var envios: ComercioEnvios = ComercioEnvios()

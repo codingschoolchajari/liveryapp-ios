@@ -13,9 +13,18 @@ struct ComercioView: View {
     @State private var categoriaSeleccionadaId: String? = nil
     @State private var mostrarComentarios = false
     @State private var categoriaDropdownExpandido = false
+    @State private var mostrarPopupContactoExterno = false
+
+    private var comercioTieneContactoExterno: Bool {
+        comercioViewModel.comercio?.contactoExterno == true
+    }
+
+    private var numeroWhatsappComercio: String {
+        (comercioViewModel.comercio?.telefono ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .bottomTrailing) {
             if let comercio = comercioViewModel.comercio {
                 VStack(spacing: 0) {
                     Portada(
@@ -44,6 +53,36 @@ struct ComercioView: View {
                 BannerAviso(comercioViewModel: comercioViewModel)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 8)
+
+                if comercioTieneContactoExterno && !numeroWhatsappComercio.isEmpty {
+                    Button {
+                        abrirWhatsAppComercio()
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .fill(Color.verdePrincipal)
+
+                            Image("icono_whatsapp")
+                                .resizable()
+                                .scaledToFill()
+                                .clipped()
+                        }
+                    }
+                    .frame(width: 68, height: 68)
+                    .clipShape(Circle())
+                    .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 100)
+                }
+
+                if mostrarPopupContactoExterno && comercioTieneContactoExterno {
+                    PopupContactoExternoView(
+                        onCerrar: {
+                            mostrarPopupContactoExterno = false
+                        }
+                    )
+                    .zIndex(2)
+                }
             } else {
                 ProgressView()
                     .tint(.verdePrincipal)
@@ -57,6 +96,16 @@ struct ComercioView: View {
                 comercioViewModel.refreshCategoriasYPromociones()
             }
         }
+        .onAppear {
+            if comercioTieneContactoExterno {
+                mostrarPopupContactoExterno = true
+            }
+        }
+        .onChange(of: comercioViewModel.comercio?.contactoExterno ?? false) { _, nuevoValor in
+            if nuevoValor {
+                mostrarPopupContactoExterno = true
+            }
+        }
         .sheet(isPresented: $mostrarComentarios) {
             if let comercio = comercioViewModel.comercio {
                 BottomSheetComentarios(
@@ -64,6 +113,53 @@ struct ComercioView: View {
                     perfilUsuarioState: perfilUsuarioState
                 )
             }
+        }
+    }
+
+    private func abrirWhatsAppComercio() {
+        let numero = numeroWhatsappComercio.filter { $0.isNumber }
+        guard !numero.isEmpty else { return }
+
+        let mensaje = "Quiero realizar un pedido, pero no encontré en Livery lo que estoy necesitando."
+        guard let url = URL(string: "https://wa.me/\(numero)?text=\(mensaje.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")") else {
+            return
+        }
+
+        UIApplication.shared.open(url)
+    }
+}
+
+private struct PopupContactoExternoView: View {
+    let onCerrar: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    onCerrar()
+                }
+
+            VStack(spacing: 0) {
+                Text(
+                    Text("Si no encontrás lo que estás necesitando escribinos por ")
+                        .bold()
+                        .foregroundColor(.negro)
+                    + Text("Whatsapp")
+                        .bold()
+                        .foregroundColor(.verdePrincipal)
+                )
+                .font(.custom("Barlow", size: 17))
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, 22)
+            .padding(.vertical, 32)
+            .frame(maxWidth: 320)
+            .background(Color.blanco)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .shadow(color: .black.opacity(0.18), radius: 18, x: 0, y: 8)
+            .padding(.horizontal, 24)
         }
     }
 }

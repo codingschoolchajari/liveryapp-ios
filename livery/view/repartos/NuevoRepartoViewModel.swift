@@ -14,7 +14,7 @@ class NuevoRepartoViewModel: ObservableObject {
     private let repartidoresService = RepartidoresService()
     private let verificacionService = VerificacionService()
 
-    @Published var coordenadasDestino: CLLocationCoordinate2D? = nil
+    @Published var coordenadasComercio: CLLocationCoordinate2D? = nil
     @Published var direccionesUsuario: [UsuarioDireccion] = []
     @Published var idDireccionUsuarioSeleccionada: String? = nil
 
@@ -51,7 +51,7 @@ class NuevoRepartoViewModel: ObservableObject {
     private var costoEnvioDebounceTask: Task<Void, Never>? = nil
     private var geocodingTask: Task<Void, Never>? = nil
     private var pollingTask: Task<Void, Never>? = nil
-    private var coordenadasOrigen: CLLocationCoordinate2D? = nil
+    private var coordenadasUsuario: CLLocationCoordinate2D? = nil
 
     init(perfilUsuarioState: PerfilUsuarioState) {
         self.perfilUsuarioState = perfilUsuarioState
@@ -65,9 +65,9 @@ class NuevoRepartoViewModel: ObservableObject {
         idDireccionUsuarioSeleccionada = direccionSeleccionada?.id
 
         if let coords = direccionSeleccionada?.coordenadas.coordinates, coords.count >= 2 {
-            let origen = CLLocationCoordinate2D(latitude: coords[0], longitude: coords[1])
-            coordenadasOrigen = origen
-            coordenadasDestino = origen
+            let destinoUsuario = CLLocationCoordinate2D(latitude: coords[0], longitude: coords[1])
+            coordenadasUsuario = destinoUsuario
+            coordenadasComercio = destinoUsuario
         }
 
         tarifaServicio = perfilUsuarioState.configuracion?.tarifaServicio ?? 0
@@ -83,7 +83,7 @@ class NuevoRepartoViewModel: ObservableObject {
         idDireccionUsuarioSeleccionada = idDireccion
         if let direccion = direccionesUsuario.first(where: { $0.id == idDireccion }),
            direccion.coordenadas.coordinates.count >= 2 {
-            coordenadasOrigen = CLLocationCoordinate2D(
+            coordenadasUsuario = CLLocationCoordinate2D(
                 latitude: direccion.coordenadas.coordinates[0],
                 longitude: direccion.coordenadas.coordinates[1]
             )
@@ -91,8 +91,8 @@ class NuevoRepartoViewModel: ObservableObject {
         calcularCostoEnvioDebounced()
     }
 
-    func actualizarDestino(coordenada: CLLocationCoordinate2D) {
-        coordenadasDestino = coordenada
+    func actualizarCoordenadasComercio(coordenada: CLLocationCoordinate2D) {
+        coordenadasComercio = coordenada
         calcularCostoEnvioDebounced()
     }
 
@@ -112,7 +112,7 @@ class NuevoRepartoViewModel: ObservableObject {
             }
         }
 
-        actualizarDestino(coordenada: place.coordinate)
+        actualizarCoordenadasComercio(coordenada: place.coordinate)
     }
 
     func onNumeroChange(_ texto: String) {
@@ -149,7 +149,7 @@ class NuevoRepartoViewModel: ObservableObject {
             URLQueryItem(name: "key", value: apiKey)
         ]
 
-        if let centro = coordenadasDestino {
+        if let centro = coordenadasComercio {
             let delta = 0.15
             let sw = "\(centro.latitude - delta),\(centro.longitude - delta)"
             let ne = "\(centro.latitude + delta),\(centro.longitude + delta)"
@@ -187,7 +187,7 @@ class NuevoRepartoViewModel: ObservableObject {
                 return
             }
             print("✅ [Geocoding] resultado: (\(lat), \(lng))")
-            coordenadasDestino = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+            coordenadasComercio = CLLocationCoordinate2D(latitude: lat, longitude: lng)
         } catch {
             print("❌ [Geocoding] error de red: \(error.localizedDescription)")
         }
@@ -302,9 +302,9 @@ class NuevoRepartoViewModel: ObservableObject {
     }
 
     func calcularCostoEnvio() async {
-        guard let destino = coordenadasDestino,
-              let direccion = direccionesUsuario.first(where: { $0.id == idDireccionUsuarioSeleccionada }),
-              direccion.coordenadas.coordinates.count >= 2 else {
+        guard let origenComercio = coordenadasComercio,
+            let direccion = direccionesUsuario.first(where: { $0.id == idDireccionUsuarioSeleccionada }),
+            direccion.coordenadas.coordinates.count >= 2 else {
             costoEnvio = nil
             distanciaEnvio = nil
             return
@@ -317,13 +317,16 @@ class NuevoRepartoViewModel: ObservableObject {
             let accessToken = TokenRepository.repository.accessToken ?? ""
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
 
+            // El backend espera origen=comercio y destino=usuario.
+            // Aquí `direccion` es la dirección del usuario y `origenComercio` representa
+            // la ubicación del comercio, por lo que invertimos los parámetros.
             let envio = try await enviosService.calcularCosto(
                 token: accessToken,
                 dispositivoID: dispositivoID,
-                latitudOrigen: direccion.coordenadas.coordinates[0],
-                longitudOrigen: direccion.coordenadas.coordinates[1],
-                latitudDestino: destino.latitude,
-                longitudDestino: destino.longitude
+                latitudOrigen: origenComercio.latitude,
+                longitudOrigen: origenComercio.longitude,
+                latitudDestino: direccion.coordenadas.coordinates[0],
+                longitudDestino: direccion.coordenadas.coordinates[1]
             )
 
             costoEnvio = envio.costo
@@ -371,10 +374,10 @@ class NuevoRepartoViewModel: ObservableObject {
     func crearReparto() async {
         guard !creandoReparto else { return }
 
-        guard let usuario = perfilUsuarioState.usuario,
+          guard let usuario = perfilUsuarioState.usuario,
               let idDireccion = idDireccionUsuarioSeleccionada,
               let direccionUsuario = direccionesUsuario.first(where: { $0.id == idDireccion }),
-              let destino = coordenadasDestino else { return }
+              let origenComercio = coordenadasComercio else { return }
 
         creandoReparto = true
 
@@ -410,11 +413,11 @@ class NuevoRepartoViewModel: ObservableObject {
                 departamento: direccionUsuario.departamento,
                 coordenadas: direccionUsuario.coordenadas
             ),
-            direccionOrigen: DireccionReparto(
+                direccionOrigen: DireccionReparto(
                 calle: calle.trimmingCharacters(in: .whitespacesAndNewlines),
                 numero: numero.trimmingCharacters(in: .whitespacesAndNewlines),
                 departamento: "",
-                coordenadas: Point(coordinates: [destino.latitude, destino.longitude])
+                    coordenadas: Point(coordinates: [origenComercio.latitude, origenComercio.longitude])
             ),
             localidad: perfilUsuarioState.ciudadSeleccionada ?? "",
             tarifaServicio: tarifaServicio,
@@ -462,8 +465,8 @@ class NuevoRepartoViewModel: ObservableObject {
     func reiniciarFormulario() {
         costoEnvioDebounceTask?.cancel()
         detenerPolling()
-        coordenadasDestino = nil
-        coordenadasOrigen = nil
+        coordenadasComercio = nil
+        coordenadasUsuario = nil
         idDireccionUsuarioSeleccionada = nil
         calle = ""
         numero = ""

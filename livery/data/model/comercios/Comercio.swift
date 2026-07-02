@@ -75,6 +75,7 @@ struct Comercio: Codable, Identifiable {
     var localidad: String = ""
     var nombre: String = ""
     var nombreComplemento: String? = nil
+    var contactoExterno: Bool? = nil
     var puntuacion: Double = 0.0
     var limitePagoEfectivo: Double? = nil
     var aviso: ComercioAviso = ComercioAviso()
@@ -85,6 +86,7 @@ struct Comercio: Codable, Identifiable {
     var datosBancarios: ComercioDatosBancarios = ComercioDatosBancarios()
     var imagenURL: String = ""
     var logoURL: String = ""
+    var telefono: String? = nil
     var colorBorde: String? = nil
     var categoriasPrincipales: [String] = []
     var categorias: [Categoria] = []

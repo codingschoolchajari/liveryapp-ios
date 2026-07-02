@@ -22,6 +22,10 @@ struct HomeView: View {
         perfilUsuarioState.obtenerDireccionSeleccionada().isEmpty
     }
 
+    private var numeroWhatsappSoporte: String {
+        (perfilUsuarioState.configuracion?.numeroWhatsappSoporte ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     var body: some View {
         ZStack(alignment: .topLeading) {
             VStack(spacing: 0) {
@@ -63,6 +67,28 @@ struct HomeView: View {
                 .offset(x: 72, y: -10)
                 .allowsHitTesting(false)
             }
+
+            if !numeroWhatsappSoporte.isEmpty {
+                Button {
+                    abrirWhatsAppSoporte()
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(Color.verdePrincipal)
+
+                        Image("icono_whatsapp")
+                            .resizable()
+                            .scaledToFill()
+                            .clipped()
+                    }
+                }
+                .frame(width: 68, height: 68)
+                .clipShape(Circle())
+                .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
+                .padding(.trailing, 20)
+                .padding(.bottom, 100)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            }
         }
         .padding(.bottom, 16)
         .background(Color.blanco)
@@ -78,6 +104,18 @@ struct HomeView: View {
                 notificacionesState.refrescarNotificaciones(receptor: email)
             }
         }
+    }
+
+    private func abrirWhatsAppSoporte() {
+        let numero = numeroWhatsappSoporte.filter { $0.isNumber }
+        guard !numero.isEmpty else { return }
+
+        let mensaje = "Necesito ayuda con mi pedido\nEl email de mi usuario es : \(perfilUsuarioState.usuario?.email ?? "")"
+        guard let url = URL(string: "https://wa.me/\(numero)?text=\(mensaje.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")") else {
+            return
+        }
+
+        UIApplication.shared.open(url)
     }
 }
 

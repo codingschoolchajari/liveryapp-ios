@@ -61,6 +61,8 @@ class ComercioViewModel: ObservableObject {
                 self.comercio?.categorias = fresco.categorias
                 self.comercio?.promociones = fresco.promociones
                 self.comercio?.aviso = fresco.aviso
+                self.comercio?.contactoExterno = fresco.contactoExterno
+                self.comercio?.telefono = fresco.telefono
             } catch {
                 print("Error al refrescar categorias y promociones: \(error)")
             }

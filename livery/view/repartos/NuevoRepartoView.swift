@@ -123,7 +123,7 @@ struct NuevoRepartoView: View {
                 VStack(spacing: 0) {
                     if pasoActual == PASO_COMERCIO {
                         ZStack {
-                            GoogleMapView(coordenadas: $viewModel.coordenadasDestino)
+                            GoogleMapView(coordenadas: $viewModel.coordenadasComercio)
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 16)

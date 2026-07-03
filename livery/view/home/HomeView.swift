@@ -54,6 +54,7 @@ struct HomeView: View {
                     }
                 }
             }
+            .padding(.bottom, 16)
 
             if sinDireccionSeleccionada {
                 LottieView(
@@ -69,27 +70,32 @@ struct HomeView: View {
             }
 
             if !numeroWhatsappSoporte.isEmpty {
-                Button {
-                    abrirWhatsAppSoporte()
-                } label: {
-                    Circle()
-                        .fill(Color.verdePrincipal)
-                        .overlay {
-                            Image("icono_whatsapp")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 30, height: 30)
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            abrirWhatsAppSoporte()
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.verdePrincipal)
+
+                                Image("icono_whatsapp")
+                                    .resizable()
+                                    .scaledToFill()
+                                    .clipped()
+                            }
                         }
+                        .frame(width: 56, height: 56)
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 16)
+                    }
                 }
-                .frame(width: 56, height: 56)
-                .clipShape(Circle())
-                .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
-                .padding(.trailing, 20)
-                .padding(.bottom, 16)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             }
         }
-        .padding(.bottom, 16)
         .background(Color.blanco)
         .onAppear {
             // Refrescar notificaciones cuando aparece la vista (similar a HomeLifecycleObserver en Android)

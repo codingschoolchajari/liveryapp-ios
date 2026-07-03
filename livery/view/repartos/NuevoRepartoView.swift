@@ -403,7 +403,7 @@ private struct PasoComercioView: View {
 
                     // Buscador (solo en modo búsqueda)
                     PlacesSearchBar(
-                        coordenadasInicialesGPS: viewModel.coordenadasDestino,
+                        coordenadasInicialesGPS: viewModel.coordenadasComercio,
                         soloDirecciones: false,
                         placeholder: "Buscar Dirección / Comercio"
                     ) { place in

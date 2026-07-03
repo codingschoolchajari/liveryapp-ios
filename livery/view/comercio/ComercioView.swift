@@ -141,7 +141,7 @@ private struct PopupContactoExternoView: View {
                 }
 
             VStack(spacing: 0) {
-                Text(
+                (
                     Text("Si no encontrás lo que estás necesitando escribinos por ")
                         .bold()
                         .foregroundColor(.negro)

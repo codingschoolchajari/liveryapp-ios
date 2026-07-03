@@ -58,21 +58,20 @@ struct ComercioView: View {
                     Button {
                         abrirWhatsAppComercio()
                     } label: {
-                        ZStack {
-                            Circle()
-                                .fill(Color.verdePrincipal)
-
-                            Image("icono_whatsapp")
-                                .resizable()
-                                .scaledToFill()
-                                .clipped()
-                        }
+                        Circle()
+                            .fill(Color.verdePrincipal)
+                            .overlay {
+                                Image("icono_whatsapp")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                            }
                     }
-                    .frame(width: 68, height: 68)
+                    .frame(width: 56, height: 56)
                     .clipShape(Circle())
                     .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
                     .padding(.trailing, 20)
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 16)
                 }
 
                 if mostrarPopupContactoExterno && comercioTieneContactoExterno {

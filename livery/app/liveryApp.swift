@@ -70,7 +70,21 @@ struct RootContainerView: View {
             return
         }
 
+        // Si el estado local dice "logueado" pero Firebase no tiene usuario válido,
+        // forzamos autenticación para evitar quedar en Home con estado inconsistente.
+        guard let firebaseUser = perfilUsuarioState.currentUser,
+              !firebaseUser.isAnonymous else {
+            logueado = false
+            if navManager.currentPhase != .auth {
+                navManager.replaceRoot(with: .auth)
+            }
+            return
+        }
+
         guard let user = perfilUsuarioState.usuario else {
+            Task {
+                await perfilUsuarioState.buscarUsuario()
+            }
             return
         }
 

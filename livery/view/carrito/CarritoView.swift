@@ -433,6 +433,16 @@ struct ConfirmacionView: View {
     @State private var textoError = ""
     @State private var mostrarAvisoEnvio = false
     @State private var mostrarAvisoRetiro = false
+
+    private var sesionValidaParaPagar: Bool {
+        guard !perfilUsuarioState.esInvitado else { return false }
+        let email = perfilUsuarioState.usuario?.email.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return !email.isEmpty
+    }
+
+    private var puedeIrAPagar: Bool {
+        sesionValidaParaPagar && perfilUsuarioState.obtenerUsuarioDireccion() != nil
+    }
     
     var body: some View {
         Button {
@@ -446,10 +456,10 @@ struct ConfirmacionView: View {
                 .foregroundColor(.blanco)
                 .frame(maxWidth: .infinity)
                 .frame(height: 35)
-                .background(perfilUsuarioState.obtenerUsuarioDireccion() != nil ? Color.verdePrincipal : Color.grisSecundario)
+                .background(puedeIrAPagar ? Color.verdePrincipal : Color.grisSecundario)
                 .cornerRadius(24)
         }
-        .disabled(perfilUsuarioState.obtenerUsuarioDireccion() == nil)
+        .disabled(!puedeIrAPagar)
         .alert(tituloError, isPresented: $mostrarAlerta) {
             Button("Aceptar", role: .cancel) { }
         } message: {
@@ -486,6 +496,13 @@ struct ConfirmacionView: View {
         guard let usuario = perfilUsuarioState.usuario,
               let direccion = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
 
+        guard sesionValidaParaPagar else {
+            tituloError = "Inicio de sesión requerido"
+            textoError = "Para confirmar el pedido, iniciá sesión con tu cuenta."
+            mostrarAlerta = true
+            return
+        }
+
         let validacionDisponibilidad = await carritoViewModel.validacionDisponibilidad(
             perfilUsuarioState: perfilUsuarioState,
             email: usuario.email
@@ -521,6 +538,14 @@ struct ConfirmacionView: View {
     private func confirmarPedido() async {
         guard let usuario = perfilUsuarioState.usuario,
               let direccion = perfilUsuarioState.obtenerUsuarioDireccion() else { return }
+
+        guard sesionValidaParaPagar else {
+            mostrarBottomSheetPago = false
+            tituloError = "Inicio de sesión requerido"
+            textoError = "Tu sesión no es válida para crear pedidos. Iniciá sesión nuevamente."
+            mostrarAlerta = true
+            return
+        }
 
         await carritoViewModel.crearPedido(
             perfilUsuarioState: perfilUsuarioState,

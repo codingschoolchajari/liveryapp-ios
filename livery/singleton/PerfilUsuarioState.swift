@@ -88,13 +88,20 @@ class PerfilUsuarioState: ObservableObject {
                 await buscarUsuario()
                 
             } catch {
-                print("Sesión de Firebase expirada o inválida: \(error.localizedDescription)")
-                self.usuario = nil
-                self.currentUser = nil
+                // Un error de red no debe desloguear al usuario automáticamente.
+                do {
+                    let _ = try await user.getIDToken(forcingRefresh: true)
+                    print("Token refrescado forzadamente")
+                    await buscarUsuario()
+                } catch {
+                    print("No se pudo validar sesión en este intento: \(error.localizedDescription)")
+                }
             }
         } else {
             // No hay usuario en Firebase
             self.usuario = nil
+            // Evita estado mixto: logueado=true con sesión real inexistente.
+            UserDefaults.standard.set(false, forKey: "logueado")
         }
     }
     
@@ -110,6 +117,7 @@ class PerfilUsuarioState: ObservableObject {
                 dispositivoID: dispositivoID,
                 email: currentUser?.email ?? ""
             )
+            repararDireccionSeleccionadaInvalida()
         }
         catch {
             print("Error al buscar usuario: \(error)")
@@ -226,6 +234,30 @@ class PerfilUsuarioState: ObservableObject {
         )
         
         self.idDireccionSeleccionada = direccionGuardada
+        repararDireccionSeleccionadaInvalida()
+    }
+
+    private func repararDireccionSeleccionadaInvalida() {
+        guard let usuario else { return }
+        let direcciones = usuario.direcciones ?? []
+
+        if direcciones.isEmpty {
+            if idDireccionSeleccionada != nil {
+                idDireccionSeleccionada = nil
+                UserDefaults.standard.removeObject(forKey: ConfiguracionesUtil.ID_DIRECCION_KEY)
+            }
+            return
+        }
+
+        if let idSeleccionado = idDireccionSeleccionada,
+           direcciones.contains(where: { $0.id == idSeleccionado }) {
+            return
+        }
+
+        let nuevaDireccionID = direcciones[0].id
+        idDireccionSeleccionada = nuevaDireccionID
+        UserDefaults.standard.set(nuevaDireccionID, forKey: ConfiguracionesUtil.ID_DIRECCION_KEY)
+        print("[PerfilUsuarioState] idDireccionSeleccionada inválido reparado: \(nuevaDireccionID)")
     }
     
     func obtenerUsuarioDireccion() -> UsuarioDireccion? {

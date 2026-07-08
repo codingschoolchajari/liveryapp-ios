@@ -5,6 +5,7 @@
 //  Created by Nicolas Matias Garay on 18/12/2025.
 //
 import SwiftUI
+import CoreLocation
 
 struct CarritoView: View {
     @EnvironmentObject var navManager: NavigationManager
@@ -428,10 +429,10 @@ struct ConfirmacionView: View {
     @EnvironmentObject var navManager: NavigationManager
     
     @State private var mostrarBottomSheetPago = false
+    @State private var mostrarBottomSheetConfirmarDireccionYPago = false
     @State private var mostrarAlerta = false
     @State private var tituloError = ""
     @State private var textoError = ""
-    @State private var mostrarAvisoEnvio = false
     @State private var mostrarAvisoRetiro = false
 
     private var sesionValidaParaPagar: Bool {
@@ -465,15 +466,20 @@ struct ConfirmacionView: View {
         } message: {
             Text(textoError)
         }
-        .alert("IMPORTANTE", isPresented: $mostrarAvisoEnvio) {
-            Button("Aceptar") { mostrarBottomSheetPago = true }
-        } message: {
-            Text("Recordar que el **envío** se debe abonar **siempre directamente al repartidor**, ya sea que abones por transferencia o en efectivo.")
-        }
         .alert("IMPORTANTE - RETIRO EN COMERCIO", isPresented: $mostrarAvisoRetiro) {
             Button("Aceptar") { mostrarBottomSheetPago = true }
         } message: {
             Text("Esta opción significa que **debés pasar a buscar tu pedido por el comercio**, ya que no hay opciones de envío disponibles.")
+        }
+        .sheet(isPresented: $mostrarBottomSheetConfirmarDireccionYPago) {
+            BottomSheetConfirmarDireccionYPagoCarrito {
+                Task {
+                    await confirmarPedido()
+                }
+            }
+            .presentationDetents([.fraction(0.95)])
+            .presentationDragIndicator(.hidden)
+            .interactiveDismissDisabled(true)
         }
         .sheet(isPresented: $mostrarBottomSheetPago) {
             BottomSheetPagoCarrito {
@@ -529,7 +535,7 @@ struct ConfirmacionView: View {
             textoError = StringUtils.textoPedidoPendiente
             mostrarAlerta = true
         } else if carritoViewModel.tipoEntregaSeleccionada == .envioPropio || carritoViewModel.tipoEntregaSeleccionada == .envioLivery {
-            mostrarAvisoEnvio = true
+            mostrarBottomSheetConfirmarDireccionYPago = true
         } else {
             mostrarAvisoRetiro = true
         }
@@ -557,8 +563,219 @@ struct ConfirmacionView: View {
 
         carritoViewModel.onPedidoConfirmado()
         carritoViewModel.limpiarComprobante()
+        mostrarBottomSheetConfirmarDireccionYPago = false
         mostrarBottomSheetPago = false
         navManager.select(.pedidos)
+    }
+}
+
+struct BottomSheetConfirmarDireccionYPagoCarrito: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+
+    let onConfirmarPedido: () -> Void
+
+    @State private var mostrarPasoPago = false
+    @State private var mostrarNuevaDireccion = false
+    @State private var coordenadasMapa: CLLocationCoordinate2D? = nil
+
+    private var direcciones: [UsuarioDireccion] {
+        perfilUsuarioState.usuario?.direcciones ?? []
+    }
+
+    private var tarifaServicio: Double {
+        carritoViewModel.aplicaTarifaServicio
+        ? (perfilUsuarioState.configuracion?.tarifaServicio ?? StringUtils.tarifaServicioDefault)
+        : 0.0
+    }
+
+    private var textoCostoEnvio: String {
+        if carritoViewModel.comercio?.envios.envioGratisParaCliente == true {
+            return "Gratis"
+        }
+        if carritoViewModel.envio > 0 {
+            if carritoViewModel.tipoEntregaSeleccionada == .envioLivery {
+                return DoubleUtils.formatearPrecio(valor: carritoViewModel.envio + tarifaServicio)
+            }
+            return DoubleUtils.formatearPrecio(valor: carritoViewModel.envio)
+        }
+        return ""
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                Button(action: { dismiss() }) {
+                    Image("icono_cerrar")
+                        .resizable()
+                        .frame(width: 32, height: 32)
+                        .foregroundColor(.negro)
+                        .background(Color.blanco)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.negro, lineWidth: 2))
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+
+            if mostrarPasoPago {
+                BottomSheetPagoCarrito(
+                    onConfirmarPedido: onConfirmarPedido,
+                    mostrarBotonCerrar: false,
+                    contentHorizontalPadding: 0
+                )
+            } else {
+                VStack(spacing: 0) {
+                    Text("Confirmar Dirección")
+                        .font(.custom("Barlow", size: 18))
+                        .bold()
+                        .foregroundColor(.negro)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+
+                    Spacer().frame(height: 12)
+
+                    ZStack {
+                        GoogleMapView(coordenadas: $coordenadasMapa)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.grisSecundario, lineWidth: 1)
+                            )
+
+                        Image("icono_ubicacion_mapa")
+                            .resizable()
+                            .frame(width: 52, height: 52)
+                    }
+                    .frame(height: 170)
+
+                    Spacer().frame(height: 12)
+
+                    Text("Costo de envío: \(textoCostoEnvio)")
+                        .font(.custom("Barlow", size: 14))
+                        .bold()
+                        .foregroundColor(.negro)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+
+                    Spacer().frame(height: 8)
+
+                    ScrollView(showsIndicators: false) {
+                        LazyVStack(spacing: 6) {
+                            ForEach(direcciones) { direccion in
+                                let seleccionada = direccion.id == perfilUsuarioState.idDireccionSeleccionada
+
+                                Button {
+                                    Task {
+                                        await perfilUsuarioState.actualizarDireccionSeleccionada(idDireccion: direccion.id)
+                                        await perfilUsuarioState.obtenerCiudadSeleccionada()
+                                        carritoViewModel.refrescarCostoEnvio(
+                                            perfilUsuarioState: perfilUsuarioState,
+                                            usuarioDireccion: direccion
+                                        )
+                                        if let ciudad = perfilUsuarioState.ciudadSeleccionada {
+                                            await carritoViewModel.actualizarEnviosLiveryActivo(
+                                                perfilUsuarioState: perfilUsuarioState,
+                                                localidad: ciudad
+                                            )
+                                        }
+                                        actualizarMapaSegunDireccionSeleccionada()
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text(StringUtils.formatearDireccion(direccion.calle, direccion.numero, direccion.departamento))
+                                            .font(.custom("Barlow", size: 14))
+                                            .foregroundColor(.negro)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 10)
+                                    .background(seleccionada ? Color.verdePrincipal.opacity(0.1) : Color.grisSurface)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(
+                                                seleccionada ? Color.verdePrincipal : Color.grisSecundario.opacity(0.4),
+                                                lineWidth: seleccionada ? 2 : 1
+                                            )
+                                    )
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                }
+                            }
+
+                            Spacer().frame(height: 10)
+
+                            Button {
+                                mostrarNuevaDireccion = true
+                            } label: {
+                                Text("Nueva dirección")
+                                    .font(.custom("Barlow", size: 14))
+                                    .bold()
+                                    .foregroundColor(.blanco)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 36)
+                                    .background(Color.naranjaPrincipal)
+                                    .cornerRadius(24)
+                                    .padding(.horizontal, 100)
+                            }
+                        }
+                    }
+
+                    Spacer().frame(height: 12)
+                    Divider()
+                    Spacer().frame(height: 10)
+
+                    Text("Recordar que el envío se debe abonar siempre directamente al repartidor, ya sea que abones por transferencia o en efectivo.")
+                        .font(.custom("Barlow", size: 13))
+                        .foregroundColor(.negro)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+
+                    Spacer().frame(height: 12)
+
+                    Button {
+                        mostrarPasoPago = true
+                    } label: {
+                        Text("Continuar")
+                            .font(.custom("Barlow", size: 14))
+                            .bold()
+                            .foregroundColor(perfilUsuarioState.obtenerUsuarioDireccion() != nil ? .blanco : .grisSecundario)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .background(perfilUsuarioState.obtenerUsuarioDireccion() != nil ? Color.verdePrincipal : Color.grisSurface)
+                            .cornerRadius(24)
+                    }
+                    .disabled(perfilUsuarioState.obtenerUsuarioDireccion() == nil)
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.blanco)
+        .onAppear {
+            actualizarMapaSegunDireccionSeleccionada()
+        }
+        .onChange(of: perfilUsuarioState.idDireccionSeleccionada) { _, _ in
+            actualizarMapaSegunDireccionSeleccionada()
+        }
+        .sheet(isPresented: $mostrarNuevaDireccion) {
+            DireccionView()
+                .presentationDetents([.large])
+        }
+    }
+
+    private func actualizarMapaSegunDireccionSeleccionada() {
+        guard let direccion = perfilUsuarioState.obtenerUsuarioDireccion(),
+              direccion.coordenadas.coordinates.count >= 2 else {
+            return
+        }
+
+        coordenadasMapa = CLLocationCoordinate2D(
+            latitude: direccion.coordenadas.coordinates[0],
+            longitude: direccion.coordenadas.coordinates[1]
+        )
     }
 }
 
@@ -569,6 +786,8 @@ struct BottomSheetPagoCarrito: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
 
     let onConfirmarPedido: () -> Void
+    var mostrarBotonCerrar: Bool = true
+    var contentHorizontalPadding: CGFloat = 16
 
     @State private var tabSeleccionado: Int = 0
 
@@ -598,19 +817,21 @@ struct BottomSheetPagoCarrito: View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    HStack {
-                        Spacer()
-                        Button(action: { dismiss() }) {
-                            Image("icono_cerrar")
-                                .resizable()
-                                .frame(width: 32, height: 32)
-                                .foregroundColor(.negro)
-                                .background(Color.blanco)
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(Color.negro, lineWidth: 2))
+                    if mostrarBotonCerrar {
+                        HStack {
+                            Spacer()
+                            Button(action: { dismiss() }) {
+                                Image("icono_cerrar")
+                                    .resizable()
+                                    .frame(width: 32, height: 32)
+                                    .foregroundColor(.negro)
+                                    .background(Color.blanco)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.negro, lineWidth: 2))
+                            }
                         }
+                        .padding(.horizontal, 8)
                     }
-                    .padding(.horizontal, 8)
 
                     MontoAPagarView(
                         subtotal: obtenerSubtotal(
@@ -666,7 +887,7 @@ struct BottomSheetPagoCarrito: View {
                 .padding(12)
                 .background(Color.grisSurface)
                 .cornerRadius(12)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, contentHorizontalPadding)
                 .padding(.top, 16)
             }
 
@@ -686,7 +907,7 @@ struct BottomSheetPagoCarrito: View {
                     .cornerRadius(24)
             }
             .disabled(!confirmarHabilitado)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, max(contentHorizontalPadding, 16))
             .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

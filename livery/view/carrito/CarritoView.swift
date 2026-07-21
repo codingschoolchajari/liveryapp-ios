@@ -823,7 +823,49 @@ struct BottomSheetPagoCarrito: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            VStack(spacing: 0) {
+            contenidoPrincipal
+
+            if !numeroWhatsappSoporte.isEmpty {
+                Button {
+                    abrirWhatsAppSoporte()
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(Color.verdePrincipal)
+
+                        Image("icono_whatsapp")
+                            .resizable()
+                            .scaledToFill()
+                            .clipped()
+                    }
+                }
+                .frame(width: 56, height: 56)
+                .clipShape(Circle())
+                .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
+                .padding(.trailing, 20)
+                .padding(.bottom, 80)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.blanco)
+        .onAppear {
+            if tabSeleccionado == 1 {
+                carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
+            }
+        }
+        .onChange(of: tabSeleccionado) { _, newTab in
+            carritoViewModel.onPagoTransferenciaChange(newTab == 0)
+            if newTab == 1 {
+                carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            carritoViewModel.revalidarSiNecesario(perfilUsuarioState: perfilUsuarioState)
+        }
+    }
+
+    private var contenidoPrincipal: some View {
+        VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     if mostrarBotonCerrar {
@@ -923,43 +965,6 @@ struct BottomSheetPagoCarrito: View {
             .disabled(!confirmarHabilitado)
             .padding(.horizontal, max(contentHorizontalPadding, 16))
             .padding(.bottom, 16)
-
-            if !numeroWhatsappSoporte.isEmpty {
-                Button {
-                    abrirWhatsAppSoporte()
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(Color.verdePrincipal)
-
-                        Image("icono_whatsapp")
-                            .resizable()
-                            .scaledToFill()
-                            .clipped()
-                    }
-                }
-                .frame(width: 56, height: 56)
-                .clipShape(Circle())
-                .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
-                .padding(.trailing, 20)
-                .padding(.bottom, 80)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.blanco)
-        .onAppear {
-            if tabSeleccionado == 1 {
-                carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
-            }
-        }
-        .onChange(of: tabSeleccionado) { _, newTab in
-            carritoViewModel.onPagoTransferenciaChange(newTab == 0)
-            if newTab == 1 {
-                carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-            carritoViewModel.revalidarSiNecesario(perfilUsuarioState: perfilUsuarioState)
         }
     }
 

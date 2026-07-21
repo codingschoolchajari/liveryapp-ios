@@ -325,13 +325,13 @@ class CarritoViewModel: ObservableObject {
             tipoEntrega: tipoEntregaSeleccionada.rawValue,
             tarifaServicio: tarifaServicio,
             envio: envio,
+            envioGratisParaCliente: comercioActual.envios.envioGratisParaCliente ?? false,
             tiempoRecorridoEstimado: tiempoRecorridoEstimado,
             precioTotal: precioTotal,
             descuentos: descuentosPedido,
             modalidadPago: modalidadPago,
             itemsProductos: itemsProductos,
-            itemsPromociones: itemsPromociones,
-            envioGratisParaCliente: comercioActual.envios.envioGratisParaCliente ?? false
+            itemsPromociones: itemsPromociones
         )
         
         do {

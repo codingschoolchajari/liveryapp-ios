@@ -6,6 +6,20 @@
 //
 import Foundation
 import Combine
+import CoreLocation
+
+enum EstadoValidacionUbicacion {
+    case idle
+    case clienteFrecuente
+    case solicitandoPermiso
+    case permisoDenegado
+    case gpsApagado
+    case obteniendoUbicacion
+    case verificandoCobertura
+    case cubierto
+    case fueraDeCobertura
+    case error
+}
 
 @MainActor
 class CarritoViewModel: ObservableObject {
@@ -13,6 +27,8 @@ class CarritoViewModel: ObservableObject {
     private let comerciosService = ComerciosService()
     private let enviosService = EnviosService()
     private let pedidosService = PedidosService()
+    private let coberturasService = CoberturasService()
+    private let locationService: LocationServicing
 
     @Published var itemsProductos: [ItemProducto] = []
     @Published var itemsPromociones: [ItemPromocion] = []
@@ -21,28 +37,46 @@ class CarritoViewModel: ObservableObject {
     @Published var tipoEntregaSeleccionada: TipoEntrega = TipoEntrega.retiroEnComercio
     @Published var enviosLiveryActivo: Bool = false
     @Published var envio: Double = 0.0
+    @Published var tarifaServicioCalculada: Double = 0.0
     @Published var tiempoRecorridoEstimado: Int = 0
     @Published var comprobanteSeleccionado: Comprobante? = nil
     @Published var cargandoComprobante: Bool = false
     @Published var pedidoConfirmado: Bool = false
     @Published var pagoTransferencia: Bool = true
 
-    // MARK: Efectivo – validación automática por WhatsApp
-    @Published var estadoValidacionEfectivo: EstadoValidacionEfectivo = .idle
-    @Published var codigoEfectivo: String = ""
-    @Published var urlWhatsapp: String? = nil
-    @Published var mostrarErrorValidacion: Bool = false
-
-    private let verificacionService = VerificacionService()
-    private var pollingTask: Task<Void, Never>? = nil
+    // MARK: Efectivo – validación por ubicación
+    @Published var estadoValidacionUbicacion: EstadoValidacionUbicacion = .idle
+    @Published var coordenadasEfectivo: CLLocationCoordinate2D? = nil
     
     private var cancellables = Set<AnyCancellable>()
+    private var esperandoUbicacionPago = false
+    private var perfilUsuarioStatePago: PerfilUsuarioState?
     
     @Published var precioTotal: Double = 0.0
     @Published var aplicaTarifaServicio: Bool = true
 
-    init() {
+    init(locationService: LocationServicing = LocationService()) {
+        self.locationService = locationService
+        bindLocationService()
         configurarSuscriptores()
+    }
+
+    private func bindLocationService() {
+        locationService.onAuthorizationChange = { [weak self] status in
+            Task { @MainActor in
+                self?.onPermisoPagoResultado(status: status)
+            }
+        }
+
+        locationService.onLocationUpdate = { [weak self] coord in
+            Task { @MainActor in
+                guard let self = self, self.esperandoUbicacionPago else { return }
+                self.esperandoUbicacionPago = false
+                self.locationService.stopUpdatingLocation()
+                self.coordenadasEfectivo = coord
+                await self.verificarCoberturaEnCoordenadas(coord)
+            }
+        }
     }
     
     // Configura la lógica reactiva de 'combine'
@@ -332,6 +366,7 @@ class CarritoViewModel: ObservableObject {
     ) {
         guard let direccion = direccion, let comercioActual = comercio else {
             self.envio = 0.0
+            self.tarifaServicioCalculada = 0.0
             return
         }
         
@@ -356,9 +391,11 @@ class CarritoViewModel: ObservableObject {
                     longitudDestino: Double(longitudUsuario)
                 )
                 
-                self.envio = Double(envioResponse.costo)
+                self.envio = envioResponse.costo
+                self.tarifaServicioCalculada = envioResponse.tarifaServicio
                 self.tiempoRecorridoEstimado = envioResponse.tiempoEstimado
             } catch {
+                self.tarifaServicioCalculada = 0.0
                 print("Error calculando envío")
             }
         }
@@ -388,8 +425,10 @@ class CarritoViewModel: ObservableObject {
         switch tipoEntregaSeleccionada {
         case .retiroEnComercio:
             self.envio = 0.0
+            self.tarifaServicioCalculada = 0.0
             
         case .envioPropio:
+            self.tarifaServicioCalculada = 0.0
             let precios = comercio?.envios.preciosEnvioPropio ?? []
             if precios.isEmpty {
                 self.envio = StringUtils.envioPropioTarifaDefault
@@ -443,88 +482,136 @@ class CarritoViewModel: ObservableObject {
         }
     }
 
-    // MARK: Efectivo – métodos
-    func generarCodigoEfectivo(perfilUsuarioState: PerfilUsuarioState) {
-        estadoValidacionEfectivo = .cargandoCodigo
+    // MARK: Efectivo – validación por ubicación
+    private func esGpsActivo() -> Bool {
+        CLLocationManager.locationServicesEnabled()
+    }
+
+    func iniciarValidacionUbicacion(perfilUsuarioState: PerfilUsuarioState) {
+        perfilUsuarioStatePago = perfilUsuarioState
+
+        guard let email = perfilUsuarioState.usuario?.email, !email.isEmpty else {
+            iniciarValidacionUbicacionSinClienteFrecuente(perfilUsuarioState: perfilUsuarioState)
+            return
+        }
+
         Task {
             do {
                 await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
                 let token = TokenRepository.repository.accessToken ?? ""
                 let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
-
-                guard let codigo = try await verificacionService.generarCodigoEfectivo(
+                let esFrecuente = try await pedidosService.esClienteFrecuente(
                     token: token,
-                    dispositivoID: dispositivoID
-                ) else {
-                    estadoValidacionEfectivo = .error
-                    mostrarErrorValidacion = true
-                    return
+                    dispositivoID: dispositivoID,
+                    email: email
+                )
+
+                if esFrecuente {
+                    estadoValidacionUbicacion = .clienteFrecuente
+                } else {
+                    iniciarValidacionUbicacionSinClienteFrecuente(perfilUsuarioState: perfilUsuarioState)
                 }
-
-                codigoEfectivo = codigo
-
-                let numero = (perfilUsuarioState.configuracion?.numeroWhatsappAutomatico ?? "")
-                    .replacingOccurrences(of: "+", with: "")
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                let email = perfilUsuarioState.usuario?.email ?? ""
-                let texto = "Hola Livery, mi código de validación es: \(codigo). \nMi usuario es: \(email)"
-                let encoded = texto.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                urlWhatsapp = "https://wa.me/\(numero)?text=\(encoded)"
-
-                estadoValidacionEfectivo = .esperando
-                iniciarPolling(perfilUsuarioState: perfilUsuarioState)
             } catch {
-                estadoValidacionEfectivo = .error
-                mostrarErrorValidacion = true
-                print("Error al generar código de efectivo: \(error)")
+                print("Error al verificar cliente frecuente: \(error)")
+                iniciarValidacionUbicacionSinClienteFrecuente(perfilUsuarioState: perfilUsuarioState)
             }
         }
     }
 
-    private func iniciarPolling(perfilUsuarioState: PerfilUsuarioState) {
-        detenerPolling()
-        pollingTask = Task {
-            while estadoValidacionEfectivo == .esperando {
-                try? await Task.sleep(nanoseconds: 3_000_000_000)
-                guard estadoValidacionEfectivo == .esperando else { break }
+    private func iniciarValidacionUbicacionSinClienteFrecuente(perfilUsuarioState: PerfilUsuarioState) {
+        switch locationService.authorizationStatus {
+        case .notDetermined:
+            estadoValidacionUbicacion = .solicitandoPermiso
+            locationService.requestPermission()
+            return
+        case .restricted, .denied:
+            estadoValidacionUbicacion = .permisoDenegado
+            return
+        case .authorizedAlways, .authorizedWhenInUse:
+            break
+        @unknown default:
+            estadoValidacionUbicacion = .error
+            return
+        }
 
-                do {
-                    await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
-                    let token = TokenRepository.repository.accessToken ?? ""
-                    let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+        guard esGpsActivo() else {
+            estadoValidacionUbicacion = .gpsApagado
+            return
+        }
 
-                    let validado = try await verificacionService.estadoCodigoEfectivo(
-                        token: token,
-                        dispositivoID: dispositivoID
-                    )
+        obtenerUbicacionYVerificarSinClienteFrecuente()
+    }
 
-                    if validado {
-                        estadoValidacionEfectivo = .validado
-                        detenerPolling()
-                        break
-                    }
-                } catch {
-                    print("Error consultando estado de código efectivo: \(error)")
-                }
-            }
+    private func obtenerUbicacionYVerificarSinClienteFrecuente() {
+        estadoValidacionUbicacion = .obteniendoUbicacion
+        esperandoUbicacionPago = true
+        locationService.startUpdatingLocation()
+    }
+
+    private func verificarCoberturaEnCoordenadas(_ coord: CLLocationCoordinate2D) async {
+        estadoValidacionUbicacion = .verificandoCobertura
+
+        guard let perfilUsuarioStatePago else {
+            estadoValidacionUbicacion = .error
+            return
+        }
+
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioStatePago)
+            let token = TokenRepository.repository.accessToken ?? ""
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+
+            let ciudadResponse = try await coberturasService.buscarCiudadPorUbicacion(
+                token: token,
+                dispositivoID: dispositivoID,
+                latitud: coord.latitude,
+                longitud: coord.longitude
+            )
+
+            estadoValidacionUbicacion = ciudadResponse.ciudad.isEmpty ? .fueraDeCobertura : .cubierto
+        } catch {
+            print("Error al verificar cobertura para pago en efectivo: \(error)")
+            estadoValidacionUbicacion = .error
         }
     }
 
-    func detenerPolling() {
-        pollingTask?.cancel()
-        pollingTask = nil
+    private func onPermisoPagoResultado(status: CLAuthorizationStatus) {
+        switch status {
+        case .authorizedAlways, .authorizedWhenInUse:
+            guard esGpsActivo() else {
+                estadoValidacionUbicacion = .gpsApagado
+                return
+            }
+            obtenerUbicacionYVerificarSinClienteFrecuente()
+        case .denied, .restricted:
+            estadoValidacionUbicacion = .permisoDenegado
+        case .notDetermined:
+            estadoValidacionUbicacion = .solicitandoPermiso
+        @unknown default:
+            estadoValidacionUbicacion = .error
+        }
     }
 
-    func limpiarUrlWhatsapp() { urlWhatsapp = nil }
-
-    func descartarErrorValidacion() { mostrarErrorValidacion = false }
+    func revalidarSiNecesario(perfilUsuarioState: PerfilUsuarioState) {
+        switch estadoValidacionUbicacion {
+        case .permisoDenegado:
+            let status = locationService.authorizationStatus
+            if status == .authorizedAlways || status == .authorizedWhenInUse {
+                iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
+            }
+        case .gpsApagado:
+            iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
+        default:
+            break
+        }
+    }
 
     func resetEfectivo() {
-        detenerPolling()
-        estadoValidacionEfectivo = .idle
-        codigoEfectivo = ""
-        urlWhatsapp = nil
-        mostrarErrorValidacion = false
+        esperandoUbicacionPago = false
+        locationService.stopUpdatingLocation()
+        estadoValidacionUbicacion = .idle
+        coordenadasEfectivo = nil
+        perfilUsuarioStatePago = nil
     }
 
     func calcularMontoDescuentoEfectivo() -> Double {
@@ -568,10 +655,12 @@ class CarritoViewModel: ObservableObject {
 
     private func construirModalidadPago() -> ModalidadPago {
         if !pagoTransferencia {
+            let point = coordenadasEfectivo.map {
+                Point(coordinates: [$0.latitude, $0.longitude])
+            }
             return ModalidadPago(
                 tipo: "EFECTIVO",
-                celular: "",
-                codigoVerificacion: codigoEfectivo
+                coordenadas: point
             )
         }
         return ModalidadPago(tipo: "TRANSFERENCIA")

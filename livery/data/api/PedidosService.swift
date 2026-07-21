@@ -142,6 +142,32 @@ class PedidosService {
         return try JSONDecoder().decode(BooleanResponse.self, from: data)
     }
 
+    func esClienteFrecuente(
+        token: String,
+        dispositivoID: String,
+        email: String
+    ) async throws -> Bool {
+
+        let emailEncoded = email.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? email
+        guard let url = URL(string: "\(pedidosURL)/esClienteFrecuente/\(emailEncoded)") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        let result = try JSONDecoder().decode(BooleanResponse.self, from: data)
+        return result.valor
+    }
+
     func eliminarPedido(
         token: String,
         dispositivoID: String,

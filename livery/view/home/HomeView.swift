@@ -513,7 +513,7 @@ struct TarjetaComercio: View {
     let comercio: Comercio
 
     private var estaAbierto: Bool {
-        DateUtils.comercioEstaAbierto(horarios: comercio.horarios)
+        DateUtils.comercioEstaAbierto(horarios: comercio.horarios, estadoApertura: comercio.estadoApertura)
     }
 
     var body: some View {

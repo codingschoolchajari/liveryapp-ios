@@ -20,7 +20,9 @@ struct DateUtils {
         "sábado": "Sábado"
     ]
     
-    static func comercioEstaAbierto(horarios: [ComercioHorario]?) -> Bool {
+    static func comercioEstaAbierto(horarios: [ComercioHorario]?, estadoApertura: String?) -> Bool {
+        if estadoApertura == "CERRADO" { return false }
+
         guard let horarios = horarios, !horarios.isEmpty else { return false }
 
         let nombreDia = obtenerNombreDiaActual()

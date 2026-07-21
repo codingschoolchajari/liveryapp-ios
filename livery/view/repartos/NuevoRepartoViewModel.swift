@@ -307,6 +307,7 @@ class NuevoRepartoViewModel: ObservableObject {
             direccion.coordenadas.coordinates.count >= 2 else {
             costoEnvio = nil
             distanciaEnvio = nil
+            tarifaServicio = 0
             return
         }
 
@@ -329,11 +330,13 @@ class NuevoRepartoViewModel: ObservableObject {
                 longitudDestino: direccion.coordenadas.coordinates[1]
             )
 
-            costoEnvio = envio.costo
+            costoEnvio = Int(envio.costo)
             distanciaEnvio = envio.distancia
+            tarifaServicio = envio.tarifaServicio
         } catch {
             costoEnvio = nil
             distanciaEnvio = nil
+            tarifaServicio = 0
             print("Error calculando costo envio de reparto: \(error)")
         }
 

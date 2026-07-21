@@ -9,5 +9,6 @@ import Foundation
 struct EnvioResponse: Codable {
     let distancia: Int
     let tiempoEstimado: Int
-    let costo: Int
+    let costo: Double
+    let tarifaServicio: Double
 }

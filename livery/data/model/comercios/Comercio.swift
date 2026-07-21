@@ -81,6 +81,7 @@ struct Comercio: Codable, Identifiable {
     var aviso: ComercioAviso = ComercioAviso()
     var direccion: ComercioDireccion = ComercioDireccion()
     var envios: ComercioEnvios = ComercioEnvios()
+    var estadoApertura: String? = nil
     var horarios: [ComercioHorario]? = []
     var horariosReducidos: [ComercioHorarioReducido]? = []
     var datosBancarios: ComercioDatosBancarios = ComercioDatosBancarios()

@@ -358,8 +358,9 @@ struct ResumenView: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     
     var body: some View {
-        let tarifaServicio = carritoViewModel.aplicaTarifaServicio ?
-        (perfilUsuarioState.configuracion?.tarifaServicio ?? StringUtils.tarifaServicioDefault) : 0.0
+        let tarifaServicio = carritoViewModel.aplicaTarifaServicio
+            ? carritoViewModel.tarifaServicioCalculada
+            : 0.0
 
         let esLivery = carritoViewModel.tipoEntregaSeleccionada == .envioLivery
         let subtotal = carritoViewModel.precioTotal
@@ -494,7 +495,7 @@ struct ConfirmacionView: View {
 
     private var tarifaServicio: Double {
         carritoViewModel.aplicaTarifaServicio
-        ? (perfilUsuarioState.configuracion?.tarifaServicio ?? StringUtils.tarifaServicioDefault)
+        ? carritoViewModel.tarifaServicioCalculada
         : 0.0
     }
     
@@ -586,7 +587,7 @@ struct BottomSheetConfirmarDireccionYPagoCarrito: View {
 
     private var tarifaServicio: Double {
         carritoViewModel.aplicaTarifaServicio
-        ? (perfilUsuarioState.configuracion?.tarifaServicio ?? StringUtils.tarifaServicioDefault)
+        ? carritoViewModel.tarifaServicioCalculada
         : 0.0
     }
 
@@ -791,6 +792,10 @@ struct BottomSheetPagoCarrito: View {
 
     @State private var tabSeleccionado: Int = 0
 
+    private var numeroWhatsappSoporte: String {
+        (perfilUsuarioState.configuracion?.numeroWhatsappSoporte ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private var limitePagoEfectivo: Double {
         carritoViewModel.comercio?.limitePagoEfectivo ?? perfilUsuarioState.configuracion?.limitePagoEfectivo ?? 0.0
     }
@@ -807,14 +812,18 @@ struct BottomSheetPagoCarrito: View {
         case 0:
             return carritoViewModel.comprobanteSeleccionado != nil
         case 1:
-            return !superaLimiteEfectivo && carritoViewModel.estadoValidacionEfectivo == .validado
+            return !superaLimiteEfectivo && (
+                carritoViewModel.estadoValidacionUbicacion == .cubierto
+                || carritoViewModel.estadoValidacionUbicacion == .clienteFrecuente
+            )
         default:
             return false
         }
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottomTrailing) {
+            VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     if mostrarBotonCerrar {
@@ -878,7 +887,12 @@ struct BottomSheetPagoCarrito: View {
                             }
                         )
                     case 1:
-                        SeccionEfectivo(superaLimite: superaLimiteEfectivo, limitePagoEfectivo: limitePagoEfectivo)
+                        SeccionEfectivo(
+                            superaLimite: superaLimiteEfectivo,
+                            limitePagoEfectivo: limitePagoEfectivo,
+                            onAbrirAjustesPermiso: abrirAjustesApp,
+                            onAbrirAjustesGps: abrirAjustesGps
+                        )
                     default:
                         EmptyView()
                     }
@@ -909,23 +923,71 @@ struct BottomSheetPagoCarrito: View {
             .disabled(!confirmarHabilitado)
             .padding(.horizontal, max(contentHorizontalPadding, 16))
             .padding(.bottom, 16)
+
+            if !numeroWhatsappSoporte.isEmpty {
+                Button {
+                    abrirWhatsAppSoporte()
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(Color.verdePrincipal)
+
+                        Image("icono_whatsapp")
+                            .resizable()
+                            .scaledToFill()
+                            .clipped()
+                    }
+                }
+                .frame(width: 56, height: 56)
+                .clipShape(Circle())
+                .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
+                .padding(.trailing, 20)
+                .padding(.bottom, 80)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.blanco)
+        .onAppear {
+            if tabSeleccionado == 1 {
+                carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
+            }
+        }
         .onChange(of: tabSeleccionado) { _, newTab in
             carritoViewModel.onPagoTransferenciaChange(newTab == 0)
+            if newTab == 1 {
+                carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
+            }
         }
-        .onChange(of: carritoViewModel.urlWhatsapp) { _, nuevaUrl in
-            guard let nuevaUrl,
-                  let url = URL(string: nuevaUrl) else { return }
-            openURL(url)
-            carritoViewModel.limpiarUrlWhatsapp()
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            carritoViewModel.revalidarSiNecesario(perfilUsuarioState: perfilUsuarioState)
         }
-        .alert("Error al validar", isPresented: $carritoViewModel.mostrarErrorValidacion) {
-            Button("Aceptar", role: .cancel) { carritoViewModel.descartarErrorValidacion() }
-        } message: {
-            Text("Hubo un error al generar el código de validación. Por favor intentá nuevamente.")
+    }
+
+    private func abrirAjustesApp() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        openURL(url)
+    }
+
+    private func abrirAjustesGps() {
+        guard let url = URL(string: "App-Prefs:root=Privacy&path=LOCATION") else {
+            abrirAjustesApp()
+            return
         }
+        openURL(url)
+    }
+
+    private func abrirWhatsAppSoporte() {
+        let numero = numeroWhatsappSoporte.filter { $0.isNumber }
+        guard !numero.isEmpty else { return }
+
+        let email = perfilUsuarioState.usuario?.email ?? ""
+        let mensaje = "Hola, necesito ayuda con mi pago\nMi usuario es: \(email)"
+        guard let encoded = mensaje.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: "https://wa.me/\(numero)?text=\(encoded)") else {
+            return
+        }
+
+        openURL(url)
     }
 }
 
@@ -936,73 +998,120 @@ private struct SeccionEfectivo: View {
 
     let superaLimite: Bool
     let limitePagoEfectivo: Double
+    let onAbrirAjustesPermiso: () -> Void
+    let onAbrirAjustesGps: () -> Void
 
     var body: some View {
         VStack(spacing: 12) {
             if superaLimite {
-                Text("El límite máximo para pago en efectivo es de \(DoubleUtils.formatearPrecio(valor: limitePagoEfectivo)). Utilizá la opción de transferencia para realizar tu pedido.")
+                Text("El límite máximo para pago en efectivo es de \(DoubleUtils.formatearPrecio(valor: limitePagoEfectivo)), utilice la opción de pago por transferencia para realizar su pedido.")
                     .font(.custom("Barlow", size: 14))
                     .bold()
                     .foregroundColor(.rojoError)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 8)
             } else {
-                Text("Necesitamos validar tu número de WhatsApp para poder abonar en efectivo.")
-                    .font(.custom("Barlow", size: 13))
-                    .foregroundColor(.negro)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-
-                switch carritoViewModel.estadoValidacionEfectivo {
-                case .validado:
-                    Text("✓ Número de WhatsApp validado")
-                        .font(.custom("Barlow", size: 15))
+                switch carritoViewModel.estadoValidacionUbicacion {
+                case .clienteFrecuente:
+                    Text("Cliente Frecuente")
+                        .font(.custom("Barlow", size: 14))
                         .bold()
                         .foregroundColor(.verdePrincipal)
                         .multilineTextAlignment(.center)
-                case .esperando:
-                    if !carritoViewModel.codigoEfectivo.isEmpty {
-                        Text("Tu código: \(carritoViewModel.codigoEfectivo)")
-                            .font(.custom("Barlow", size: 18))
-                            .bold()
-                            .foregroundColor(.negro)
-                    }
-                    Text("Esperando validación...")
+                case .cubierto:
+                    Text("Verificación de Ubicación Exitosa")
+                        .font(.custom("Barlow", size: 14))
+                        .bold()
+                        .foregroundColor(.verdePrincipal)
+                        .multilineTextAlignment(.center)
+                case .obteniendoUbicacion:
+                    Text("Obteniendo ubicación...")
                         .font(.custom("Barlow", size: 13))
                         .foregroundColor(.grisSecundario)
                         .multilineTextAlignment(.center)
                     ProgressView()
                         .tint(.verdePrincipal)
-                default:
-                    let cargando = carritoViewModel.estadoValidacionEfectivo == .cargandoCodigo
-                    Button(action: {
-                        carritoViewModel.generarCodigoEfectivo(perfilUsuarioState: perfilUsuarioState)
-                    }) {
-                        Group {
-                            if cargando {
-                                ProgressView()
-                                    .tint(.blanco)
-                                    .frame(width: 22, height: 22)
-                            } else {
-                                Text("Validar WhatsApp")
-                                    .font(.custom("Barlow", size: 15))
-                                    .bold()
-                                    .foregroundColor(.blanco)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 38)
-                        .background(Color.verdePrincipal)
-                        .cornerRadius(24)
-                        .padding(.horizontal, 40)
+                case .verificandoCobertura:
+                    Text("Verificando área de cobertura...")
+                        .font(.custom("Barlow", size: 13))
+                        .foregroundColor(.grisSecundario)
+                        .multilineTextAlignment(.center)
+                    ProgressView()
+                        .tint(.verdePrincipal)
+                case .solicitandoPermiso:
+                    ProgressView()
+                        .tint(.verdePrincipal)
+                case .permisoDenegado:
+                    Text("Se necesitan Permisos de Ubicación")
+                        .font(.custom("Barlow", size: 14))
+                        .bold()
+                        .foregroundColor(.rojoError)
+                        .multilineTextAlignment(.center)
+                    Button("Permitir Ubicación") {
+                        onAbrirAjustesPermiso()
                     }
-                    .disabled(cargando)
+                    .font(.custom("Barlow", size: 15).bold())
+                    .foregroundColor(.blanco)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 38)
+                    .background(Color.verdePrincipal)
+                    .cornerRadius(24)
+                    .padding(.horizontal, 40)
+                case .gpsApagado:
+                    Text("El GPS está apagado")
+                        .font(.custom("Barlow", size: 14))
+                        .bold()
+                        .foregroundColor(.rojoError)
+                        .multilineTextAlignment(.center)
+                    Button("Encender GPS") {
+                        onAbrirAjustesGps()
+                    }
+                    .font(.custom("Barlow", size: 15).bold())
+                    .foregroundColor(.blanco)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 38)
+                    .background(Color.verdePrincipal)
+                    .cornerRadius(24)
+                    .padding(.horizontal, 40)
+                case .fueraDeCobertura:
+                    Text("Verificación de Ubicación fallida\n Estás fuera del Área de Cobertura de la localidad del comercio")
+                        .font(.custom("Barlow", size: 14))
+                        .bold()
+                        .foregroundColor(.rojoError)
+                        .multilineTextAlignment(.center)
+                    botonRevalidar
+                case .error:
+                    Text("No se pudo obtener tu ubicación\nVerificá que el GPS esté activo e intentá nuevamente")
+                        .font(.custom("Barlow", size: 14))
+                        .bold()
+                        .foregroundColor(.rojoError)
+                        .multilineTextAlignment(.center)
+                    botonRevalidar
+                case .idle:
+                    ProgressView()
+                        .tint(.verdePrincipal)
                 }
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
+    }
+
+    private var botonRevalidar: some View {
+        Button(action: {
+            carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
+        }) {
+            Text("Validar ubicación")
+                .font(.custom("Barlow", size: 15))
+                .bold()
+                .foregroundColor(.blanco)
+                .frame(maxWidth: .infinity)
+                .frame(height: 38)
+                .background(Color.verdePrincipal)
+                .cornerRadius(24)
+                .padding(.horizontal, 40)
+        }
     }
 }
 

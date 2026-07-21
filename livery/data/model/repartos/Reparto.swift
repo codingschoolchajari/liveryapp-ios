@@ -5,6 +5,7 @@ struct ModalidadPago: Codable, Equatable {
     var precioTotal: Double?
     var celular: String?
     var codigoVerificacion: String?
+    var coordenadas: Point?
 }
 
 struct DireccionReparto: Codable, Equatable {

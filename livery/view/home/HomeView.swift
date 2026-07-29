@@ -239,7 +239,7 @@ struct FranjaPrincipal: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 8)
-        .padding(.bottom, 12)
+        .padding(.bottom, 16)
         .background(.verdePrincipal)
         .clipShape(RoundedCorners(radius: 24, corners: [.bottomLeft, .bottomRight]))
         .sheet(isPresented: $mostrarLoginRequerido) {

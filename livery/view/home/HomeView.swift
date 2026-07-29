@@ -307,19 +307,22 @@ struct Buscador: View {
         let palabraSeleccionada = homeViewModel.palabraClaveSeleccionada
         let placeholder = (palabraSeleccionada?.isEmpty ?? true) ? opcionTodos : palabraSeleccionada!.capitalized
 
-        HStack {
+        ZStack {
             Text(placeholder)
                 .font(.custom("Barlow", size: 12))
                 .bold()
                 .foregroundColor(Color.grisSecundario)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.horizontal, 32)
-            Spacer()
-            Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
-                .foregroundColor(Color.grisSecundario)
-                .font(.custom("Barlow", size: 12))
-                .bold()
-                .padding(.trailing, 20)
+
+            HStack {
+                Spacer()
+                Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
+                    .foregroundColor(Color.grisSecundario)
+                    .font(.custom("Barlow", size: 12))
+                    .bold()
+                    .padding(.trailing, 20)
+            }
         }
         .frame(height: 24)
         .background(Color.blanco)

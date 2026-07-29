@@ -27,13 +27,14 @@ struct HomeView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            Color.verdePrincipal
-                .frame(maxWidth: .infinity)
-                .frame(height: 140)
-                .ignoresSafeArea(edges: .top)
+        GeometryReader { proxy in
+            ZStack(alignment: .topLeading) {
+                Color.verdePrincipal
+                    .frame(maxWidth: .infinity)
+                    .frame(height: proxy.safeAreaInsets.top)
+                    .ignoresSafeArea(edges: .top)
 
-            VStack(spacing: 0) {
+                VStack(spacing: 0) {
                 
                 FranjaPrincipal(homeViewModel: homeViewModel)
                 
@@ -58,45 +59,46 @@ struct HomeView: View {
                         ListaComerciosProductos(homeViewModel: homeViewModel)
                     }
                 }
-            }
-            .padding(.bottom, 16)
+                }
+                .padding(.bottom, 16)
 
-            if sinDireccionSeleccionada {
-                LottieView(
-                    animationName: "touch",
-                    endFrame: 85,
-                    loopMode: .loop,
-                    backgroundColor: .clear,
-                    contentMode: .scaleAspectFit
-                )
-                .frame(width: 54, height: 122)
-                .offset(x: 72, y: -10)
-                .allowsHitTesting(false)
-            }
+                if sinDireccionSeleccionada {
+                    LottieView(
+                        animationName: "touch",
+                        endFrame: 85,
+                        loopMode: .loop,
+                        backgroundColor: .clear,
+                        contentMode: .scaleAspectFit
+                    )
+                    .frame(width: 54, height: 122)
+                    .offset(x: 72, y: -10)
+                    .allowsHitTesting(false)
+                }
 
-            if !numeroWhatsappSoporte.isEmpty {
-                VStack {
-                    Spacer()
-                    HStack {
+                if !numeroWhatsappSoporte.isEmpty {
+                    VStack {
                         Spacer()
-                        Button {
-                            abrirWhatsAppSoporte()
-                        } label: {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.verdePrincipal)
+                        HStack {
+                            Spacer()
+                            Button {
+                                abrirWhatsAppSoporte()
+                            } label: {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.verdePrincipal)
 
-                                Image("icono_whatsapp")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .clipped()
+                                    Image("icono_whatsapp")
+                                        .resizable()
+                                        .scaledToFill()
+                                        .clipped()
+                                }
                             }
+                            .frame(width: 56, height: 56)
+                            .clipShape(Circle())
+                            .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
+                            .padding(.trailing, 20)
+                            .padding(.bottom, 16)
                         }
-                        .frame(width: 56, height: 56)
-                        .clipShape(Circle())
-                        .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 16)
                     }
                 }
             }

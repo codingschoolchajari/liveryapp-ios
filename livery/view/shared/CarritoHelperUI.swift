@@ -9,27 +9,31 @@ import SwiftUI
 struct TituloComercio: View {
     let comercio: Comercio
     var mostrarBotonAdd: Bool = true
+    var mostrarEstadoApertura: Bool = false
     var mostrarSubtituloDistancia: Bool = false
+    var altura: CGFloat = 70
+    var paddingHorizontal: CGFloat = 30
     
     var body: some View {
         ZStack {
             ComercioTitulo(
                 comercio: comercio,
                 mostrarBotonAdd: mostrarBotonAdd,
+                mostrarEstadoApertura: mostrarEstadoApertura,
                 mostrarSubtituloDistancia: mostrarSubtituloDistancia
             )
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 70)
+        .frame(height: altura)
         .background(Color.blanco)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .overlay(
             RoundedRectangle(cornerRadius: 24)
                 .stroke(Color.grisSecundario, lineWidth: 2)
         )
-        .padding(.horizontal, 30)
+        .padding(.horizontal, paddingHorizontal)
     }
 }
 

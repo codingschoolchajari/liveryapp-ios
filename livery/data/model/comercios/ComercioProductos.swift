@@ -10,6 +10,8 @@ struct ComercioProductos: Codable {
     let idComercio: String
     let nombreComercio: String
     let logoComercioURL: String
+    var estadoApertura: String? = nil
+    var horarios: [ComercioHorario]? = []
     var direccion: ComercioDireccion = ComercioDireccion()
     var productos: [Producto] = []
     var promociones: [Promocion] = []

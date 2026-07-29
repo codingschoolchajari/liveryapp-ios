@@ -232,7 +232,9 @@ struct FranjaPrincipal: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 8)
+        .padding(.bottom, 12)
         .background(.verdePrincipal)
+        .clipShape(RoundedCorners(radius: 24, corners: [.bottomLeft, .bottomRight]))
         .sheet(isPresented: $mostrarLoginRequerido) {
             LoginRequiridoView {
                 mostrarLoginRequerido = false
@@ -300,22 +302,28 @@ struct Buscador: View {
 
         HStack {
             Text(placeholder)
-                .font(.custom("Barlow", size: 14))
+                .font(.custom("Barlow", size: 12))
                 .bold()
                 .foregroundColor(Color.grisSecundario)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal, 32)
             Spacer()
             Image(systemName: estaExpandido ? "chevron.up" : "chevron.down")
                 .foregroundColor(Color.grisSecundario)
-                .font(.custom("Barlow", size: 14))
+                .font(.custom("Barlow", size: 12))
                 .bold()
+                .padding(.trailing, 20)
         }
-        .padding(.horizontal, 20)
-        .frame(height: 30)
+        .frame(height: 24)
         .background(Color.blanco)
         .clipShape(RoundedCorners(
             radius: 32,
-            corners: .allCorners
+            corners: estaExpandido ? [.topLeft, .topRight] : .allCorners
         ))
+        .overlay(
+            RoundedCorners(radius: 32, corners: estaExpandido ? [.topLeft, .topRight] : .allCorners)
+                .stroke(Color.negro, lineWidth: 1)
+        )
         .onTapGesture {
             withAnimation(.spring()) {
                 estaExpandido.toggle()
@@ -324,8 +332,7 @@ struct Buscador: View {
         .overlay(alignment: .top) {
             if estaExpandido {
                 VStack(spacing: 0) {
-                    // Este espacio vacío empuja la lista exactamente debajo del botón blanco
-                    Color.clear.frame(height: 30)
+                    Color.clear.frame(height: 34)
                     
                     VStack(spacing: 0) {
                         Divider().background(Color.grisSecundario)
@@ -351,6 +358,7 @@ struct Buscador: View {
                             }
                         }
                         .frame(maxHeight: 200)
+                        .gesture(DragGesture(minimumDistance: 0))
                     }
                     .background(Color.blanco)
                     .clipShape(RoundedCorners(radius: 22, corners: [.bottomLeft, .bottomRight]))
@@ -359,7 +367,8 @@ struct Buscador: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 80)
+        .padding(.vertical, 2)
         .zIndex(100)
     }
 }
@@ -542,10 +551,19 @@ struct ListaComerciosProductos: View {
                         idInterno: comercioProductos.idComercio,
                         nombre: comercioProductos.nombreComercio,
                         logoURL: comercioProductos.logoComercioURL,
+                        estadoApertura: comercioProductos.estadoApertura,
+                        horarios: comercioProductos.horarios,
                         distanciaUsuario: comercioProductos.distanciaUsuario
                     )
                     
-                    TituloComercio(comercio: comercio, mostrarBotonAdd: true, mostrarSubtituloDistancia: true)
+                    TituloComercio(
+                        comercio: comercio,
+                        mostrarBotonAdd: false,
+                        mostrarEstadoApertura: true,
+                        mostrarSubtituloDistancia: true,
+                        altura: 60,
+                        paddingHorizontal: 0
+                    )
                         .padding(.top, 8)
                         .padding(.bottom, 6)
                         .onTapGesture {

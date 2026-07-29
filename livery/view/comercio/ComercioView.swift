@@ -251,11 +251,16 @@ private struct BoxDescuentoPortada: View {
 struct ComercioTitulo: View {
     let comercio: Comercio
     var mostrarBotonAdd: Bool = false
+    var mostrarEstadoApertura: Bool = false
     var mostrarHorarios: Bool = false
     var mostrarEncabezado: Bool = false
     var mostrarSubtituloDistancia: Bool = false
     var mostrarBotonComentarios: Bool = false
     var onComentariosTap: () -> Void = {}
+
+    private var estaAbierto: Bool {
+        DateUtils.comercioEstaAbierto(horarios: comercio.horarios, estadoApertura: comercio.estadoApertura)
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -352,7 +357,15 @@ struct ComercioTitulo: View {
                 
                 // Grupo Derecho
                 HStack(spacing: 8) {
-                    if mostrarBotonAdd {
+                    if mostrarEstadoApertura {
+                        Text(estaAbierto ? "Abierto" : "Cerrado")
+                            .font(.custom("Barlow", size: 11).bold())
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(estaAbierto ? Color.verdePrincipal : Color.naranjaPrincipal)
+                            .clipShape(Capsule())
+                    } else if mostrarBotonAdd {
                         Image("icono_add_circle")
                             .resizable()
                             .frame(width: 24, height: 24)

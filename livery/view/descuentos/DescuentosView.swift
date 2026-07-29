@@ -95,10 +95,19 @@ struct FilaComercioDescuento: View {
                 idInterno: comercioDescuentos.idComercio,
                 nombre: comercioDescuentos.nombreComercio,
                 logoURL: comercioDescuentos.logoComercioURL,
+                estadoApertura: comercioDescuentos.estadoApertura,
+                horarios: comercioDescuentos.horarios,
                 distanciaUsuario: comercioDescuentos.distanciaUsuario
             )
             
-            TituloComercio(comercio: comercio, mostrarSubtituloDistancia: true)
+            TituloComercio(
+                comercio: comercio,
+                mostrarBotonAdd: false,
+                mostrarEstadoApertura: true,
+                mostrarSubtituloDistancia: true,
+                altura: 60,
+                paddingHorizontal: 0
+            )
                 .onTapGesture {
                     navManager.descuentosPath.append(NavigationManager.DescuentosDestination.comercio(idComercio: comercio.idInterno))
                 }

@@ -94,9 +94,9 @@ struct FilaComercioDescuento: View {
             let comercio = Comercio(
                 idInterno: comercioDescuentos.idComercio,
                 nombre: comercioDescuentos.nombreComercio,
-                logoURL: comercioDescuentos.logoComercioURL,
                 estadoApertura: comercioDescuentos.estadoApertura,
                 horarios: comercioDescuentos.horarios,
+                logoURL: comercioDescuentos.logoComercioURL,
                 distanciaUsuario: comercioDescuentos.distanciaUsuario
             )
             

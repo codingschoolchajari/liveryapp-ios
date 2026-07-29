@@ -550,9 +550,9 @@ struct ListaComerciosProductos: View {
                     let comercio = Comercio(
                         idInterno: comercioProductos.idComercio,
                         nombre: comercioProductos.nombreComercio,
-                        logoURL: comercioProductos.logoComercioURL,
                         estadoApertura: comercioProductos.estadoApertura,
                         horarios: comercioProductos.horarios,
+                        logoURL: comercioProductos.logoComercioURL,
                         distanciaUsuario: comercioProductos.distanciaUsuario
                     )
                     

@@ -10,12 +10,12 @@ import Combine
 @MainActor
 class HomeViewModel: ObservableObject {
 
+    private static let categoriaComercios = "todos"
+
     private let perfilUsuarioState: PerfilUsuarioState
     private let comerciosService = ComerciosService()
     
-    @Published var modoComercioSeleccionado: Bool = true
-
-    // Modo Comercio
+    // Comercios
     @Published var categoriaSeleccionada: String?
     @Published var comercios: [Comercio] = []
 
@@ -24,7 +24,7 @@ class HomeViewModel: ObservableObject {
     private var cargandoComercios = false
     private var noHayMasComercios = false
     
-    // Modo Producto
+    // Productos
     @Published var palabraClaveSeleccionada: String?
     @Published var comerciosProductos: [ComercioProductos] = []
 
@@ -67,28 +67,29 @@ class HomeViewModel: ObservableObject {
                 !ciudad.isEmpty
             else { return }
 
-            // 2. Limpiamos estado
             self.paginaActualComercios = 0
             self.comercios = []
             self.noHayMasComercios = false
-            
-            // 3. Pequeño respiro para que el estado se asiente
-            Task {
-                await self.cargarMasComercios()
+
+            if categoria == Self.categoriaComercios {
+                Task {
+                    await self.cargarMasComercios()
+                }
             }
         }
         .store(in: &cancellables)
 
-        // Palabra clave + ciudad → comerciosProductos
-        Publishers.CombineLatest(
+        // Categoria + subcategoria + ciudad -> comerciosProductos
+        Publishers.CombineLatest3(
+            $categoriaSeleccionada,
             $palabraClaveSeleccionada,
             perfilUsuarioState.$ciudadSeleccionada
         )
         .receive(on: DispatchQueue.main)
-        .sink { [weak self] palabraClave, ciudad in
+        .sink { [weak self] categoria, _, ciudad in
             guard
                 let self,
-                let palabraClave,
+                let categoria,
                 let ciudad,
                 !ciudad.isEmpty
             else { return }
@@ -96,20 +97,20 @@ class HomeViewModel: ObservableObject {
             self.paginaActualComerciosProductos = 0
             self.comerciosProductos = []
             self.noHayMasComerciosProductos = false
-            
-            Task {
-                await self.cargarMasComerciosProductos()
+
+            if categoria != Self.categoriaComercios {
+                Task {
+                    await self.cargarMasComerciosProductos()
+                }
             }
         }
         .store(in: &cancellables)
     }
 
-    func onModoComercioSeleccionadoChange(_ valor: Bool) {
-        modoComercioSeleccionado = valor
-    }
-
     func onCategoriaSeleccionadaChange(_ valor: String) {
+        palabraClaveSeleccionada = nil
         categoriaSeleccionada = valor
+        perfilUsuarioState.categoriaSeleccionadaHome = valor
     }
 
     func onPalabraClaveSeleccionadaChange(_ valor: String?) {
@@ -121,6 +122,7 @@ class HomeViewModel: ObservableObject {
             !cargandoComercios,
             !noHayMasComercios,
             let categoria = categoriaSeleccionada,
+            categoria == Self.categoriaComercios,
             let ciudad = perfilUsuarioState.ciudadSeleccionada
         else {
             print("[Home] cargarMasComercios guard falló: cargando=\(cargandoComercios), noHayMas=\(noHayMasComercios), categoria=\(String(describing: categoriaSeleccionada)), ciudad=\(String(describing: perfilUsuarioState.ciudadSeleccionada))")
@@ -173,7 +175,8 @@ class HomeViewModel: ObservableObject {
         guard
             !cargandoComerciosProductos,
             !noHayMasComerciosProductos,
-            let palabraClave = palabraClaveSeleccionada,
+            let categoria = categoriaSeleccionada,
+            categoria != Self.categoriaComercios,
             let ciudad = perfilUsuarioState.ciudadSeleccionada
         else { return }
 
@@ -185,11 +188,12 @@ class HomeViewModel: ObservableObject {
             
             let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
             
-            var nuevos = try await comerciosService.buscarProductosPorPalabraClave(
+            var nuevos = try await comerciosService.buscarProductosPorCategoriaSubcategoria(
                 token: accessToken,
                 dispositivoID: dispositivoID,
                 localidad: ciudad,
-                palabraClave: palabraClave,
+                categoria: categoria,
+                subcategoria: palabraClaveSeleccionada,
                 skip: paginaActualComerciosProductos * tamanoPaginaComerciosProductos,
                 limit: tamanoPaginaComerciosProductos
             )
@@ -281,8 +285,10 @@ class HomeViewModel: ObservableObject {
         paginaActualComercios = 0
         comercios = []
         noHayMasComercios = false
-        Task {
-            await cargarMasComercios()
+        if categoriaSeleccionada == Self.categoriaComercios {
+            Task {
+                await cargarMasComercios()
+            }
         }
 
         // Comercios Productos: sigue calculando localmente

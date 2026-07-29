@@ -179,6 +179,44 @@ class ComerciosService {
         return try JSONDecoder().decode([ComercioProductos].self, from: data)
     }
 
+    func buscarProductosPorCategoriaSubcategoria(
+        token: String,
+        dispositivoID: String,
+        localidad: String,
+        categoria: String,
+        subcategoria: String?,
+        skip: Int,
+        limit: Int
+    ) async throws -> [ComercioProductos] {
+
+        guard var components = URLComponents(string: "\(comerciosURL)/buscarProductosPorCategoriaSubcategoria") else {
+            throw URLError(.badURL)
+        }
+
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "categoria", value: categoria),
+            URLQueryItem(name: "skip", value: String(skip)),
+            URLQueryItem(name: "limit", value: String(limit))
+        ]
+
+        if let subcategoria, !subcategoria.isEmpty {
+            queryItems.append(URLQueryItem(name: "subcategoria", value: subcategoria))
+        }
+
+        components.queryItems = queryItems
+
+        guard let url = components.url else { throw URLError(.badURL) }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+        request.setValue(localidad, forHTTPHeaderField: "localidad")
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode([ComercioProductos].self, from: data)
+    }
+
     func comercioAbierto(
         token: String,
         dispositivoID: String,

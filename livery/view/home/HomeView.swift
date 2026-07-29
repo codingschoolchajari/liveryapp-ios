@@ -31,7 +31,6 @@ struct HomeView: View {
             VStack(spacing: 0) {
                 
                 FranjaPrincipal(homeViewModel: homeViewModel)
-                BusquedaModos(homeViewModel: homeViewModel)
                 
                 if  ( perfilUsuarioState.ciudadSeleccionada != nil
                       && perfilUsuarioState.ciudadSeleccionada == StringUtils.sinCobertura
@@ -44,9 +43,10 @@ struct HomeView: View {
                 {
                     DireccionFueraDeCobertura()
                 } else {
-                    if homeViewModel.modoComercioSeleccionado {
-                        SelectorCategorias(homeViewModel: homeViewModel)
-                        Spacer().frame(height: 8)
+                    SelectorCategorias(homeViewModel: homeViewModel)
+                    Spacer().frame(height: 8)
+
+                    if homeViewModel.categoriaSeleccionada == "todos" {
                         ListaComercios(homeViewModel: homeViewModel)
                     } else {
                         FranjaBusqueda(homeViewModel: homeViewModel)
@@ -269,78 +269,13 @@ struct FranjaPrincipal: View {
     }
 }
 
-struct BusquedaModos: View {
-
-    @ObservedObject var homeViewModel: HomeViewModel
-
-    var body: some View {
-        HStack {
-            // Contenedor blanco
-            HStack(spacing: 16) {
-
-                Button {
-                    homeViewModel.onModoComercioSeleccionadoChange(true)
-                } label: {
-                    Image("icono_busqueda_comercios")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 32, height: 32)
-                        .foregroundColor(
-                            homeViewModel.modoComercioSeleccionado
-                            ? .verdePrincipal
-                            : .grisSecundario
-                        )
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    homeViewModel.onModoComercioSeleccionadoChange(false)
-                } label: {
-                    Image("icono_busqueda_productos")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 32, height: 32)
-                        .foregroundColor(
-                            !homeViewModel.modoComercioSeleccionado
-                            ? .verdePrincipal
-                            : .grisSecundario
-                        )
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 32))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 4)
-        .background(Color.verdePrincipal)
-        .clipShape(
-            RoundedCorners(
-                radius: homeViewModel.modoComercioSeleccionado ? 32 : 0,
-                corners: [.bottomLeft, .bottomRight]
-            )
-        )
-        .animation(.easeInOut, value: homeViewModel.modoComercioSeleccionado)
-    }
-}
-
 struct FranjaBusqueda: View {
     @ObservedObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        ZStack(alignment: .top) {
-            Rectangle()
-                .fill(Color.verdePrincipal)
-                .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .clipShape(RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight]))
-            
-            Buscador(homeViewModel: homeViewModel)
-                .offset(y: 5)
-        }
-        .zIndex(100)
+        Buscador(homeViewModel: homeViewModel)
+            .padding(.bottom, 4)
+            .zIndex(100)
     }
 }
 
@@ -351,11 +286,17 @@ struct Buscador: View {
     @State private var estaExpandido = false
         
     var body: some View {
-        let configuracion = perfilUsuarioState.configuracion
-        let palabrasClave = configuracion?.palabrasClave.map { $0.capitalized } ?? []
-        
+        let categoriaSeleccionada = homeViewModel.categoriaSeleccionada ?? "todos"
+        let opcionTodos = "Todos los Productos"
+        let subcategorias = perfilUsuarioState.configuracion?
+            .categorias?
+            .first(where: { $0.nombre.caseInsensitiveCompare(categoriaSeleccionada) == .orderedSame })?
+            .subcategorias
+            .map { $0.capitalized } ?? []
+        let palabrasClave = [opcionTodos] + subcategorias
+
         let palabraSeleccionada = homeViewModel.palabraClaveSeleccionada
-        let placeholder = (palabraSeleccionada?.isEmpty ?? true) ? "¿Qué se te antoja hoy?" : palabraSeleccionada!.capitalized
+        let placeholder = (palabraSeleccionada?.isEmpty ?? true) ? opcionTodos : palabraSeleccionada!.capitalized
 
         HStack {
             Text(placeholder)
@@ -369,11 +310,11 @@ struct Buscador: View {
                 .bold()
         }
         .padding(.horizontal, 20)
-        .frame(height: 44)
+        .frame(height: 30)
         .background(Color.blanco)
         .clipShape(RoundedCorners(
             radius: 32,
-            corners: estaExpandido ? [.topLeft, .topRight] : .allCorners
+            corners: .allCorners
         ))
         .onTapGesture {
             withAnimation(.spring()) {
@@ -384,7 +325,7 @@ struct Buscador: View {
             if estaExpandido {
                 VStack(spacing: 0) {
                     // Este espacio vacío empuja la lista exactamente debajo del botón blanco
-                    Color.clear.frame(height: 44)
+                    Color.clear.frame(height: 30)
                     
                     VStack(spacing: 0) {
                         Divider().background(Color.grisSecundario)
@@ -393,7 +334,9 @@ struct Buscador: View {
                             VStack(spacing: 0) {
                                 ForEach(palabrasClave, id: \.self) { palabra in
                                     Button(action: {
-                                        homeViewModel.onPalabraClaveSeleccionadaChange(palabra)
+                                        homeViewModel.onPalabraClaveSeleccionadaChange(
+                                            palabra.caseInsensitiveCompare(opcionTodos) == .orderedSame ? nil : palabra
+                                        )
                                         withAnimation { estaExpandido = false }
                                     }) {
                                         Text(palabra)
@@ -426,58 +369,93 @@ struct SelectorCategorias: View {
     @ObservedObject var homeViewModel: HomeViewModel
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 16) {
-                    ForEach(ListUtils.categorias, id: \.idInterno) { categoria in
-                        VStack {
-                            Button {
-                                homeViewModel.onCategoriaSeleccionadaChange(categoria.idInterno)
-                            } label: {
-                                Image(categoria.imagenGenerica!)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 70, height: 60)
-                                    .padding(.all, 2)
-                                    .background(.grisSurface)
-                                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(
-                                                homeViewModel.categoriaSeleccionada == categoria.idInterno
-                                                ? .verdePrincipal
-                                                : .clear,
-                                                lineWidth: 4
-                                            )
-                                    )
-                            }
-                            
-                            Text(categoria.nombre)
-                                .font(.custom("Barlow", size: 11))
-                                .bold()
-                                .foregroundColor(.negro)
-                        }
-                        .id(categoria.idInterno)
-                    }
+        let categoriaComercios = ListUtils.categorias.first { $0.idInterno == "todos" }
+        let grupoComestiblesIDs: Set<String> = [
+            "bebidas", "carnes", "empanadas", "ensaladas", "fritos", "hamburguesas", "helados",
+            "milanesas", "panificados", "pastas", "picadas", "pizzas", "postres", "sandwiches", "sushi"
+        ]
+        let grupoFarmaciaIDs: Set<String> = ["farmacias"]
+        let grupoKioskoIDs: Set<String> = ["alfajores", "chocolates", "galletitas", "golosinas", "snacks"]
+
+        let grupoComestibles = ListUtils.categorias.filter { grupoComestiblesIDs.contains($0.idInterno) }
+        let grupoFarmacias = ListUtils.categorias.filter { grupoFarmaciaIDs.contains($0.idInterno) }
+        let grupoKiosko = ListUtils.categorias.filter { grupoKioskoIDs.contains($0.idInterno) }
+
+        let gruposTematicos = [grupoComestibles, grupoFarmacias, grupoKiosko].filter { !$0.isEmpty }
+
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(alignment: .top, spacing: 10) {
+                if let categoriaComercios {
+                    CategoriaGrupo(
+                        categorias: [categoriaComercios],
+                        categoriaSeleccionada: homeViewModel.categoriaSeleccionada,
+                        onSeleccionar: homeViewModel.onCategoriaSeleccionadaChange
+                    )
                 }
-                .padding(.horizontal)
-            }
-            .frame(height: 100)
-            .onChange(of: homeViewModel.categoriaSeleccionada) { oldValue, newValue in
-                withAnimation(.spring()) {
-                    proxy.scrollTo(newValue, anchor: .center)
+
+                ForEach(Array(gruposTematicos.enumerated()), id: \.offset) { _, grupo in
+                    CategoriaGrupo(
+                        categorias: grupo,
+                        categoriaSeleccionada: homeViewModel.categoriaSeleccionada,
+                        onSeleccionar: homeViewModel.onCategoriaSeleccionadaChange
+                    )
                 }
             }
-            .onAppear {
-                if let seleccionada = homeViewModel.categoriaSeleccionada, !seleccionada.isEmpty {
-                    // Damos un respiro de 0.1 o 0.2 segundos
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        withAnimation(.spring()) {
-                            proxy.scrollTo(seleccionada, anchor: .center)
-                        }
-                    }
-                }
+            .padding(.horizontal, 16)
+        }
+        .frame(height: 100)
+    }
+}
+
+private struct CategoriaGrupo: View {
+    let categorias: [Categoria]
+    let categoriaSeleccionada: String?
+    let onSeleccionar: (String) -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            ForEach(categorias, id: \.idInterno) { categoria in
+                CategoriaItem(
+                    categoria: categoria,
+                    seleccionada: categoriaSeleccionada == categoria.idInterno,
+                    onClick: { onSeleccionar(categoria.idInterno) }
+                )
             }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
+        .background(Color.grisSurface)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+private struct CategoriaItem: View {
+    let categoria: Categoria
+    let seleccionada: Bool
+    let onClick: () -> Void
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Button(action: onClick) {
+                Image(categoria.imagenGenerica ?? "")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 64, height: 50)
+                    .padding(2)
+                    .frame(width: 80, height: 60)
+                    .background(Color.grisSurface)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(seleccionada ? Color.verdePrincipal : Color.clear, lineWidth: 3)
+                    )
+            }
+            .buttonStyle(.plain)
+
+            Text(categoria.nombre)
+                .font(.custom("Barlow", size: 12))
+                .bold()
+                .foregroundColor(.negro)
         }
     }
 }

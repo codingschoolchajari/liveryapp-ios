@@ -14,46 +14,85 @@ struct DireccionView: View {
 
     var body: some View {
         VStack {
-            switch direccionViewModel.permissionState {
+            if !direccionViewModel.gpsConectado {
+                PantallaGpsRequerido(onAbrirAjustesGps: abrirAjustesGps)
+            } else {
+                switch direccionViewModel.permissionState {
 
-            case .checking:
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .checking:
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            case .denied:
-                LocationPermissionView()
+                case .denied:
+                    LocationPermissionView()
 
-            case .restricted:
-                VStack(spacing: 12) {
-                    Text("Ubicación restringida")
-                        .font(.custom("Barlow", size: 16))
-                        .bold()
-                        .foregroundColor(.negro)
+                case .restricted:
+                    VStack(spacing: 12) {
+                        Text("Ubicación restringida")
+                            .font(.custom("Barlow", size: 16))
+                            .bold()
+                            .foregroundColor(.negro)
 
-                    Text("El acceso a la ubicación está restringido por el sistema.")
-                        .font(.custom("Barlow", size: 16))
-                        .bold()
-                        .foregroundColor(.negro)
-                        .multilineTextAlignment(.center)
+                        Text("El acceso a la ubicación está restringido por el sistema.")
+                            .font(.custom("Barlow", size: 16))
+                            .bold()
+                            .foregroundColor(.negro)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+
+                case .granted:
+                    FormularioDireccionView(direccionViewModel: direccionViewModel)
                 }
-                .padding()
-
-            case .granted:
-                // Se removió .ignoresSafeArea(.keyboard, edges: .bottom)
-                FormularioDireccionView(direccionViewModel: direccionViewModel)
             }
         }
         .background(Color.blanco)
         .task {
             direccionViewModel.ciudadSeleccionada = perfilUsuarioState.ciudadSeleccionada
-            direccionViewModel.verificarPermisoUbicacion()
+            direccionViewModel.verificarPermisoUbicacion(perfilUsuarioState: perfilUsuarioState)
         }
         .onReceive(
             NotificationCenter.default.publisher(
                 for: UIApplication.didBecomeActiveNotification
             )
         ) { _ in
-            direccionViewModel.verificarPermisoUbicacion()
+            direccionViewModel.verificarPermisoUbicacion(perfilUsuarioState: perfilUsuarioState)
+        }
+    }
+
+    private func abrirAjustesGps() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+    }
+}
+
+struct PantallaGpsRequerido: View {
+    let onAbrirAjustesGps: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            Text("Para agregar una nueva dirección necesitás tener la ubicación del dispositivo activada.\n\nPor favor abrí los ajustes para encender el GPS.")
+                .font(.custom("Barlow", size: 18))
+                .bold()
+                .foregroundColor(.negro)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+
+            Spacer().frame(height: 40)
+
+            Button(action: onAbrirAjustesGps) {
+                Text("Encender GPS")
+                    .font(.custom("Barlow", size: 18))
+                    .bold()
+                    .foregroundColor(.blanco)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 35)
+                    .background(Color.verdePrincipal)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .padding(.horizontal, 60)
+            }
+            Spacer()
         }
     }
 }
@@ -82,35 +121,7 @@ struct FormularioDireccionView: View {
                     MapaView(direccionViewModel: direccionViewModel)
 
                     // Toggle: Buscar Dirección / Cargar Manualmente / Ubicación Actual
-                    HStack(spacing: 0) {
-                        Button {
-                            direccionViewModel.seleccionarModo(manual: false)
-                        } label: {
-                            Text("Buscar Dirección")
-                                .font(.custom("Barlow", size: 10))
-                                .bold()
-                                .multilineTextAlignment(.center)
-                                .foregroundColor(!direccionViewModel.modoManual && !direccionViewModel.modoUbicacionActual ? Color.blanco : Color.grisSecundario)
-                                .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36)
-                                .background(!direccionViewModel.modoManual && !direccionViewModel.modoUbicacionActual ? Color.verdePrincipal : Color.blanco)
-                        }
-                        Rectangle()
-                            .fill(Color.grisSecundario)
-                            .frame(width: 1, height: 36)
-                        Button {
-                            direccionViewModel.seleccionarModo(manual: true)
-                        } label: {
-                            Text("Cargar Manualmente")
-                                .font(.custom("Barlow", size: 10))
-                                .bold()
-                                .multilineTextAlignment(.center)
-                                .foregroundColor(direccionViewModel.modoManual ? Color.blanco : Color.grisSecundario)
-                                .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36)
-                                .background(direccionViewModel.modoManual ? Color.verdePrincipal : Color.blanco)
-                        }
-                        Rectangle()
-                            .fill(Color.grisSecundario)
-                            .frame(width: 1, height: 36)
+                    if direccionViewModel.mostrarSoloUbicacionActual {
                         Button {
                             direccionViewModel.seleccionarModoUbicacionActual()
                         } label: {
@@ -122,10 +133,55 @@ struct FormularioDireccionView: View {
                                 .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36)
                                 .background(direccionViewModel.modoUbicacionActual ? Color.verdePrincipal : Color.blanco)
                         }
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.grisSecundario, lineWidth: 1))
+                        .padding(.horizontal, 8)
+                    } else {
+                        HStack(spacing: 0) {
+                            Button {
+                                direccionViewModel.seleccionarModo(manual: false)
+                            } label: {
+                                Text("Buscar Dirección")
+                                    .font(.custom("Barlow", size: 10))
+                                    .bold()
+                                    .multilineTextAlignment(.center)
+                                    .foregroundColor(!direccionViewModel.modoManual && !direccionViewModel.modoUbicacionActual ? Color.blanco : Color.grisSecundario)
+                                    .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36)
+                                    .background(!direccionViewModel.modoManual && !direccionViewModel.modoUbicacionActual ? Color.verdePrincipal : Color.blanco)
+                            }
+                            Rectangle()
+                                .fill(Color.grisSecundario)
+                                .frame(width: 1, height: 36)
+                            Button {
+                                direccionViewModel.seleccionarModo(manual: true)
+                            } label: {
+                                Text("Cargar Manualmente")
+                                    .font(.custom("Barlow", size: 10))
+                                    .bold()
+                                    .multilineTextAlignment(.center)
+                                    .foregroundColor(direccionViewModel.modoManual ? Color.blanco : Color.grisSecundario)
+                                    .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36)
+                                    .background(direccionViewModel.modoManual ? Color.verdePrincipal : Color.blanco)
+                            }
+                            Rectangle()
+                                .fill(Color.grisSecundario)
+                                .frame(width: 1, height: 36)
+                            Button {
+                                direccionViewModel.seleccionarModoUbicacionActual()
+                            } label: {
+                                Text("Ubicación Actual")
+                                    .font(.custom("Barlow", size: 10))
+                                    .bold()
+                                    .multilineTextAlignment(.center)
+                                    .foregroundColor(direccionViewModel.modoUbicacionActual ? Color.blanco : Color.grisSecundario)
+                                    .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36)
+                                    .background(direccionViewModel.modoUbicacionActual ? Color.verdePrincipal : Color.blanco)
+                            }
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.grisSecundario, lineWidth: 1))
+                        .padding(.horizontal, 8)
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.grisSecundario, lineWidth: 1))
-                    .padding(.horizontal, 8)
 
                     // Buscador (solo en modo Buscar Dirección)
                     PlacesSearchBar(coordenadasInicialesGPS: direccionViewModel.coordenadasInicialesGPS) { place in

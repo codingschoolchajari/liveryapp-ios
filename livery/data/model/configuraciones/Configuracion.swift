@@ -29,10 +29,16 @@ struct ConfiguracionEnviosPrecios: Codable {
     let distanciaMinima: Int
 }
 
+struct ConfiguracionCategoria: Codable {
+    var nombre: String = ""
+    var subcategorias: [String] = []
+}
+
 struct Configuracion: Codable {
     let enviosPrecios: ConfiguracionEnviosPrecios
     let intervalosTiempo: ConfiguracionIntervalosTiempo
     var palabrasClave: [String] = []
+    var categorias: [ConfiguracionCategoria]? = []
     let tarifaServicio: Double
     let limitePagoEfectivo: Double
     let numeroWhatsappAutomatico: String?

@@ -12,11 +12,14 @@ import GooglePlaces
 class DireccionViewModel: ObservableObject {
 
     private let usuariosService = UsuariosService()
+    private let coberturasService = CoberturasService()
     private let locationService: LocationServicing
+    private var perfilUsuarioStateActual: PerfilUsuarioState?
 
     @Published var permissionState: LocationPermissionState = .checking
     @Published var coordenadas: CLLocationCoordinate2D?
     @Published var permisoConcedido: Bool = false
+    @Published var gpsConectado: Bool = true
 
     @Published var calle: String = ""
     @Published var numero: String = ""
@@ -29,6 +32,7 @@ class DireccionViewModel: ObservableObject {
     @Published var mostrarAdvertencia: Bool = false
     @Published var modoUbicacionActual: Bool = false
     @Published var mostrarAvisoUbicacionActual: Bool = false
+    @Published var mostrarSoloUbicacionActual: Bool = false
 
     private var yaFijoUbicacionInicial = false
     private var geocodingTask: Task<Void, Never>? = nil
@@ -39,6 +43,10 @@ class DireccionViewModel: ObservableObject {
         self.locationService = locationService
 
         bindLocationService()
+    }
+
+    private func esGpsActivo() -> Bool {
+        CLLocationManager.locationServicesEnabled()
     }
     
     private func bindLocationService() {
@@ -58,31 +66,75 @@ class DireccionViewModel: ObservableObject {
                     self.coordenadasInicialesGPS = coord
                     self.yaFijoUbicacionInicial = true
                     self.locationService.stopUpdatingLocation()
+                    Task {
+                        await self.verificarBarrioPrivado(coord)
+                    }
                 }
             }
         }
     }
 
-    func verificarPermisoUbicacion() {
-        if locationService.authorizationStatus == .notDetermined {
+    func verificarPermisoUbicacion(perfilUsuarioState: PerfilUsuarioState? = nil) {
+        if let perfilUsuarioState {
+            self.perfilUsuarioStateActual = perfilUsuarioState
+        }
+
+        let gpsActivo = esGpsActivo()
+        gpsConectado = gpsActivo
+        if !gpsActivo {
+            permisoConcedido = false
+            permissionState = .checking
+            return
+        }
+
+        switch locationService.authorizationStatus {
+        case .notDetermined:
+            permisoConcedido = false
+            permissionState = .checking
             locationService.requestPermission()
+        case .authorizedAlways, .authorizedWhenInUse:
+            permisoConcedido = true
+            permissionState = .granted
+            locationService.startUpdatingLocation()
+        case .restricted:
+            permisoConcedido = false
+            permissionState = .restricted
+        case .denied:
+            permisoConcedido = false
+            permissionState = .denied
+        @unknown default:
+            permisoConcedido = false
+            permissionState = .denied
         }
     }
     
     private func handleAuthorization(_ status: CLAuthorizationStatus) {
+            let gpsActivo = esGpsActivo()
+            gpsConectado = gpsActivo
+
+            if !gpsActivo {
+                permisoConcedido = false
+                permissionState = .checking
+                return
+            }
+
             switch status {
             case .notDetermined:
+                permisoConcedido = false
                 permissionState = .checking
                 locationService.requestPermission()
 
             case .authorizedWhenInUse, .authorizedAlways:
+                permisoConcedido = true
                 permissionState = .granted
                 locationService.startUpdatingLocation()
 
             case .denied:
+                permisoConcedido = false
                 permissionState = .denied
 
             case .restricted:
+                permisoConcedido = false
                 permissionState = .restricted
 
             @unknown default:
@@ -162,6 +214,46 @@ class DireccionViewModel: ObservableObject {
         }
     }
 
+    private func verificarBarrioPrivado(_ posicionActual: CLLocationCoordinate2D) async {
+        guard let perfilUsuarioStateActual else { return }
+
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioStateActual)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+
+            let ciudadResponse = try await coberturasService.buscarCiudadPorUbicacion(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                latitud: posicionActual.latitude,
+                longitud: posicionActual.longitude
+            )
+
+            let localidad = ciudadResponse.ciudad
+            let esBarrioPrivado: Bool
+            if localidad.isEmpty {
+                esBarrioPrivado = false
+            } else {
+                let response = try await coberturasService.comprobarUbicacionEnBarrioPrivado(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    localidad: localidad,
+                    latitud: posicionActual.latitude,
+                    longitud: posicionActual.longitude
+                )
+                esBarrioPrivado = response.valor
+            }
+
+            mostrarSoloUbicacionActual = esBarrioPrivado
+            if esBarrioPrivado {
+                seleccionarModoUbicacionActual(mostrarAviso: false)
+            }
+        } catch {
+            mostrarSoloUbicacionActual = false
+            print("Error al verificar barrio privado: \(error.localizedDescription)")
+        }
+    }
+
     func confirmarGuardar(perfilUsuarioState: PerfilUsuarioState) async -> String? {
         mostrarPopupAdvertencia = false
 
@@ -209,13 +301,13 @@ class DireccionViewModel: ObservableObject {
         }
     }
 
-    func seleccionarModoUbicacionActual() {
+    func seleccionarModoUbicacionActual(mostrarAviso: Bool = true) {
         if modoUbicacionActual { return }
         modoManual = false
         modoUbicacionActual = true
         calle = "S/C"
         numero = "S/N"
-        mostrarAvisoUbicacionActual = true
+        mostrarAvisoUbicacionActual = mostrarAviso
         if let gps = coordenadasInicialesGPS {
             coordenadas = gps
         }

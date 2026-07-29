@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import CoreLocation
+import UIKit
 
 struct CarritoView: View {
     @EnvironmentObject var navManager: NavigationManager
@@ -61,6 +62,11 @@ struct CarritoView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.blanco)
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                ocultarTeclado()
+            }
+        )
         .task {
             await carritoViewModel.cargarEstadoInicial(
                 perfilUsuarioState: perfilUsuarioState,
@@ -68,6 +74,15 @@ struct CarritoView: View {
                 usuarioDireccion: perfilUsuarioState.obtenerUsuarioDireccion()
             )
         }
+    }
+
+    private func ocultarTeclado() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
     }
 }
 

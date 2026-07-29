@@ -28,6 +28,11 @@ struct HomeView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
+            Color.verdePrincipal
+                .frame(maxWidth: .infinity)
+                .frame(height: 140)
+                .ignoresSafeArea(edges: .top)
+
             VStack(spacing: 0) {
                 
                 FranjaPrincipal(homeViewModel: homeViewModel)

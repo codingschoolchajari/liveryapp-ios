@@ -138,7 +138,15 @@ class PerfilUsuarioState: ObservableObject {
             )
             limpiarEstadoInvitado()
             guardarUsuarioCache()
-            repararDireccionSeleccionadaInvalida()
+
+            // Si el ID guardado no existe en las direcciones actuales,
+            // dejamos la selección en nil para que la UI muestre "Seleccionar dirección".
+            let idsDirecciones = Set((usuario?.direcciones ?? []).map { $0.id })
+            if let idSeleccionado = idDireccionSeleccionada,
+               !idsDirecciones.contains(idSeleccionado) {
+                idDireccionSeleccionada = nil
+                UserDefaults.standard.removeObject(forKey: ConfiguracionesUtil.ID_DIRECCION_KEY)
+            }
         }
         catch {
             print("Error al buscar usuario: \(error)")
@@ -259,27 +267,9 @@ class PerfilUsuarioState: ObservableObject {
 
         if let direccionGuardada, !direccionGuardada.isEmpty {
             self.idDireccionSeleccionada = direccionGuardada
+        } else {
+            self.idDireccionSeleccionada = nil
         }
-    }
-
-    private func repararDireccionSeleccionadaInvalida() {
-        let direcciones = direccionesDisponibles()
-
-        if direcciones.isEmpty {
-            // Puede ser un estado transitorio (cache/local antes de respuesta backend).
-            // No mutamos ni borramos el ID persistido en este punto.
-            return
-        }
-
-        if let idSeleccionado = idDireccionSeleccionada,
-           direcciones.contains(where: { $0.id == idSeleccionado }) {
-            return
-        }
-
-        let nuevaDireccionID = direcciones[0].id
-        idDireccionSeleccionada = nuevaDireccionID
-        UserDefaults.standard.set(nuevaDireccionID, forKey: ConfiguracionesUtil.ID_DIRECCION_KEY)
-        print("[PerfilUsuarioState] idDireccionSeleccionada inválido reparado: \(nuevaDireccionID)")
     }
     
     func obtenerUsuarioDireccion() -> UsuarioDireccion? {

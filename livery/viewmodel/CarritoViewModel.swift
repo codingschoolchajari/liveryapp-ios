@@ -143,13 +143,25 @@ class CarritoViewModel: ObservableObject {
     
     func validacionEstado() {
         if pedidoConfirmado {
-            itemsProductos = []
-            itemsPromociones = []
-            comercio = nil
-            comprobanteSeleccionado = nil
-            pagoTransferencia = true
+            limpiarCarrito()
             pedidoConfirmado = false
         }
+    }
+
+    func limpiarCarrito() {
+        itemsProductos = []
+        itemsPromociones = []
+        comercio = nil
+        notas = ""
+        envio = 0.0
+        tiempoRecorridoEstimado = 0
+        comprobanteSeleccionado = nil
+        pagoTransferencia = true
+        tipoEntregaSeleccionada = .retiroEnComercio
+        estadoValidacionUbicacion = .idle
+        coordenadasEfectivo = nil
+        esperandoUbicacionPago = false
+        perfilUsuarioStatePago = nil
     }
     
     func validacionComercioAbierto(

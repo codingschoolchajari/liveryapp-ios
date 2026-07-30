@@ -664,7 +664,7 @@ struct BottomSheetDirecciones: View {
     @State private var mostrarLoginRequerido = false
     
     var direcciones: [UsuarioDireccion] {
-        perfilUsuarioState.usuario?.direcciones ?? []
+        perfilUsuarioState.direccionesDisponibles()
     }
 
     var body: some View {

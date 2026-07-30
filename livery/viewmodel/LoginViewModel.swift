@@ -120,21 +120,21 @@ class LoginViewModel: ObservableObject {
     // Método para desloguearse
     func signOut(
         perfilUsuarioState: PerfilUsuarioState,
-        navManager: NavigationManager
+        navManager: NavigationManager,
+        carritoViewModel: CarritoViewModel
     ) {
         do {
             try Auth.auth().signOut()
 
-            // Navegamos primero para evitar que la UI quede bloqueada en Perfil
-            // mientras se configura el estado de invitado.
             perfilUsuarioState.usuario = nil
             perfilUsuarioState.currentUser = nil
             UserDefaults.standard.set(false, forKey: "logueado")
-            navManager.select(.home)
-            navManager.replaceRoot(with: .main)
+            carritoViewModel.limpiarCarrito()
 
             Task {
                 await perfilUsuarioState.configurarUsuarioInvitado()
+                navManager.select(.home)
+                navManager.replaceRoot(with: .main)
             }
 
             print("Usuario deslogueado y estado limpiado")

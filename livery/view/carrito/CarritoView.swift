@@ -16,7 +16,9 @@ struct CarritoView: View {
     var body: some View {
         VStack(spacing: 0) {
             Group {
-                if  ( perfilUsuarioState.ciudadSeleccionada != nil
+                if perfilUsuarioState.esInvitado {
+                    CarritoVacioView()
+                } else if  ( perfilUsuarioState.ciudadSeleccionada != nil
                       && perfilUsuarioState.ciudadSeleccionada == StringUtils.sinCobertura
                     ) || (
                         perfilUsuarioState.usuario != nil
@@ -597,7 +599,7 @@ struct BottomSheetConfirmarDireccionYPagoCarrito: View {
     @State private var coordenadasMapa: CLLocationCoordinate2D? = nil
 
     private var direcciones: [UsuarioDireccion] {
-        perfilUsuarioState.usuario?.direcciones ?? []
+        perfilUsuarioState.direccionesDisponibles()
     }
 
     private var tarifaServicio: Double {

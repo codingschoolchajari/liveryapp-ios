@@ -12,7 +12,7 @@ struct PerfilView: View {
     @State private var mostrarAlertEliminarCuenta = false
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
-    //@EnvironmentObject var carritoViewModel: CarritoViewModel
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
 
     var body: some View {
         VStack(spacing: 24) {
@@ -73,13 +73,14 @@ struct Bienvenida: View {
     var body: some View {
         VStack(spacing: 4) {
 
-            Text("¡Hola, \(perfilUsuarioState.usuario?.datosPersonales?.nombre ?? "") \(perfilUsuarioState.usuario?.datosPersonales?.apellido ?? "")!")
+            Text("¡Hola, \(perfilUsuarioState.nombreVisiblePerfil())!")
                 .font(.custom("Barlow", size: 16))
                 .bold()
                 .lineLimit(1)
                 .foregroundColor(Color.negro)
 
-            if let email = perfilUsuarioState.usuario?.email {
+            let email = perfilUsuarioState.emailVisiblePerfil()
+            if !email.isEmpty {
                 Text(email)
                     .font(.custom("Barlow", size: 14))
                     .bold()
@@ -151,6 +152,7 @@ struct TituloSeccion: View {
 
 struct SeccionSesion: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
     @EnvironmentObject var navManager: NavigationManager
     @StateObject private var loginViewModel = LoginViewModel()
     
@@ -162,7 +164,8 @@ struct SeccionSesion: View {
             Button {
                 loginViewModel.signOut(
                     perfilUsuarioState: perfilUsuarioState,
-                    navManager: navManager
+                    navManager: navManager,
+                    carritoViewModel: carritoViewModel
                 )
             } label: {
                 HStack(spacing: 12) {
@@ -198,7 +201,7 @@ struct BottomSheetDireccionesView: View {
                 .foregroundColor(.negro)
                 .padding(.top, 8)
 
-            let direcciones: [UsuarioDireccion] = perfilUsuarioState.usuario?.direcciones ?? []
+            let direcciones: [UsuarioDireccion] = perfilUsuarioState.direccionesDisponibles()
             ForEach(direcciones, id: \.id) { direccion in
                 HStack {
                     Image("icono_ubicacion")

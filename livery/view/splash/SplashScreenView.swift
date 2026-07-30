@@ -9,6 +9,7 @@ import SwiftUI
 struct SplashScreenView: View {
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @EnvironmentObject var navManager: NavigationManager
+    @EnvironmentObject var carritoViewModel: CarritoViewModel
     @AppStorage("logueado") var logueado: Bool = false
     
     var body: some View {
@@ -17,19 +18,19 @@ struct SplashScreenView: View {
                 // 1. Ejecutamos TODA la inicialización
                 await perfilUsuarioState.inicializacion()
                 
-                // 2. Si está logueado, buscamos al usuario
-                if logueado {
-                    await perfilUsuarioState.buscarUsuario()
+                // 2. Si existe una sesión real, no la expulsamos por fallas transitorias
+                if logueado && perfilUsuarioState.tieneSesionAutenticada {
                     await perfilUsuarioState.generarTokenFCM()
-                    
-                    // Si el usuario se encontró, el .onChange del Root lo mandará a Main
-                    // Si NO se encontró (perfilUsuarioState.usuario == nil), forzamos salida:
+
                     if perfilUsuarioState.usuario == nil {
-                        navManager.replaceRoot(with: .auth)
+                        navManager.replaceRoot(with: .main)
+                        navManager.select(.home)
                     }
                 } else {
                     // No hay sesión → awaitar configuración completa del invitado
                     // (sign-in anónimo + estado) y luego navegar.
+                    logueado = false
+                    carritoViewModel.limpiarCarrito()
                     await perfilUsuarioState.configurarUsuarioInvitado()
 
                     // Verificar nueva versión antes de navegar a main

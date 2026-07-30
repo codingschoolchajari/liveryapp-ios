@@ -170,7 +170,9 @@ struct SeccionesView: View {
                             navManager.select(.descuentos)
                         }
                         
-                        let totalItems = carritoViewModel.itemsProductos.count + carritoViewModel.itemsPromociones.count
+                        let totalItems = perfilUsuarioState.esInvitado
+                            ? 0
+                            : carritoViewModel.itemsProductos.count + carritoViewModel.itemsPromociones.count
                         
                         // Botón Carrito
                         BotonNavPersonalizado(

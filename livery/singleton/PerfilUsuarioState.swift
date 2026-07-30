@@ -14,6 +14,8 @@ import UIKit
 @MainActor
 class PerfilUsuarioState: ObservableObject {
     static let userDefaults = UserDefaults(suiteName: "group.livery.app")
+    private static let usuarioCacheKey = "perfil_usuario_cache"
+    private static let usuarioCacheEmailKey = "perfil_usuario_cache_email"
     
     @Published var currentUser: FirebaseAuth.User?
     @Published var usuario: Usuario? = nil
@@ -22,9 +24,11 @@ class PerfilUsuarioState: ObservableObject {
     
     @Published var idDireccionSeleccionada: String? = nil
     @Published var ciudadSeleccionada: String? = nil
+    @Published private(set) var direccionInvitado: UsuarioDireccion? = nil
 
     /// `true` cuando no hay sesión real: sin usuario o usuario anónimo de Firebase.
     var esInvitado: Bool { currentUser?.isAnonymous ?? true }
+    var tieneSesionAutenticada: Bool { currentUser != nil && !esInvitado }
 
     var categoriaSeleccionadaHome: String? = nil
     
@@ -76,7 +80,14 @@ class PerfilUsuarioState: ObservableObject {
         if let user = firebaseUser {
             // Los usuarios anónimos solo necesitan el token para la API;
             // no tienen perfil en el backend, así que no buscamos usuario.
-            guard !user.isAnonymous else { return }
+            guard !user.isAnonymous else {
+                self.usuario = nil
+                cargarEstadoInvitadoSiCorresponde()
+                return
+            }
+
+            limpiarEstadoInvitado()
+            cargarUsuarioCacheSiCoincide(email: user.email)
 
             do {
                 // Intentamos obtener el token.
@@ -100,6 +111,8 @@ class PerfilUsuarioState: ObservableObject {
         } else {
             // No hay usuario en Firebase
             self.usuario = nil
+            limpiarEstadoInvitado()
+            limpiarUsuarioCache()
             // Evita estado mixto: logueado=true con sesión real inexistente.
             UserDefaults.standard.set(false, forKey: "logueado")
         }
@@ -117,10 +130,15 @@ class PerfilUsuarioState: ObservableObject {
                 dispositivoID: dispositivoID,
                 email: currentUser?.email ?? ""
             )
+            limpiarEstadoInvitado()
+            guardarUsuarioCache()
             repararDireccionSeleccionadaInvalida()
         }
         catch {
             print("Error al buscar usuario: \(error)")
+            if usuario == nil {
+                cargarUsuarioCacheSiCoincide(email: currentUser?.email)
+            }
         }
     }
     
@@ -211,7 +229,7 @@ class PerfilUsuarioState: ObservableObject {
     
     // Direccion
     func obtenerDireccionSeleccionada() -> String {
-        let direccion = usuario?.direcciones?
+        let direccion = direccionesDisponibles()
             .first { $0.id == idDireccionSeleccionada }
         
         return direccion.map {
@@ -238,8 +256,7 @@ class PerfilUsuarioState: ObservableObject {
     }
 
     private func repararDireccionSeleccionadaInvalida() {
-        guard let usuario else { return }
-        let direcciones = usuario.direcciones ?? []
+        let direcciones = direccionesDisponibles()
 
         if direcciones.isEmpty {
             if idDireccionSeleccionada != nil {
@@ -261,9 +278,54 @@ class PerfilUsuarioState: ObservableObject {
     }
     
     func obtenerUsuarioDireccion() -> UsuarioDireccion? {
-        return usuario?.direcciones?.first {
+        return direccionesDisponibles().first {
             $0.id == idDireccionSeleccionada
         }
+    }
+
+    func direccionesDisponibles() -> [UsuarioDireccion] {
+        if esInvitado {
+            return direccionInvitado.map { [$0] } ?? []
+        }
+
+        return usuario?.direcciones ?? []
+    }
+
+    func nombreVisiblePerfil() -> String {
+        if esInvitado {
+            return "Invitado"
+        }
+
+        let nombreCompleto = usuario?.obtenerNombreCompleto().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !nombreCompleto.isEmpty {
+            return nombreCompleto
+        }
+
+        let nombreUsuario = usuario?.nombre.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !nombreUsuario.isEmpty {
+            return nombreUsuario
+        }
+
+        let nombreFirebase = currentUser?.displayName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !nombreFirebase.isEmpty {
+            return nombreFirebase
+        }
+
+        let email = emailVisiblePerfil()
+        if !email.isEmpty, let localPart = email.split(separator: "@").first {
+            return String(localPart)
+        }
+
+        return "Tu cuenta"
+    }
+
+    func emailVisiblePerfil() -> String {
+        let emailUsuario = usuario?.email.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !emailUsuario.isEmpty {
+            return emailUsuario
+        }
+
+        return currentUser?.email?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
 
     func obtenerCiudadSeleccionada() async {
@@ -299,8 +361,8 @@ class PerfilUsuarioState: ObservableObject {
     
     // MARK: - Usuario Invitado (modo sin sesión)
 
-    /// Configura un perfil ficticio con dirección en Chajarí y hace sign-in anónimo
-    /// en Firebase para que la app pueda obtener tokens y llamar al backend.
+    /// Configura el contexto de navegación de invitado con dirección por defecto
+    /// y sesión anónima de Firebase para obtener token de backend.
     func configurarUsuarioInvitado() async {
         // 1. Primero completar el sign-in anónimo para que el token esté listo
         //    antes de que los observers disparen la carga de datos.
@@ -319,7 +381,7 @@ class PerfilUsuarioState: ObservableObject {
             print("[Invitado] currentUser existente NO es anónimo: \(existing.uid), isAnonymous=\(existing.isAnonymous)")
         }
 
-        // 2. Solo después asignar el estado — así cuando HomeViewModel observe
+        // 2. Solo después asignar el estado de invitado — así cuando HomeViewModel observe
         //    ciudadSeleccionada, el token ya está disponible.
         let idDireccionDefault = "_invitado_default_"
         let coordenadasChajari = Point(coordinates: [-30.758463452217256, -57.98012148325772])
@@ -331,11 +393,8 @@ class PerfilUsuarioState: ObservableObject {
             indicaciones: "Dirección por defecto",
             coordenadas: coordenadasChajari
         )
-        self.usuario = Usuario(
-            email: "",
-            nombre: "Invitado",
-            direcciones: [direccionDefault]
-        )
+        self.usuario = nil
+        self.direccionInvitado = direccionDefault
         self.idDireccionSeleccionada = idDireccionDefault
         self.ciudadSeleccionada = "chajari_entre-rios"
         print("[Invitado] Estado seteado. currentUser=\(String(describing: self.currentUser?.uid)), ciudad=\(self.ciudadSeleccionada ?? "nil")")
@@ -364,7 +423,7 @@ class PerfilUsuarioState: ObservableObject {
             await buscarUsuario()
 
             if self.idDireccionSeleccionada == idDireccion {
-                let nuevaDireccionID = usuario?.direcciones?.first?.id ?? ""
+                let nuevaDireccionID = direccionesDisponibles().first?.id ?? ""
                 
                 self.idDireccionSeleccionada = nuevaDireccionID
                 UserDefaults.standard.set(nuevaDireccionID, forKey: ConfiguracionesUtil.ID_DIRECCION_KEY)
@@ -524,12 +583,71 @@ class PerfilUsuarioState: ObservableObject {
             // Limpiar datos locales
             self.usuario = nil
             self.currentUser = nil
+            limpiarEstadoInvitado()
+            limpiarUsuarioCache()
             
             // Cerrar sesión en Firebase
             try? Auth.auth().signOut()
             
         } catch {
             print("❌ Error al eliminar el usuario: \(error.localizedDescription)")
+        }
+    }
+
+    private func guardarUsuarioCache() {
+        guard let usuario,
+              let email = currentUser?.email,
+              !email.isEmpty,
+              let data = try? JSONEncoder().encode(usuario) else {
+            return
+        }
+
+        UserDefaults.standard.set(data, forKey: Self.usuarioCacheKey)
+        UserDefaults.standard.set(email.lowercased(), forKey: Self.usuarioCacheEmailKey)
+    }
+
+    private func cargarUsuarioCacheSiCoincide(email: String?) {
+        guard let email = email?.lowercased(),
+              let emailCacheado = UserDefaults.standard.string(forKey: Self.usuarioCacheEmailKey)?.lowercased(),
+              email == emailCacheado,
+              let data = UserDefaults.standard.data(forKey: Self.usuarioCacheKey),
+              let usuarioCacheado = try? JSONDecoder().decode(Usuario.self, from: data) else {
+            return
+        }
+
+        self.usuario = usuarioCacheado
+        repararDireccionSeleccionadaInvalida()
+    }
+
+    private func limpiarUsuarioCache() {
+        UserDefaults.standard.removeObject(forKey: Self.usuarioCacheKey)
+        UserDefaults.standard.removeObject(forKey: Self.usuarioCacheEmailKey)
+    }
+
+    private func limpiarEstadoInvitado() {
+        direccionInvitado = nil
+    }
+
+    private func cargarEstadoInvitadoSiCorresponde() {
+        if direccionInvitado == nil {
+            let idDireccionDefault = "_invitado_default_"
+            let coordenadasChajari = Point(coordinates: [-30.758463452217256, -57.98012148325772])
+            direccionInvitado = UsuarioDireccion(
+                id: idDireccionDefault,
+                calle: "Sarmiento",
+                numero: "2710",
+                departamento: "",
+                indicaciones: "Dirección por defecto",
+                coordenadas: coordenadasChajari
+            )
+        }
+
+        if idDireccionSeleccionada == nil {
+            idDireccionSeleccionada = direccionInvitado?.id
+        }
+
+        if ciudadSeleccionada == nil || ciudadSeleccionada?.isEmpty == true {
+            ciudadSeleccionada = "chajari_entre-rios"
         }
     }
 }

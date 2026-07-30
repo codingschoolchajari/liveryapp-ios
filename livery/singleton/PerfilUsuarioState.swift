@@ -260,18 +260,14 @@ class PerfilUsuarioState: ObservableObject {
         if let direccionGuardada, !direccionGuardada.isEmpty {
             self.idDireccionSeleccionada = direccionGuardada
         }
-
-        repararDireccionSeleccionadaInvalida()
     }
 
     private func repararDireccionSeleccionadaInvalida() {
         let direcciones = direccionesDisponibles()
 
         if direcciones.isEmpty {
-            if idDireccionSeleccionada != nil {
-                idDireccionSeleccionada = nil
-                UserDefaults.standard.removeObject(forKey: ConfiguracionesUtil.ID_DIRECCION_KEY)
-            }
+            // Puede ser un estado transitorio (cache/local antes de respuesta backend).
+            // No mutamos ni borramos el ID persistido en este punto.
             return
         }
 
@@ -625,7 +621,6 @@ class PerfilUsuarioState: ObservableObject {
         }
 
         self.usuario = usuarioCacheado
-        repararDireccionSeleccionadaInvalida()
     }
 
     private func limpiarUsuarioCache() {

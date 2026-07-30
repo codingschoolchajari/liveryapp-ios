@@ -131,12 +131,10 @@ class LoginViewModel: ObservableObject {
             UserDefaults.standard.set(false, forKey: "logueado")
             carritoViewModel.limpiarCarrito()
 
-            // Navegación inmediata para evitar el estado visual intermedio en Perfil.
-            navManager.select(.home)
-            navManager.replaceRoot(with: .main)
-
             Task {
                 await perfilUsuarioState.configurarUsuarioInvitado()
+                navManager.select(.home)
+                navManager.replaceRoot(with: .main)
             }
 
             print("Usuario deslogueado y estado limpiado")

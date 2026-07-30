@@ -43,9 +43,11 @@ class PerfilUsuarioState: ObservableObject {
     func inicializacion() async {
         sesionInicializada = false
         iniciarAlmacenamientoLocal()
+        // Cargar primero la dirección persistida para que, al sincronizar usuario,
+        // no se reemplace por la primera dirección disponible.
+        await cargarDireccionSeleccionada()
         await validarYSincronizarSesion()
         await buscarConfiguracion()
-        await cargarDireccionSeleccionada()
         
         Publishers.CombineLatest(
             $idDireccionSeleccionada,

@@ -21,6 +21,7 @@ class PerfilUsuarioState: ObservableObject {
     @Published var usuario: Usuario? = nil
     @Published var configuracion: Configuracion?
     @Published var configuracionCargada: Bool = false
+    @Published var sesionInicializada: Bool = false
     
     @Published var idDireccionSeleccionada: String? = nil
     @Published var ciudadSeleccionada: String? = nil
@@ -40,6 +41,7 @@ class PerfilUsuarioState: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     func inicializacion() async {
+        sesionInicializada = false
         iniciarAlmacenamientoLocal()
         await validarYSincronizarSesion()
         await buscarConfiguracion()
@@ -57,6 +59,8 @@ class PerfilUsuarioState: ObservableObject {
             }
         }
         .store(in: &cancellables)
+
+        sesionInicializada = true
     }
     
     func iniciarAlmacenamientoLocal(){
@@ -250,8 +254,11 @@ class PerfilUsuarioState: ObservableObject {
         let direccionGuardada = UserDefaults.standard.string(
             forKey: ConfiguracionesUtil.ID_DIRECCION_KEY
         )
-        
-        self.idDireccionSeleccionada = direccionGuardada
+
+        if let direccionGuardada, !direccionGuardada.isEmpty {
+            self.idDireccionSeleccionada = direccionGuardada
+        }
+
         repararDireccionSeleccionadaInvalida()
     }
 

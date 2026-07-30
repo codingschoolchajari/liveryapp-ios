@@ -53,6 +53,10 @@ struct RootContainerView: View {
     }
 
     private func navegarSegunEstadoActual() {
+        if !perfilUsuarioState.sesionInicializada && navManager.currentPhase == .loading {
+            return
+        }
+
         // Primero verificar si hay nueva versión obligatoria (independiente del estado de login)
         if let config = perfilUsuarioState.configuracion {
             let versionRequerida = config.plataformas.versionIOS
@@ -133,6 +137,9 @@ struct RootContainerView: View {
         .onChange(of: perfilUsuarioState.usuario) { oldUser, newUser in
             navegarSegunEstadoActual()
         }
+        .onChange(of: perfilUsuarioState.currentUser?.uid) { _, _ in
+            navegarSegunEstadoActual()
+        }
         .onChange(of: logueado) { oldVal, newVal in
             navegarSegunEstadoActual()
         }
@@ -140,6 +147,9 @@ struct RootContainerView: View {
             navegarSegunEstadoActual()
         }
         .onChange(of: perfilUsuarioState.configuracionCargada) { _, _ in
+            navegarSegunEstadoActual()
+        }
+        .onChange(of: perfilUsuarioState.sesionInicializada) { _, _ in
             navegarSegunEstadoActual()
         }
         .onAppear {

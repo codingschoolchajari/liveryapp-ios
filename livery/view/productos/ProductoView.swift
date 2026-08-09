@@ -733,7 +733,7 @@ struct BottomSheetSeleccionProducto: View {
                 opcion.idInterno.caseInsensitiveCompare(menuOpcionCategoria) == .orderedSame
             }?
             .mensajeError
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
         if mensajeDialogoMenuNoDisponible.isEmpty {
             mensajeDialogoMenuNoDisponible = "Este producto no está disponible en el menú activo de hoy."

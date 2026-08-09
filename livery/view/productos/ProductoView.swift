@@ -569,7 +569,7 @@ struct BottomSheetSeleccionProducto: View {
     // --- Métodos de Acción ---
     
     private func agregarItemProducto(
-        onClose: () -> Void
+        onClose: @escaping () -> Void
     ) {
         if(itemProductoViewModel.itemProducto == nil) { return }
         
@@ -614,7 +614,7 @@ struct BottomSheetSeleccionProducto: View {
     }
     
     private func limpiarYAgregarItemProducto(
-        onClose: () -> Void
+        onClose: @escaping () -> Void
     ) {
         guard !perfilUsuarioState.esInvitado else {
             mostrarLoginRequerido = true

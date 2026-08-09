@@ -31,7 +31,6 @@ struct API {
         static let token = "/token"
         static let usuarios = "/usuarios"
         static let chatsRepartos = "/chatsRepartos"
-        static let verificacion = "/verificacion"
     }
 }
 
@@ -49,6 +48,5 @@ let repartidoresURL = API.baseURL + API.Endpoints.repartidores
 let repartosURL = API.baseURL + API.Endpoints.repartos
 let recorridosURL = API.baseURL + API.Endpoints.recorridos
 let tokenURL = API.baseURL + API.Endpoints.token
-let verificacionURL = API.baseURL + API.Endpoints.verificacion
 let usuariosURL = API.baseURL + API.Endpoints.usuarios
 let chatsRepartosURL = API.baseURL + API.Endpoints.chatsRepartos

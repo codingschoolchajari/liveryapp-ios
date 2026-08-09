@@ -2,17 +2,15 @@
 import CoreLocation
 import GooglePlaces
 
-enum EstadoValidacionEfectivo {
-    case idle, cargandoCodigo, esperando, validado, error
-}
-
 @MainActor
 class NuevoRepartoViewModel: ObservableObject {
     private let perfilUsuarioState: PerfilUsuarioState
     private let repartosService = RepartosService()
     private let enviosService = EnviosService()
     private let repartidoresService = RepartidoresService()
-    private let verificacionService = VerificacionService()
+    private let pedidosService = PedidosService()
+    private let coberturasService = CoberturasService()
+    private let locationService: LocationServicing
 
     @Published var coordenadasComercio: CLLocationCoordinate2D? = nil
     @Published var direccionesUsuario: [UsuarioDireccion] = []
@@ -43,19 +41,38 @@ class NuevoRepartoViewModel: ObservableObject {
     @Published var precioTotalProductos: String = ""
     @Published var limitePagoEfectivo: Double = 0
 
-    @Published var estadoValidacionEfectivo: EstadoValidacionEfectivo = .idle
-    @Published var codigoEfectivo: String = ""
-    @Published var urlWhatsapp: String? = nil
-    @Published var mostrarErrorValidacion: Bool = false
+    @Published var estadoValidacionUbicacion: EstadoValidacionUbicacion = .idle
+    @Published var coordenadasEfectivo: CLLocationCoordinate2D? = nil
 
     private var costoEnvioDebounceTask: Task<Void, Never>? = nil
     private var geocodingTask: Task<Void, Never>? = nil
-    private var pollingTask: Task<Void, Never>? = nil
     private var coordenadasUsuario: CLLocationCoordinate2D? = nil
+    private var esperandoUbicacionPago = false
+    private var perfilUsuarioStatePago: PerfilUsuarioState?
 
-    init(perfilUsuarioState: PerfilUsuarioState) {
+    init(perfilUsuarioState: PerfilUsuarioState, locationService: LocationServicing = LocationService()) {
         self.perfilUsuarioState = perfilUsuarioState
+        self.locationService = locationService
+        bindLocationService()
         inicializarDatos()
+    }
+
+    private func bindLocationService() {
+        locationService.onAuthorizationChange = { [weak self] status in
+            Task { @MainActor in
+                self?.onPermisoPagoResultado(status: status)
+            }
+        }
+
+        locationService.onLocationUpdate = { [weak self] coord in
+            Task { @MainActor in
+                guard let self = self, self.esperandoUbicacionPago else { return }
+                self.esperandoUbicacionPago = false
+                self.locationService.stopUpdatingLocation()
+                self.coordenadasEfectivo = coord
+                await self.verificarCoberturaEnCoordenadas(coord)
+            }
+        }
     }
 
     func inicializarDatos() {
@@ -199,94 +216,142 @@ class NuevoRepartoViewModel: ObservableObject {
 
     func onPagoTransferenciaChange(_ pago: Bool) {
         pagoTransferencia = pago
+        if pago {
+            resetEfectivo()
+        }
     }
 
     func onPrecioTotalProductosChange(_ texto: String) {
         precioTotalProductos = texto.filter { $0.isNumber }
     }
 
-    func generarCodigoEfectivo() {
-        Task {
-            estadoValidacionEfectivo = .cargandoCodigo
+    private func esGpsActivo() -> Bool {
+        CLLocationManager.locationServicesEnabled()
+    }
 
+    func iniciarValidacionUbicacion() {
+        perfilUsuarioStatePago = perfilUsuarioState
+
+        guard let email = perfilUsuarioState.usuario?.email, !email.isEmpty else {
+            iniciarValidacionUbicacionSinClienteFrecuente()
+            return
+        }
+
+        Task {
             do {
                 await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
-                let accessToken = TokenRepository.repository.accessToken ?? ""
+                let token = TokenRepository.repository.accessToken ?? ""
                 let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+                let esFrecuente = try await pedidosService.esClienteFrecuente(
+                    token: token,
+                    dispositivoID: dispositivoID,
+                    email: email
+                )
 
-                guard let codigo = try await verificacionService.generarCodigoEfectivo(
-                    token: accessToken,
-                    dispositivoID: dispositivoID
-                ) else {
-                    estadoValidacionEfectivo = .error
-                    mostrarErrorValidacion = true
-                    return
+                if esFrecuente {
+                    estadoValidacionUbicacion = .clienteFrecuente
+                } else {
+                    iniciarValidacionUbicacionSinClienteFrecuente()
                 }
-
-                codigoEfectivo = codigo
-
-                let numero = (perfilUsuarioState.configuracion?.numeroWhatsappAutomatico ?? "")
-                    .replacingOccurrences(of: "+", with: "")
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                let email = perfilUsuarioState.usuario?.email ?? ""
-                let texto = "Hola Livery, mi código de validación es: \(codigo). \nMi usuario es: \(email)"
-                let encoded = texto.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                urlWhatsapp = "https://wa.me/\(numero)?text=\(encoded)"
-
-                estadoValidacionEfectivo = .esperando
-                iniciarPolling()
             } catch {
-                estadoValidacionEfectivo = .error
-                mostrarErrorValidacion = true
-                print("Error generando código efectivo: \(error)")
+                iniciarValidacionUbicacionSinClienteFrecuente()
             }
         }
     }
 
-    private func iniciarPolling() {
-        detenerPolling()
-        pollingTask = Task {
-            while estadoValidacionEfectivo == .esperando {
-                try? await Task.sleep(nanoseconds: 3_000_000_000)
-                guard estadoValidacionEfectivo == .esperando else { break }
+    private func iniciarValidacionUbicacionSinClienteFrecuente() {
+        switch locationService.authorizationStatus {
+        case .notDetermined:
+            estadoValidacionUbicacion = .solicitandoPermiso
+            locationService.requestPermission()
+            return
+        case .restricted, .denied:
+            estadoValidacionUbicacion = .permisoDenegado
+            return
+        case .authorizedAlways, .authorizedWhenInUse:
+            break
+        @unknown default:
+            estadoValidacionUbicacion = .error
+            return
+        }
 
-                do {
-                    await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
-                    let accessToken = TokenRepository.repository.accessToken ?? ""
-                    let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+        guard esGpsActivo() else {
+            estadoValidacionUbicacion = .gpsApagado
+            return
+        }
 
-                    let validado = try await verificacionService.estadoCodigoEfectivo(
-                        token: accessToken,
-                        dispositivoID: dispositivoID
-                    )
+        obtenerUbicacionYVerificarSinClienteFrecuente()
+    }
 
-                    if validado {
-                        estadoValidacionEfectivo = .validado
-                        detenerPolling()
-                        break
-                    }
-                } catch {
-                    print("Error consultando estado código efectivo: \(error)")
-                }
-            }
+    private func obtenerUbicacionYVerificarSinClienteFrecuente() {
+        estadoValidacionUbicacion = .obteniendoUbicacion
+        esperandoUbicacionPago = true
+        locationService.startUpdatingLocation()
+    }
+
+    private func verificarCoberturaEnCoordenadas(_ coord: CLLocationCoordinate2D) async {
+        estadoValidacionUbicacion = .verificandoCobertura
+
+        guard let perfilUsuarioStatePago else {
+            estadoValidacionUbicacion = .error
+            return
+        }
+
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioStatePago)
+            let token = TokenRepository.repository.accessToken ?? ""
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+
+            let ciudadResponse = try await coberturasService.buscarCiudadPorUbicacion(
+                token: token,
+                dispositivoID: dispositivoID,
+                latitud: coord.latitude,
+                longitud: coord.longitude
+            )
+
+            estadoValidacionUbicacion = ciudadResponse.ciudad.isEmpty ? .fueraDeCobertura : .cubierto
+        } catch {
+            estadoValidacionUbicacion = .error
         }
     }
 
-    func detenerPolling() {
-        pollingTask?.cancel()
-        pollingTask = nil
+    private func onPermisoPagoResultado(status: CLAuthorizationStatus) {
+        switch status {
+        case .authorizedAlways, .authorizedWhenInUse:
+            guard esGpsActivo() else {
+                estadoValidacionUbicacion = .gpsApagado
+                return
+            }
+            obtenerUbicacionYVerificarSinClienteFrecuente()
+        case .denied, .restricted:
+            estadoValidacionUbicacion = .permisoDenegado
+        case .notDetermined:
+            estadoValidacionUbicacion = .solicitandoPermiso
+        @unknown default:
+            estadoValidacionUbicacion = .error
+        }
     }
 
-    func limpiarUrlWhatsapp() { urlWhatsapp = nil }
-
-    func descartarErrorValidacion() { mostrarErrorValidacion = false }
+    func revalidarSiNecesario() {
+        switch estadoValidacionUbicacion {
+        case .permisoDenegado:
+            let status = locationService.authorizationStatus
+            if status == .authorizedAlways || status == .authorizedWhenInUse {
+                iniciarValidacionUbicacion()
+            }
+        case .gpsApagado:
+            iniciarValidacionUbicacion()
+        default:
+            break
+        }
+    }
 
     func resetEfectivo() {
-        detenerPolling()
-        estadoValidacionEfectivo = .idle
-        codigoEfectivo = ""
-        urlWhatsapp = nil
-        mostrarErrorValidacion = false
+        esperandoUbicacionPago = false
+        locationService.stopUpdatingLocation()
+        estadoValidacionUbicacion = .idle
+        coordenadasEfectivo = nil
+        perfilUsuarioStatePago = nil
     }
 
     func obtenerNombreUsuario() -> String {
@@ -389,11 +454,12 @@ class NuevoRepartoViewModel: ObservableObject {
             case .some(true):
                 return ModalidadPago(tipo: "TRANSFERENCIA")
             case .some(false):
+                let point = coordenadasEfectivo.map { Point(coordinates: [$0.latitude, $0.longitude]) }
                 return ModalidadPago(
                     tipo: "EFECTIVO",
                     precioTotal: Double(precioTotalProductos) ?? 0,
                     celular: "",
-                    codigoVerificacion: codigoEfectivo
+                    coordenadas: point
                 )
             default:
                 return nil
@@ -467,7 +533,6 @@ class NuevoRepartoViewModel: ObservableObject {
 
     func reiniciarFormulario() {
         costoEnvioDebounceTask?.cancel()
-        detenerPolling()
         coordenadasComercio = nil
         coordenadasUsuario = nil
         idDireccionUsuarioSeleccionada = nil

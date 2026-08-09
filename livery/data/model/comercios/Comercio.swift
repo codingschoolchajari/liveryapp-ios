@@ -40,6 +40,11 @@ struct ComercioDescuento: Codable {
     var porcentaje: Double = 0.0
 }
 
+struct ComercioMenuOpcion: Codable {
+    var idInterno: String = ""
+    var mensajeError: String = ""
+}
+
 struct ComercioEnvios: Codable {
     var envioPropio: Bool = false
     var preciosEnvioPropio: [ComercioPrecioEnvioPropio] = []
@@ -93,6 +98,8 @@ struct Comercio: Codable, Identifiable {
     var categorias: [Categoria] = []
     var promociones: [Promocion] = []
     var descuentos: [ComercioDescuento]? = nil
+    var menuOpciones: [ComercioMenuOpcion] = []
+    var menuActivo: String? = nil
     var distanciaUsuario: Int? = nil
     
     var id: String {

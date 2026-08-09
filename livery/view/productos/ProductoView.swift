@@ -256,6 +256,12 @@ struct BottomSheetSeleccionProducto: View {
     @State private var mostrarDialogoComplementos = false
     @State private var mostrarDialogoHorarioReducido = false
     @State private var mensajeDialogoHorarioReducido = ""
+    @State private var mostrarDialogoMenuNoDisponible = false
+    @State private var mensajeDialogoMenuNoDisponible = ""
+    @State private var mostrarPopupDni = false
+    @State private var dniIngresado = ""
+    @State private var guardandoDni = false
+    @State private var accionPendienteDni: (() -> Void)? = nil
     @State private var itemPendienteAgregar: ItemProducto? = nil
     @State private var limpiarCarritoEnConfirmacion = false
     @State private var gruposComplementos: [ComplementoPopupGrupo] = []
@@ -399,6 +405,38 @@ struct BottomSheetSeleccionProducto: View {
             .presentationDetents([.fraction(0.75)])
         }
         .overlay {
+            if mostrarPopupDni {
+                PopupDniGridoView(
+                    nombreComercio: comercio.nombre,
+                    dni: $dniIngresado,
+                    guardando: guardandoDni,
+                    onNoGracias: {
+                        mostrarPopupDni = false
+                        let accionPendiente = accionPendienteDni
+                        accionPendienteDni = nil
+                        dniIngresado = ""
+                        accionPendiente?()
+                    },
+                    onConfirmar: {
+                        Task {
+                            guardandoDni = true
+                            let actualizado = await perfilUsuarioState.actualizarDni(dni: dniIngresado)
+                            guardandoDni = false
+
+                            if !actualizado {
+                                mensajeToast = "No pudimos guardar tu DNI. Continuamos igualmente."
+                            }
+
+                            mostrarPopupDni = false
+                            let accionPendiente = accionPendienteDni
+                            accionPendienteDni = nil
+                            dniIngresado = ""
+                            accionPendiente?()
+                        }
+                    }
+                )
+            }
+
             if mostrarDialogoComplementos, let itemPendiente = itemPendienteAgregar {
                 let precioBase = itemPendiente.precio
                 let precioTotal = precioBase + calcularPrecioExtraComplementos(
@@ -428,6 +466,10 @@ struct BottomSheetSeleccionProducto: View {
                     },
                     onConfirmar: {
                         if !validarHorarioReducido() {
+                            return
+                        }
+
+                        if !validarMenuActivoCategoria() {
                             return
                         }
 
@@ -489,6 +531,11 @@ struct BottomSheetSeleccionProducto: View {
         } message: {
             Text(mensajeDialogoHorarioReducido)
         }
+        .alert("Producto no disponible", isPresented: $mostrarDialogoMenuNoDisponible) {
+            Button("Aceptar", role: .cancel) {}
+        } message: {
+            Text(mensajeDialogoMenuNoDisponible)
+        }
     }
     
     // --- Lógica de Validación (Cálculo de 'enabled') ---
@@ -534,23 +581,29 @@ struct BottomSheetSeleccionProducto: View {
         if !validarHorarioReducido() {
             return
         }
+
+        if !validarMenuActivoCategoria() {
+            return
+        }
         
         let direccion = perfilUsuarioState.obtenerUsuarioDireccion()
         let ciudad = perfilUsuarioState.ciudadSeleccionada
         
         if direccion != nil && ciudad != nil && !ciudad!.isEmpty {
             if carritoViewModel.validacionComercio(comercio: comercio) {
-                let mostrarDialogo = prepararDialogoComplementos(
-                    item: itemProductoViewModel.itemProducto!,
-                    limpiarCarrito: false
-                )
-                if !mostrarDialogo {
-                    carritoViewModel.agregarItemProducto(
-                        perfilUsuarioState: perfilUsuarioState,
-                        itemProducto: itemProductoViewModel.itemProducto!,
-                        direccion: direccion!
+                ejecutarConValidacionDni {
+                    let mostrarDialogo = prepararDialogoComplementos(
+                        item: itemProductoViewModel.itemProducto!,
+                        limpiarCarrito: false
                     )
-                    onClose()
+                    if !mostrarDialogo {
+                        carritoViewModel.agregarItemProducto(
+                            perfilUsuarioState: perfilUsuarioState,
+                            itemProducto: itemProductoViewModel.itemProducto!,
+                            direccion: direccion!
+                        )
+                        onClose()
+                    }
                 }
             } else {
                 mostrarDialogoConflicto = true
@@ -574,20 +627,26 @@ struct BottomSheetSeleccionProducto: View {
             return
         }
 
+        if !validarMenuActivoCategoria() {
+            return
+        }
+
         mostrarDialogoConflicto = false
 
-        let mostrarDialogo = prepararDialogoComplementos(
-            item: itemProductoViewModel.itemProducto!,
-            limpiarCarrito: true
-        )
-        if !mostrarDialogo {
-            carritoViewModel.limpiarYAgregarItemProducto(
-                perfilUsuarioState: perfilUsuarioState,
-                itemProducto: itemProductoViewModel.itemProducto!,
-                comercio: comercio,
-                direccion: perfilUsuarioState.obtenerUsuarioDireccion()!
+        ejecutarConValidacionDni {
+            let mostrarDialogo = prepararDialogoComplementos(
+                item: itemProductoViewModel.itemProducto!,
+                limpiarCarrito: true
             )
-            onClose()
+            if !mostrarDialogo {
+                carritoViewModel.limpiarYAgregarItemProducto(
+                    perfilUsuarioState: perfilUsuarioState,
+                    itemProducto: itemProductoViewModel.itemProducto!,
+                    comercio: comercio,
+                    direccion: perfilUsuarioState.obtenerUsuarioDireccion()!
+                )
+                onClose()
+            }
         }
     }
 
@@ -654,6 +713,142 @@ struct BottomSheetSeleccionProducto: View {
         mensajeDialogoHorarioReducido = "Este producto solo está disponible en \(descripcionTexto)."
         mostrarDialogoHorarioReducido = true
         return false
+    }
+
+    private func validarMenuActivoCategoria() -> Bool {
+        let menuActivo = comercio.menuActivo?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let menuOpcionCategoria = categoria.menuOpcion?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        let comercioConMenus = !comercio.menuOpciones.isEmpty && !menuActivo.isEmpty
+        if !comercioConMenus || menuOpcionCategoria.isEmpty {
+            return true
+        }
+
+        if menuOpcionCategoria.caseInsensitiveCompare(menuActivo) == .orderedSame {
+            return true
+        }
+
+        mensajeDialogoMenuNoDisponible = comercio.menuOpciones
+            .first { opcion in
+                opcion.idInterno.caseInsensitiveCompare(menuOpcionCategoria) == .orderedSame
+            }?
+            .mensajeError
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if mensajeDialogoMenuNoDisponible.isEmpty {
+            mensajeDialogoMenuNoDisponible = "Este producto no está disponible en el menú activo de hoy."
+        }
+
+        mostrarDialogoMenuNoDisponible = true
+        return false
+    }
+
+    private func requierePopupDni() -> Bool {
+        let esComercioGrido = comercio.nombre
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .hasPrefix("grido")
+
+        let dniActual = perfilUsuarioState.usuario?.datosPersonales?.dni
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        let carritoEsDeEsteComercio = carritoViewModel.comercio?.idInterno == comercio.idInterno
+        let hayItemsEnCarrito = !carritoViewModel.itemsProductos.isEmpty || !carritoViewModel.itemsPromociones.isEmpty
+        let yaHayItemsDeEsteComercio = carritoEsDeEsteComercio && hayItemsEnCarrito
+
+        return esComercioGrido && dniActual.isEmpty && !yaHayItemsDeEsteComercio
+    }
+
+    private func ejecutarConValidacionDni(onContinuar: @escaping () -> Void) {
+        if !requierePopupDni() {
+            onContinuar()
+            return
+        }
+
+        accionPendienteDni = onContinuar
+        mostrarPopupDni = true
+    }
+}
+
+private struct PopupDniGridoView: View {
+    let nombreComercio: String
+    @Binding var dni: String
+    let guardando: Bool
+    let onNoGracias: () -> Void
+    let onConfirmar: () -> Void
+
+    private var dniValido: Bool {
+        dni.count >= 4
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+
+            VStack(spacing: 14) {
+                Text("Sistema de Puntos")
+                    .font(.custom("Barlow", size: 20))
+                    .bold()
+                    .foregroundColor(.negro)
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                Text("¿Quisieras indicarnos tu DNI para que \(nombreComercio) te sume los puntos de tu pedido?")
+                    .font(.custom("Barlow", size: 16))
+                    .foregroundColor(.negro)
+                    .multilineTextAlignment(.center)
+
+                TextField("DNI", text: Binding(
+                    get: { dni },
+                    set: { nuevoValor in
+                        dni = nuevoValor.filter { $0.isNumber }
+                    }
+                ))
+                .keyboardType(.numberPad)
+                .font(.custom("Barlow", size: 16))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.grisSecundario, lineWidth: 1)
+                )
+
+                HStack(spacing: 12) {
+                    Button(action: onNoGracias) {
+                        Text("No Gracias")
+                            .font(.custom("Barlow", size: 16))
+                            .bold()
+                            .foregroundColor(.negro)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                    }
+
+                    Button(action: onConfirmar) {
+                        Text(guardando ? "Guardando..." : "Confirmar")
+                            .font(.custom("Barlow", size: 16))
+                            .bold()
+                            .foregroundColor(.blanco)
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 10)
+                            .background((dniValido && !guardando) ? Color.verdePrincipal : Color.grisSecundario)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                    .disabled(!dniValido || guardando)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+            }
+            .padding(18)
+            .frame(maxWidth: 360)
+            .background(Color.blanco)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Color.grisSecundario, lineWidth: 1)
+            )
+            .padding(.horizontal, 20)
+        }
     }
 }
 

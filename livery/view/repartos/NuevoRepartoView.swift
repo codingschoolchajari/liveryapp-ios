@@ -15,7 +15,6 @@ struct NuevoRepartoView: View {
 
     @StateObject private var viewModel: NuevoRepartoViewModel
     @State private var pasoActual: Int = PASO_DIRECCION_USUARIO
-    @Environment(\.openURL) private var openURL
 
     init(
         perfilUsuarioState: PerfilUsuarioState,
@@ -46,10 +45,11 @@ struct NuevoRepartoView: View {
             case .some(true):
                 return viewModel.comprobanteSeleccionado != nil
             case .some(false):
-                let codigoValidado = viewModel.estadoValidacionEfectivo == .validado
+                let validacionUbicacionOk = viewModel.estadoValidacionUbicacion == .cubierto
+                    || viewModel.estadoValidacionUbicacion == .clienteFrecuente
                 let tienePrecio = !viewModel.precioTotalProductos.isEmpty
                 let noSuperaLimite = !viewModel.superaLimitePagoEfectivo
-                return codigoValidado && tienePrecio && noSuperaLimite
+                return validacionUbicacionOk && tienePrecio && noSuperaLimite
             default:
                 return false
             }
@@ -216,16 +216,18 @@ struct NuevoRepartoView: View {
             .padding(.vertical, 12)
         }
         .background(Color.blanco)
-        .onChange(of: viewModel.urlWhatsapp) { _, nuevaUrl in
-            guard let nuevaUrl,
-                  let url = URL(string: nuevaUrl) else { return }
-            openURL(url)
-            viewModel.limpiarUrlWhatsapp()
+        .onAppear {
+            if viewModel.pagoTransferencia == false {
+                viewModel.iniciarValidacionUbicacion()
+            }
         }
-        .alert("Error al validar", isPresented: $viewModel.mostrarErrorValidacion) {
-            Button("Entendido") { viewModel.descartarErrorValidacion() }
-        } message: {
-            Text("Hubo un error al generar el código de validación. Por favor intentá nuevamente.")
+        .onChange(of: viewModel.pagoTransferencia) { _, nuevaModalidad in
+            if nuevaModalidad == false {
+                viewModel.iniciarValidacionUbicacion()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            viewModel.revalidarSiNecesario()
         }
         .onChange(of: viewModel.repartoCreado) { _, creado in
             if creado {
@@ -575,6 +577,7 @@ private struct PasoPagoView: View {
 
                 Button {
                     viewModel.onPagoTransferenciaChange(false)
+                    viewModel.iniciarValidacionUbicacion()
                 } label: {
                     Text("No")
                         .font(.custom("Barlow", size: 18))
@@ -659,7 +662,7 @@ private struct PasoPagoView: View {
                     }
                 }
 
-                SeccionVerificacionWhatsAppView(viewModel: viewModel)
+                SeccionValidacionUbicacionReparto(viewModel: viewModel)
             }
         }
         .padding(.top, 4)
@@ -787,61 +790,110 @@ private struct ResumenItemView: View {
     }
 }
 
-private struct SeccionVerificacionWhatsAppView: View {
+private struct SeccionValidacionUbicacionReparto: View {
     @ObservedObject var viewModel: NuevoRepartoViewModel
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("Necesitamos validar tu número de WhatsApp para poder abonar en efectivo.")
-                .font(.custom("Barlow", size: 13))
-                .foregroundColor(.negro)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-            switch viewModel.estadoValidacionEfectivo {
-            case .validado:
-                Text("✓ Número de WhatsApp validado")
+            switch viewModel.estadoValidacionUbicacion {
+            case .clienteFrecuente:
+                Text("Cliente Frecuente")
                     .font(.custom("Barlow", size: 15))
                     .bold()
                     .foregroundColor(.verdePrincipal)
                     .multilineTextAlignment(.center)
-            case .esperando:
-                if !viewModel.codigoEfectivo.isEmpty {
-                    Text("Tu código: \(viewModel.codigoEfectivo)")
-                        .font(.custom("Barlow", size: 18))
-                        .bold()
-                        .foregroundColor(.negro)
-                }
-                Text("Esperando validación...")
+
+            case .cubierto:
+                Text("Verificación de Ubicación Exitosa")
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.verdePrincipal)
+                    .multilineTextAlignment(.center)
+
+            case .obteniendoUbicacion:
+                Text("Obteniendo ubicación...")
                     .font(.custom("Barlow", size: 13))
                     .foregroundColor(.grisSecundario)
                     .multilineTextAlignment(.center)
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .verdePrincipal))
-            default:
-                let cargando = viewModel.estadoValidacionEfectivo == .cargandoCodigo
-                Button {
-                    viewModel.generarCodigoEfectivo()
-                } label: {
-                    Group {
-                        if cargando {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .blanco))
-                                .frame(width: 22, height: 22)
-                        } else {
-                            Text("Validar WhatsApp")
-                                .font(.custom("Barlow", size: 15))
-                                .bold()
-                                .foregroundColor(.blanco)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 38)
-                    .background(Color.verdePrincipal)
-                    .cornerRadius(24)
-                    .padding(.horizontal, 40)
+
+            case .verificandoCobertura:
+                Text("Verificando área de cobertura...")
+                    .font(.custom("Barlow", size: 13))
+                    .foregroundColor(.grisSecundario)
+                    .multilineTextAlignment(.center)
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .verdePrincipal))
+
+            case .solicitandoPermiso, .idle:
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .verdePrincipal))
+
+            case .permisoDenegado:
+                Text("Se necesitan Permisos de Ubicación")
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.rojoError)
+                    .multilineTextAlignment(.center)
+                botonValidacion(titulo: "Permitir Ubicación", accion: abrirAjustesApp)
+
+            case .gpsApagado:
+                Text("El GPS está apagado")
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.rojoError)
+                    .multilineTextAlignment(.center)
+                botonValidacion(titulo: "Encender GPS", accion: abrirAjustesGps)
+
+            case .fueraDeCobertura:
+                Text("Verificación de Ubicación fallida\n Estás fuera del Área de Cobertura de la localidad del comercio")
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.rojoError)
+                    .multilineTextAlignment(.center)
+                botonValidacion(titulo: "Validar ubicación") {
+                    viewModel.iniciarValidacionUbicacion()
                 }
-                .disabled(cargando)
+
+            case .error:
+                Text("No se pudo obtener tu ubicación\nVerificá que el GPS esté activo e intentá nuevamente")
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.rojoError)
+                    .multilineTextAlignment(.center)
+                botonValidacion(titulo: "Validar ubicación") {
+                    viewModel.iniciarValidacionUbicacion()
+                }
             }
+        }
+    }
+
+    private func abrirAjustesApp() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+    }
+
+    private func abrirAjustesGps() {
+        if let url = URL(string: "App-Prefs:root=Privacy&path=LOCATION") {
+            UIApplication.shared.open(url)
+        } else {
+            abrirAjustesApp()
+        }
+    }
+
+    @ViewBuilder
+    private func botonValidacion(titulo: String, accion: @escaping () -> Void) -> some View {
+        Button(action: accion) {
+            Text(titulo)
+                .font(.custom("Barlow", size: 15))
+                .bold()
+                .foregroundColor(.blanco)
+                .frame(maxWidth: .infinity)
+                .frame(height: 38)
+                .background(Color.verdePrincipal)
+                .cornerRadius(24)
+                .padding(.horizontal, 40)
         }
     }
 }

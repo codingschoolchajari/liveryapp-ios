@@ -10,6 +10,7 @@ struct Categoria: Codable, Identifiable {
     let idInterno: String
     var nombre: String = ""
     var imagenGenerica: String? = ""
+    var menuOpcion: String? = nil
     var productos: [Producto] = []
     var seleccionables: [Seleccionable]? = []
     

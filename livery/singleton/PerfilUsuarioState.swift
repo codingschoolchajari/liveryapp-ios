@@ -207,6 +207,31 @@ class PerfilUsuarioState: ObservableObject {
             print("Error al actualizar Datos Personales: \(error.localizedDescription)")
         }
     }
+
+    func actualizarDni(dni: String) async -> Bool {
+        await TokenRepository.repository.validarToken(perfilUsuarioState: self)
+        let accessToken = TokenRepository.repository.accessToken ?? ""
+
+        do {
+            guard let email = currentUser?.email, !email.isEmpty else {
+                return false
+            }
+
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            try await usuariosService.actualizarDni(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                email: email,
+                dni: dni
+            )
+
+            await buscarUsuario()
+            return true
+        } catch {
+            print("Error al actualizar DNI: \(error.localizedDescription)")
+            return false
+        }
+    }
     
     func obtenerFirebaseIdToken() async -> String? {
         do {

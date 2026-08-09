@@ -14,6 +14,11 @@ struct UsuarioPremios: Codable, Equatable {
 struct UsuarioDatosPersonales: Codable, Equatable {
     var nombre: String = ""
     var apellido: String = ""
+    var dni: String = ""
+}
+
+struct UsuarioActualizarDni: Codable, Equatable {
+    var dni: String = ""
 }
 
 struct UsuarioFavorito: Codable, Equatable, Identifiable {

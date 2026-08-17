@@ -13,6 +13,7 @@ struct Categoria: Codable, Identifiable {
     var menuOpcion: String? = nil
     var productos: [Producto] = []
     var seleccionables: [Seleccionable]? = []
+    var seleccionablesGrupos: [SeleccionableGrupo]? = []
     
     var id: String { idInterno }
 }

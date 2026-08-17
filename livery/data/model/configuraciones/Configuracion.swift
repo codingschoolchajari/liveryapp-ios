@@ -37,7 +37,6 @@ struct ConfiguracionCategoria: Codable {
 struct Configuracion: Codable {
     let enviosPrecios: ConfiguracionEnviosPrecios
     let intervalosTiempo: ConfiguracionIntervalosTiempo
-    var palabrasClave: [String] = []
     var categorias: [ConfiguracionCategoria]? = []
     let tarifaServicio: Double
     let limitePagoEfectivo: Double

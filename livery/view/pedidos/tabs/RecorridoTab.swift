@@ -20,11 +20,16 @@ struct RecorridoTab: View {
                          pedido != nil && comercio != nil && recorrido != nil
         
         VStack {
-            if habilitado {
+            if habilitado,
+               let pedido,
+               let comercio,
+               let recorrido,
+               comercio.direccion.coordenadas.coordinates.count >= 2,
+               pedido.direccion.coordenadas.coordinates.count >= 2 {
                 GoogleMapTrackingView(
                     recorrido: recorrido,
-                    coordComercio: comercio!.direccion.coordenadas.toCoordinate(),
-                    coordCliente: pedido!.direccion.coordenadas.toCoordinate(),
+                    coordComercio: comercio.direccion.coordenadas.toCoordinate(),
+                    coordCliente: pedido.direccion.coordenadas.toCoordinate(),
                     tick: pedidosViewModel.recorridoTick
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 16))

@@ -12,4 +12,5 @@ struct Seleccionable: Codable {
     var disponible: Bool = true
     var imagenURL: String? = nil
     var tipo: String = "" // unitario (check), multiple (por cantidad)
+    var grupo: String? = nil
 }

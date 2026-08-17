@@ -126,30 +126,62 @@ struct Seleccionables: View {
         let itemsDisponibles = (categoria.seleccionables ?? [])
             .filter { $0.disponible }
             .sorted(by: { $0.nombre < $1.nombre })
-        
+        let gruposDefinidos = categoria.seleccionablesGrupos ?? []
+
         ScrollView (showsIndicators: false){
-            VStack(spacing: 4) {
-                ForEach(itemsDisponibles, id: \.idInterno) { seleccionable in
-                    
-                    // Obtenemos el estado actual desde los diccionarios recibidos
-                    let unitario = seleccionadosUnitarios[seleccionable.idInterno] ?? false
-                    let multiple = seleccionadosMultiples[seleccionable.idInterno] ?? 0
-                    
-                    FilaSeleccionable(
-                        seleccionable: seleccionable,
-                        seleccionadoUnitario: unitario,
-                        seleccionadoMultiple: multiple,
-                        onUnitarioChange: { nuevoValor in
-                            validarYNotificarUnitario(id: seleccionable.idInterno, nuevoValor: nuevoValor)
-                        },
-                        onMultipleChange: { nuevaCant in
-                            validarYNotificarMultiple(id: seleccionable.idInterno, nuevaCant: nuevaCant)
+            VStack(spacing: 8) {
+                if !gruposDefinidos.isEmpty {
+                    let itemsPorGrupo = Dictionary(grouping: itemsDisponibles) { $0.grupo?.trimmingCharacters(in: .whitespaces) ?? "" }
+                    let idsGruposDefinidos = Set(gruposDefinidos.map { $0.idInterno })
+
+                    ForEach(gruposDefinidos) { grupo in
+                        let itemsGrupo = itemsPorGrupo[grupo.idInterno] ?? []
+                        if !itemsGrupo.isEmpty {
+                            GrupoSeleccionablesCard(grupo: grupo) {
+                                filaSeleccionables(itemsGrupo)
+                            }
                         }
-                    )
+                    }
+
+                    let itemsSinGrupo = itemsDisponibles.filter {
+                        ($0.grupo?.isEmpty ?? true) || !idsGruposDefinidos.contains($0.grupo!)
+                    }
+                    if !itemsSinGrupo.isEmpty {
+                        GrupoSeleccionablesCard(
+                            grupo: SeleccionableGrupo(idInterno: "sin_grupo", nombre: "Otros", color: "#F1F3F5")
+                        ) {
+                            filaSeleccionables(itemsSinGrupo)
+                        }
+                    }
+                } else {
+                    filaSeleccionables(itemsDisponibles)
                 }
             }
         }
         .overlay(ToastView(mensaje: $mensajeToast), alignment: .bottom)
+    }
+
+    @ViewBuilder
+    private func filaSeleccionables(_ items: [Seleccionable]) -> some View {
+        VStack(spacing: 4) {
+            ForEach(items, id: \.idInterno) { seleccionable in
+                // Obtenemos el estado actual desde los diccionarios recibidos
+                let unitario = seleccionadosUnitarios[seleccionable.idInterno] ?? false
+                let multiple = seleccionadosMultiples[seleccionable.idInterno] ?? 0
+
+                FilaSeleccionable(
+                    seleccionable: seleccionable,
+                    seleccionadoUnitario: unitario,
+                    seleccionadoMultiple: multiple,
+                    onUnitarioChange: { nuevoValor in
+                        validarYNotificarUnitario(id: seleccionable.idInterno, nuevoValor: nuevoValor)
+                    },
+                    onMultipleChange: { nuevaCant in
+                        validarYNotificarMultiple(id: seleccionable.idInterno, nuevaCant: nuevaCant)
+                    }
+                )
+            }
+        }
     }
     
     private func validarYNotificarUnitario(id: String, nuevoValor: Bool) {
@@ -269,6 +301,39 @@ struct FilaSeleccionable: View {
         .onTapGesture {
             if seleccionable.tipo == "unitario" { onUnitarioChange(!seleccionadoUnitario) }
         }
+    }
+}
+
+struct GrupoSeleccionablesCard<Content: View>: View {
+    let grupo: SeleccionableGrupo
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        let backgroundColor = Color(hexString: grupo.color) ?? Color(hexString: "#F1F3F5")!
+
+        VStack(spacing: 0) {
+            Text(grupo.nombre)
+                .font(.custom("Barlow", size: 16))
+                .bold()
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(backgroundColor)
+
+            VStack(spacing: 0) {
+                content()
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+        }
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(backgroundColor, lineWidth: 1)
+        )
     }
 }
 

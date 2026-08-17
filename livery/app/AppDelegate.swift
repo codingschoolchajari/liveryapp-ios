@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import FirebaseCore
+import FirebaseCrashlytics
 import FirebaseMessaging
 import UserNotifications
 import GoogleMaps
@@ -21,6 +22,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
 
         FirebaseApp.configure()
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
 
         // Google Maps
         if let apiKey = Bundle.main.object(

@@ -118,10 +118,8 @@ struct Seleccionables: View {
     
     var onCambiarSeleccionadoUnitario: (String, Bool) -> Void
     var onCambiarSeleccionadoMultiple: (String, Int) -> Void
+    var onLimiteAlcanzado: (String) -> Void
     
-    @State private var mensajeToast: String? = nil
-    @State private var toastWorkItem: DispatchWorkItem? = nil // Para controlar el tiempo
-
     var body: some View {
         let itemsDisponibles = (categoria.seleccionables ?? [])
             .filter { $0.disponible }
@@ -158,7 +156,6 @@ struct Seleccionables: View {
                 }
             }
         }
-        .overlay(ToastView(mensaje: $mensajeToast), alignment: .bottom)
     }
 
     @ViewBuilder
@@ -208,25 +205,7 @@ struct Seleccionables: View {
     
     private func mostrarToast() {
         let texto = "Solo puedes seleccionar hasta \(producto.cantidadMaximaSeleccionables ?? 0) \(producto.nombreSeleccionable ?? "")."
-        
-        // 1. Cancelar cualquier temporizador que esté corriendo
-        toastWorkItem?.cancel()
-        
-        // 2. Asignar el mensaje
-        withAnimation {
-            mensajeToast = texto
-        }
-        
-        // 3. Crear una nueva tarea para ocultar el toast
-        let task = DispatchWorkItem {
-            withAnimation {
-                self.mensajeToast = nil
-            }
-        }
-        
-        // 4. Guardar y programar la tarea
-        toastWorkItem = task
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: task)
+        onLimiteAlcanzado(texto)
     }
 }
 

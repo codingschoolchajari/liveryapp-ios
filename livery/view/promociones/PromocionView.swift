@@ -160,7 +160,8 @@ struct BottomSheetSeleccionPromocion: View {
                 ProductosSeleccionablesTabs(
                     comercio: comercio,
                     productosSeleccionables: itemPromocionViewModel.productosSeleccionablesState,
-                    viewModel: itemPromocionViewModel
+                    viewModel: itemPromocionViewModel,
+                    onLimiteAlcanzado: mostrarToast
                 )
             }
             .frame(maxHeight: .infinity)
@@ -202,6 +203,18 @@ struct BottomSheetSeleccionPromocion: View {
             .presentationDetents([.fraction(0.75)])
         }
         .overlay(ToastView(mensaje: $mensajeToast))
+    }
+
+    private func mostrarToast(_ mensaje: String) {
+        withAnimation {
+            mensajeToast = mensaje
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation {
+                mensajeToast = nil
+            }
+        }
     }
     
     // --- Lógica de negocio extraída ---
@@ -284,6 +297,7 @@ struct ProductosSeleccionablesTabs: View {
     let comercio: Comercio
     let productosSeleccionables: [String: ProductoSeleccionableState]
     @ObservedObject var viewModel: ItemPromocionViewModel
+    let onLimiteAlcanzado: (String) -> Void
     
     @State private var selectedTabIndex = 0
     
@@ -338,7 +352,8 @@ struct ProductosSeleccionablesTabs: View {
                             },
                             onCambiarSeleccionadoMultiple: { id, cantidad in
                                 viewModel.cambiarSeleccionadoMultiple(productoState: state, id: id, cantidad: cantidad)
-                            }
+                            },
+                            onLimiteAlcanzado: onLimiteAlcanzado
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }

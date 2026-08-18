@@ -347,7 +347,8 @@ struct BottomSheetSeleccionProducto: View {
                                     id: id,
                                     cantidad: cant
                                 )
-                            }
+                            },
+                            onLimiteAlcanzado: mostrarToast
                         )
                     } else if tieneAlternativas {
                         Alternativas(
@@ -535,6 +536,18 @@ struct BottomSheetSeleccionProducto: View {
             Button("Aceptar", role: .cancel) {}
         } message: {
             Text(mensajeDialogoMenuNoDisponible)
+        }
+    }
+
+    private func mostrarToast(_ mensaje: String) {
+        withAnimation {
+            mensajeToast = mensaje
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation {
+                mensajeToast = nil
+            }
         }
     }
     

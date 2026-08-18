@@ -24,10 +24,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         FirebaseApp.configure()
         Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
 
-        if ProcessInfo.processInfo.arguments.contains("-crashlyticsTestCrash") {
-            fatalError("Crashlytics test crash")
-        }
-
         // Google Maps
         if let apiKey = Bundle.main.object(
             forInfoDictionaryKey: "GOOGLE_MAPS_API_KEY"

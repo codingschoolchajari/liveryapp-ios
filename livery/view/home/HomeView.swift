@@ -5,7 +5,6 @@
 //  Created by Nicolas Matias Garay on 18/12/2025.
 //
 import SwiftUI
-import FirebaseCrashlytics
 
 struct HomeView: View {
 
@@ -100,29 +99,6 @@ struct HomeView: View {
                             .padding(.trailing, 20)
                             .padding(.bottom, 16)
                         }
-                    }
-                }
-
-                VStack {
-                    Spacer()
-                    HStack {
-                        Button {
-                            Crashlytics.crashlytics().log("Crash de prueba activado desde Home")
-                            fatalError("Crashlytics test crash from Home")
-                        } label: {
-                            Text("Test Crashlytics")
-                                .font(.custom("Barlow", size: 14))
-                                .bold()
-                                .foregroundColor(.blanco)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                                .background(Color.red)
-                                .clipShape(Capsule())
-                        }
-                        .padding(.leading, 20)
-                        .padding(.bottom, 16)
-
-                        Spacer()
                     }
                 }
             }

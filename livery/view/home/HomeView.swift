@@ -733,18 +733,25 @@ struct BottomSheetDirecciones: View {
             }
             .frame(maxHeight: 250)
             
-            Text("Tips de Ayuda : en caso de no poder agregar una dirección, es muy probable que sea un inconveniente con su sesión de usuario. Dirijase a la sección de Perfil (icono de persona, arriba a la derecha) y presione el botón \"Cerrar Sesión\"")
-                .font(.custom("Barlow", size: 13))
-                .foregroundColor(.naranjaPrincipal)
+            (
+                Text("Tips de Ayuda: ")
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.verdePrincipal)
+                +
+                Text("en caso de no poder agregar una dirección, es muy probable que sea un inconveniente con su sesión de usuario. Dirijase a la sección de Perfil (icono de persona, arriba a la derecha) y presione el botón \"Cerrar Sesión\"")
+                    .font(.custom("Barlow", size: 14))
+                    .foregroundColor(.grisTerciario)
+            )
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.naranjaPrincipal.opacity(0.12))
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.blanco)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.naranjaPrincipal, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.verdePrincipal, lineWidth: 1)
                 )
             
             Spacer()

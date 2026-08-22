@@ -758,7 +758,7 @@ struct BottomSheetDirecciones: View {
                 Text(iconoChico)
                     .baselineOffset(-2)
                 +
-                Text("   y presione el botón \"Cerrar Sesión\".")
+                Text("   y presione el botón \"Cerrar Sesión\". Luego inicie sesión y pruebe nuevamente.")
                     .font(.custom("Barlow", size: 14))
                     .foregroundColor(.grisTerciario)
             )

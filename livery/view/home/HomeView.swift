@@ -739,7 +739,14 @@ struct BottomSheetDirecciones: View {
                     .bold()
                     .foregroundColor(.verdePrincipal)
                 +
-                Text("en caso de no poder agregar una dirección diríjase a la sección de Perfil y presione el botón \"Cerrar Sesión\". \n\n Para ingresar a Perfil presione el icono con forma de persona que se encuentra arriba a la derecha.")
+                Text("en caso de no poder agregar una dirección diríjase a la sección de Perfil ")
+                    .font(.custom("Barlow", size: 14))
+                    .foregroundColor(.grisTerciario)
+                +
+                Text(Image("icono_perfil"))
+                    .baselineOffset(-2)
+                +
+                Text(" y presione el botón \"Cerrar Sesión\".")
                     .font(.custom("Barlow", size: 14))
                     .foregroundColor(.grisTerciario)
             )

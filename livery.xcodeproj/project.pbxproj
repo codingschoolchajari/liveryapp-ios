@@ -11,10 +11,10 @@
 		B35EF5FC2F0DBB9000D2D907 /* GooglePlaces in Frameworks */ = {isa = PBXBuildFile; productRef = B35EF5FB2F0DBB9000D2D907 /* GooglePlaces */; };
 		B3AFD24F2EF3A14A00C9EDB2 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD24E2EF3A14A00C9EDB2 /* Lottie */; };
 		B3AFD2572EF3A9AE00C9EDB2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD2562EF3A9AE00C9EDB2 /* FirebaseAuth */; };
-		B3AFD25A2EF3A9AE00C9EDB2 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD25B2EF3A9AE00C9EDB2 /* FirebaseCrashlytics */; };
 		B3AFD2592EF3A9AE00C9EDB2 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD2582EF3A9AE00C9EDB2 /* FirebaseMessaging */; };
 		B3AFD3012EF448DF00C9EDB2 /* JWTDecode in Frameworks */ = {isa = PBXBuildFile; productRef = B3AFD3002EF448DF00C9EDB2 /* JWTDecode */; };
 		B3CEC5DB2EF9BFB2003052F9 /* GoogleMaps in Frameworks */ = {isa = PBXBuildFile; productRef = B3CEC5DA2EF9BFB2003052F9 /* GoogleMaps */; };
+		B3DB4F4D30340865003D5586 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = B3DB4F4C30340865003D5586 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +81,7 @@
 				B35EF5FC2F0DBB9000D2D907 /* GooglePlaces in Frameworks */,
 				B3CEC5DB2EF9BFB2003052F9 /* GoogleMaps in Frameworks */,
 				B3AFD3012EF448DF00C9EDB2 /* JWTDecode in Frameworks */,
+				B3DB4F4D30340865003D5586 /* FirebaseCrashlytics in Frameworks */,
 				B3AFD2572EF3A9AE00C9EDB2 /* FirebaseAuth in Frameworks */,
 				B35EF5FA2F0DBA0900D2D907 /* GooglePlacesSwift in Frameworks */,
 			);
@@ -159,6 +160,7 @@
 				B3CEC5DA2EF9BFB2003052F9 /* GoogleMaps */,
 				B35EF5F92F0DBA0900D2D907 /* GooglePlacesSwift */,
 				B35EF5FB2F0DBB9000D2D907 /* GooglePlaces */,
+				B3DB4F4C30340865003D5586 /* FirebaseCrashlytics */,
 			);
 			productName = livery;
 			productReference = B3D0DD532EDFD53600DF1EDF /* livery.app */;
@@ -493,7 +495,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.codingschool.livery;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -536,7 +538,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.codingschool.livery;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -758,6 +760,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B3CEC5D92EF9BFB2003052F9 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */;
 			productName = GoogleMaps;
+		};
+		B3DB4F4C30340865003D5586 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B3AFD2552EF3A9AE00C9EDB2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

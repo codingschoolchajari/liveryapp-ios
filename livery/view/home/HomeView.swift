@@ -733,6 +733,18 @@ struct BottomSheetDirecciones: View {
             }
             .frame(maxHeight: 250)
             
+            let iconoChico: Image = {
+                if let img = UIImage(named: "icono_perfil") {
+                    let tam = UIFont(name: "Barlow-Bold", size: 14)?.lineHeight ?? 14
+                    let renderer = UIGraphicsImageRenderer(size: CGSize(width: tam, height: tam))
+                    let resized = renderer.image { _ in
+                        img.draw(in: CGRect(origin: .zero, size: CGSize(width: tam, height: tam)))
+                    }
+                    return Image(uiImage: resized)
+                }
+                return Image("icono_perfil")
+            }()
+            
             (
                 Text("Tips de Ayuda: ")
                     .font(.custom("Barlow", size: 14))
@@ -743,8 +755,7 @@ struct BottomSheetDirecciones: View {
                     .font(.custom("Barlow", size: 14))
                     .foregroundColor(.grisTerciario)
                 +
-                Text(Image("icono_perfil"))
-                    .baselineOffset(-2)
+                Text(iconoChico)
                 +
                 Text(" y presione el botón \"Cerrar Sesión\".")
                     .font(.custom("Barlow", size: 14))

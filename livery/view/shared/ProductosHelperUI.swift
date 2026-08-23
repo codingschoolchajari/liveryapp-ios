@@ -307,7 +307,7 @@ struct GrupoSeleccionablesCard<Content: View>: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
         }
-        .background(Color(.systemBackground))
+        .background(Color.blanco)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
             RoundedRectangle(cornerRadius: 16)

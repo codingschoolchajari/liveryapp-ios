@@ -259,7 +259,7 @@ private struct TarjetaPuntos: View {
             }
             .padding(12)
         }
-        .frame(width: 330, height: 80)
+        .frame(width: 280, height: 80)
         .background(Color.blanco)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)

@@ -61,6 +61,7 @@ struct MisPuntosView: View {
                         }
                     }
                     .pickerStyle(.segmented)
+                    .tint(.verdeSistemaPuntos)
                     .padding(.horizontal, 50)
 
                     Spacer().frame(height: 16)
@@ -80,7 +81,7 @@ struct MisPuntosView: View {
                 }
             }
         }
-        .background(Color(UIColor.systemBackground))
+        .background(Color.blanco)
         .onAppear {
             if let email = perfilUsuarioState.usuario?.email {
                 misPuntosViewModel.cargarPuntos(email: email)

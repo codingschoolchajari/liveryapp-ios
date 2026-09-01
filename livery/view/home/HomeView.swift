@@ -58,7 +58,7 @@ struct HomeView: View {
                     } else {
                         FranjaBusqueda(homeViewModel: homeViewModel)
                         ListaComerciosProductos(homeViewModel: homeViewModel)
-}
+                    }
                 }
 
                 VStack(spacing: 0) {
@@ -560,14 +560,11 @@ struct ListaComercios: View {
                                 }
                             }
                         }
-.onTapGesture {
+                        .onTapGesture {
                             navManager.homePath.append(NavigationManager.HomeDestination.comercio(idComercio: comercio.idInterno))
                         }
                 }
             }
-        }
-    }
-}
         }
     }
 }

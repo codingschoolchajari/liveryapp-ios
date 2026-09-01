@@ -102,7 +102,7 @@ struct HomeView: View {
                             .padding(.bottom, 16)
                         }
                     }
-                    .padding(.bottom, 48)
+                    .padding(.bottom, 16)
                 }
 
                 VStack(spacing: 0) {

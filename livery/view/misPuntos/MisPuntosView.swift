@@ -76,7 +76,7 @@ struct MisPuntosView: View {
                             )
                             .clipShape(
                                 RoundedCorners(
-                                    radius: index == 0 || index == opciones.count - 1 ? 6 : 0,
+                                    radius: index == 0 || index == opciones.count - 1 ? 14 : 0,
                                     corners: index == 0 ? [.topLeft, .bottomLeft]
                                         : index == opciones.count - 1 ? [.topRight, .bottomRight]
                                         : []
@@ -130,11 +130,12 @@ private struct HistorialPuntos: View {
                     HStack(spacing: 4) {
                         ForEach(sistemaDePuntos, id: \.concepto) { item in
                             TarjetaPuntos(item: item)
+                            .padding(.vertical, 4)
                         }
                     }
                     .padding(.horizontal, 16)
                 }
-                .frame(height: 100)
+                .frame(height: 88)
 
                 Spacer().frame(height: 24)
             }
@@ -230,8 +231,7 @@ private struct TarjetaPuntos: View {
     var body: some View {
         HStack(spacing: 0) {
             RemoteImage(url: URL(string: API.baseURL + "/" + item.imagenURL))
-                .frame(width: 100)
-                .frame(maxHeight: .infinity)
+                .frame(width: 100, height: 80)
                 .clipped()
 
             VStack(alignment: .leading, spacing: 4) {
@@ -258,7 +258,7 @@ private struct TarjetaPuntos: View {
             }
             .padding(12)
         }
-        .frame(width: 330, height: 100)
+        .frame(width: 330, height: 80)
         .background(Color.blanco)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)

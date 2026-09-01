@@ -637,10 +637,10 @@ struct ListaPremiosRepartidos: View {
                             }
                             Text(premio.nombreProducto)
                                 .font(.custom("Barlow", size: 14))
-                                .foregroundColor(.grisSecundario)
+                                .foregroundColor(.grisTerciario)
                             Text(premio.fechaAsignacion)
                                 .font(.custom("Barlow", size: 14))
-                                .foregroundColor(.grisSecundario)
+                                .foregroundColor(.grisTerciario)
                         }
                         Spacer()
                     }

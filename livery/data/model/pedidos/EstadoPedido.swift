@@ -78,6 +78,8 @@ enum EstadoPedido: String, CaseIterable, Codable {
 }
 
 extension Color {
+    static let verdeSistemaPuntos = Color(hex: 0xFF30AF3E)
+
     init(hex: UInt32) {
         let a = Double((hex >> 24) & 0xFF) / 255
         let r = Double((hex >> 16) & 0xFF) / 255

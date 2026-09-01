@@ -23,11 +23,29 @@ struct DoubleUtils {
         // Convertimos el valor a NSNumber (requerido por el formatter)
         let numero = NSNumber(value: valor)
         
-        if let resultado = formatter.string(from: numero) {
+if let resultado = formatter.string(from: numero) {
             return "$ \(resultado)"
         }
         
         return "$ \(Int(valor))"
     }
-    
+
+    static func formatearPuntos(valor: Int) -> String {
+        let formatter = NumberFormatter()
+
+        formatter.numberStyle = .decimal
+
+        formatter.groupingSeparator = "."
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 0
+
+        let numero = NSNumber(value: valor)
+
+        if let resultado = formatter.string(from: numero) {
+            return resultado
+        }
+
+        return "\(valor)"
+    }
+
 }

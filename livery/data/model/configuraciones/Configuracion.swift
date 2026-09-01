@@ -45,4 +45,5 @@ struct Configuracion: Codable {
     let configuracionIOS: ConfiguracionIOS
     let plataformas: ConfiguracionPlataformas
     let mensajeEnviosLivery: String?
+    let sistemaDePuntos: [ConfiguracionSistemaPuntos]?
 }

@@ -44,6 +44,11 @@ struct SeccionesView: View {
                                         perfilUsuarioState: perfilUsuarioState
                                     )
                                         .navigationBackButtonHiddenWithSwipe()
+                                case .misPuntos:
+                                    MisPuntosView(
+                                        perfilUsuarioState: perfilUsuarioState
+                                    )
+                                        .navigationBackButtonHiddenWithSwipe()
                                 }
                             }
                     }

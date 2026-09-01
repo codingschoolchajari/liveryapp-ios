@@ -112,6 +112,7 @@ class PremiosViewModel: ObservableObject {
                 // Configuración de los valores del premio
                 producto?.esPremio = true
                 producto?.idPremio = idPremio
+                producto?.tipoPremio = "PREMIO_GANADO_RULETA"
                 producto?.precio = 0.0
                 producto?.precioSinDescuento = nil
                 producto?.descuento = nil

@@ -10,6 +10,7 @@ struct HomeView: View {
 
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @EnvironmentObject var notificacionesState: NotificacionesState
+    @EnvironmentObject var navManager: NavigationManager
     @StateObject var homeViewModel : HomeViewModel
     
     init(perfilUsuarioState: PerfilUsuarioState) {
@@ -105,15 +106,15 @@ struct HomeView: View {
         }
         .background(Color.blanco)
         .onAppear {
-            // Refrescar notificaciones cuando aparece la vista (similar a HomeLifecycleObserver en Android)
             if let email = perfilUsuarioState.usuario?.email {
                 notificacionesState.refrescarNotificaciones(receptor: email)
+                homeViewModel.cargarPuntos(email: email)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-            // Refrescar notificaciones cuando la app vuelve del background (equivalente a onStart en Android)
             if let email = perfilUsuarioState.usuario?.email {
                 notificacionesState.refrescarNotificaciones(receptor: email)
+                homeViewModel.cargarPuntos(email: email)
             }
         }
     }
@@ -499,8 +500,42 @@ struct ListaComercios: View {
                         }
                         .onTapGesture {
                             navManager.homePath.append(NavigationManager.HomeDestination.comercio(idComercio: comercio.idInterno))
-                        }
+}
                 }
+            }
+            .padding(.bottom, 16)
+            .overlay(alignment: .bottom) {
+                VStack(spacing: 0) {
+                    Rectangle()
+                        .fill(Color.grisSecundario)
+                        .frame(height: 1)
+                    
+                    Button {
+                        navManager.irAMisPuntos()
+                    } label: {
+                        HStack {
+                            Text("Mis Puntos Livery")
+                                .font(.custom("Barlow", size: 13))
+                                .bold()
+                                .foregroundColor(.blanco)
+                            
+                            Spacer()
+                            
+                            Text("\(DoubleUtils.formatearPuntos(valor: homeViewModel.puntos ?? 0)) pts")
+                                .font(.custom("Barlow", size: 13))
+                                .bold()
+                                .foregroundColor(.blanco)
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.blanco)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.verdePrincipal)
+                    }
+                }
+            }
             }
         }
     }

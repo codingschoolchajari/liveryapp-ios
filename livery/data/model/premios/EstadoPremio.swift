@@ -9,6 +9,7 @@ import SwiftUI
 enum EstadoPremio: String, Codable, CaseIterable {
     case asignado = "ASIGNADO"
     case utilizado = "UTILIZADO"
+    case vencido = "VENCIDO"
 
     var descripcion: String {
         switch self {
@@ -16,6 +17,8 @@ enum EstadoPremio: String, Codable, CaseIterable {
             return "Premio aún no utilizado"
         case .utilizado:
             return "Premio utilizado"
+        case .vencido:
+            return "Premio vencido"
         }
     }
 
@@ -25,6 +28,8 @@ enum EstadoPremio: String, Codable, CaseIterable {
             return Color(red: 1.0, green: 0.596, blue: 0.0)   // #FF9800
         case .utilizado:
             return Color(red: 0.188, green: 0.686, blue: 0.243) // #30AF3E
+        case .vencido:
+            return Color(red: 0.620, green: 0.620, blue: 0.620) // #9E9E9E
         }
     }
 

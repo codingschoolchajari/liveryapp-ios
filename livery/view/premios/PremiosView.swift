@@ -309,9 +309,9 @@ struct ListaPremios: View {
         ScrollView {
             LazyVStack(spacing: 12) {
                 ForEach(listaFiltrada, id: \.id) { premio in
+                    let esPremioLivery = premio.tipo == "PREMIO_LIVERY"
                     HStack(alignment: .top) {
-                        // Imagen Logo (con URL base)
-                        RemoteImage(url: URL(string: API.baseURL + "/" + premio.logoComercioURL))
+                        RemoteImage(url: URL(string: API.baseURL + "/" + (esPremioLivery ? "images/puntos/\(premio.idProducto).png" : premio.logoComercioURL)))
                         .frame(width: 65, height: 65)
                         .cornerRadius(12)
                         .clipped()
@@ -324,10 +324,12 @@ struct ListaPremios: View {
                     .background(Color.grisSurface)
                     .cornerRadius(12)
                     .onTapGesture {
-                        if carritoViewModel.existePremioEnCarrito(idInterno: premio.idInterno) {
-                            mostrarAlertaError = true
-                        } else if EstadoPremio.desdeString(premio.estado) == .asignado {
-                            premiosViewModel.seleccionarPremio(premio: premio)
+                        if !esPremioLivery {
+                            if carritoViewModel.existePremioEnCarrito(idInterno: premio.idInterno) {
+                                mostrarAlertaError = true
+                            } else if EstadoPremio.desdeString(premio.estado) == .asignado {
+                                premiosViewModel.seleccionarPremio(premio: premio)
+                            }
                         }
                     }
                 }
@@ -387,31 +389,47 @@ struct SeleccionProductoView: View {
 
 struct PremioDescripcion: View {
     let premio: Premio
+
+    private var esPremioLivery: Bool { premio.tipo == "PREMIO_LIVERY" }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            // Nombre del Producto
             Text(premio.nombreProducto)
                 .font(.custom("Barlow", size: 16))
                 .bold()
                 .foregroundColor(.negro)
+
+            if let descripcion = premio.descripcion, !descripcion.isEmpty {
+                Text(descripcion)
+                    .font(.custom("Barlow", size: 13))
+                    .bold()
+                    .foregroundColor(.grisTerciario)
+            }
             
-            // Fecha de Asignación
             Text("Ganado : \(DateUtils.fechaSinSegundos(premio.fechaAsignacion))")
-                .font(.custom("Barlow", size: 14))
+                .font(.custom("Barlow", size: 13))
+                .bold()
                 .foregroundColor(.negro)
+
+            if let fechaVenc = premio.fechaVencimiento, !fechaVenc.isEmpty {
+                Text("Vence : \(DateUtils.fechaSinSegundos(fechaVenc))")
+                    .font(.custom("Barlow", size: 13))
+                    .bold()
+                    .foregroundColor(.red)
+            }
             
-            // Fecha de Utilización (Conditional)
             if let fechaUti = premio.fechaUtilizacion, !fechaUti.isEmpty {
                 Text("Utilizado : \(DateUtils.fechaSinSegundos(fechaUti))")
-                    .font(.custom("Barlow", size: 14))
+                    .font(.custom("Barlow", size: 13))
                     .foregroundColor(.negro)
             }
-            // Estado del Premio
-            Text(PremiosHelper.obtenerEstadoPremio(premio.estado))
-                .font(.custom("Barlow", size: 14))
-                .bold()
-                .foregroundColor(PremiosHelper.obtenerColorEstadoPremio(premio.estado) ?? .primary)
+
+            if !esPremioLivery || premio.idProducto == "premio-envio-gratis" {
+                Text(PremiosHelper.obtenerEstadoPremio(premio.estado))
+                    .font(.custom("Barlow", size: 12))
+                    .bold()
+                    .foregroundColor(PremiosHelper.obtenerColorEstadoPremio(premio.estado) ?? .primary)
+            }
         }
     }
 }
@@ -471,6 +489,14 @@ struct DialogoResultadoGirarRuleta: View {
                                 .font(.custom("Barlow", size: 20))
                                 .bold()
                                 .foregroundColor(.negro)
+
+                            if let descripcion = resultado?.descripcion, !descripcion.isEmpty {
+                                Text(descripcion)
+                                    .font(.custom("Barlow", size: 14))
+                                    .foregroundColor(.grisSecundario)
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+                            }
                         }
                     }
                     .padding(.vertical, 32)
@@ -595,8 +621,9 @@ struct ListaPremiosRepartidos: View {
         ScrollView {
             LazyVStack(spacing: 12) {
                 ForEach(premiosViewModel.premiosAsignados) { premio in
+                    let esPremioLivery = premio.tipo == "PREMIO_LIVERY"
                     HStack(alignment: .center, spacing: 12) {
-                        RemoteImage(url: URL(string: API.baseURL + "/" + (premio.logoComercioURL)))
+                        RemoteImage(url: URL(string: API.baseURL + "/" + (esPremioLivery ? "images/puntos/\(premio.idProducto).png" : premio.logoComercioURL)))
                         .frame(width: 65, height: 65)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .clipped()
@@ -644,8 +671,9 @@ struct ListaPremiosPendientes: View {
         ScrollView {
             LazyVStack(spacing: 12) {
                 ForEach(premiosViewModel.premiosDisponibles) { premio in
+                    let esPremioLivery = premio.tipo == "PREMIO_LIVERY"
                     HStack(alignment: .center, spacing: 12) {
-                        RemoteImage(url: URL(string: API.baseURL + "/" + (premio.logoComercioURL ?? "")))
+                        RemoteImage(url: URL(string: API.baseURL + "/" + (esPremioLivery ? "images/puntos/\(premio.idProducto).png" : (premio.logoComercioURL ?? ""))))
                         .frame(width: 65, height: 65)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .clipped()

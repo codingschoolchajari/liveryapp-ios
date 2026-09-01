@@ -14,6 +14,7 @@ class HomeViewModel: ObservableObject {
 
     private let perfilUsuarioState: PerfilUsuarioState
     private let comerciosService = ComerciosService()
+    private let usuariosService = UsuariosService()
     
     // Comercios
     @Published var categoriaSeleccionada: String?
@@ -39,6 +40,9 @@ class HomeViewModel: ObservableObject {
     // Extras
     var comercio: Comercio?
     var categoria: Categoria?
+
+    // Puntos
+    @Published var puntos: Int?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -276,10 +280,29 @@ class HomeViewModel: ObservableObject {
             promocionSeleccionada = ComerciosHelper.obtenerPromocion(comercio: comercio!, idPromocion: idPromocion)
             
         } catch {
-            print("Error iniciando promoción seleccionada: \(error)")
+print("Error iniciando promoción seleccionada: \(error)")
         }
     }
-    
+
+    func cargarPuntos(email: String) {
+        Task {
+            do {
+                await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+                let accessToken = TokenRepository.repository.accessToken ?? ""
+                let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+
+                let resultado = try await usuariosService.obtenerPuntos(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    email: email
+                )
+                self.puntos = resultado.total
+            } catch {
+                print("Error al cargar puntos: \(error)")
+            }
+        }
+    }
+
     func recalcularDistanciasComercios() {
         // Para comercios por categoría, la distancia la calcula el backend.
         paginaActualComercios = 0

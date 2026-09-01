@@ -70,6 +70,7 @@ class ItemProductoViewModel: ObservableObject {
             opcionesPersonalizables: buildOpcionesPersonalizables(),
             esPremio: producto.esPremio ?? false,
             idPremio: producto.idPremio,
+            tipoPremio: producto.tipoPremio,
             contieneAlcohol: producto.contieneAlcohol,
             disponibleParaDelivery: buildDisponibleParaDelivery(),
             horariosReducidos: producto.horariosReducidos

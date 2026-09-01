@@ -275,4 +275,55 @@ class UsuariosService {
             throw URLError(.badServerResponse)
         }
     }
+
+    func obtenerPuntos(
+        token: String,
+        dispositivoID: String,
+        email: String
+    ) async throws -> UsuarioPuntos {
+        guard let url = URL(string: "\(usuariosURL)/puntos/\(email)") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        return try JSONDecoder().decode(UsuarioPuntos.self, from: data)
+    }
+
+    func obtenerHistorialPuntos(
+        token: String,
+        dispositivoID: String,
+        email: String,
+        skip: Int,
+        limit: Int = 40
+    ) async throws -> HistorialPuntosResponse {
+        var components = URLComponents(string: "\(usuariosURL)/puntos/historial/\(email)")!
+        components.queryItems = [
+            URLQueryItem(name: "skip", value: "\(skip)"),
+            URLQueryItem(name: "limit", value: "\(limit)")
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        return try JSONDecoder().decode(HistorialPuntosResponse.self, from: data)
+    }
 }

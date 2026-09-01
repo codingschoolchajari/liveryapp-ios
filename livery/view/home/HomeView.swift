@@ -99,7 +99,7 @@ struct HomeView: View {
                             .clipShape(Circle())
                             .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
                             .padding(.trailing, 20)
-                            .padding(.bottom, 16)
+                            .padding(.bottom, 32)
                         }
                     }
                     .padding(.bottom, 16)

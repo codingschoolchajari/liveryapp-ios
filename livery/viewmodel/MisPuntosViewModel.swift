@@ -15,6 +15,8 @@ class MisPuntosViewModel: ObservableObject {
 
     @Published var puntos: Int? = nil
 
+    @Published var pestaniaActiva: String = "Historial"
+
     @Published var historialPuntos: [HistorialPuntosItem] = []
     @Published var cargandoHistorial: Bool = false
     @Published var hayMasHistorial: Bool = true

@@ -16,7 +16,12 @@ struct MisPuntosView: View {
         )
     }
 
-    @State private var pestaniaSeleccionada = "Historial"
+    private var pestaniaSeleccionada: Binding<String> {
+        Binding(
+            get: { misPuntosViewModel.pestaniaActiva },
+            set: { misPuntosViewModel.pestaniaActiva = $0 }
+        )
+    }
     private let opciones = ["Historial", "Productos", "Canjeados"]
 
     var body: some View {
@@ -53,20 +58,37 @@ struct MisPuntosView: View {
 
                     Spacer().frame(height: 4)
 
-                    Picker("", selection: $pestaniaSeleccionada) {
-                        ForEach(opciones, id: \.self) { opcion in
-                            Text(opcion)
-                                .font(.custom("Barlow", size: 12))
-                                .bold()
+                    HStack(spacing: 0) {
+                        ForEach(Array(opciones.enumerated()), id: \.element) { index, opcion in
+                            let seleccionada = pestaniaSeleccionada.wrappedValue == opcion
+                            Button(action: { pestaniaSeleccionada.wrappedValue = opcion }) {
+                                Text(opcion)
+                                    .font(.custom("Barlow", size: 12))
+                                    .bold()
+                                    .foregroundColor(seleccionada ? .blanco : .grisSecundario)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 10)
+                                    .background(seleccionada ? Color.verdeSistemaPuntos : Color.grisSurface)
+                            }
+                            .overlay(
+                                Rectangle()
+                                    .stroke(seleccionada ? Color.verdeSistemaPuntos : Color.grisSecundario, lineWidth: 1)
+                            )
+                            .clipShape(
+                                RoundedCorners(
+                                    radius: index == 0 || index == opciones.count - 1 ? 6 : 0,
+                                    corners: index == 0 ? [.topLeft, .bottomLeft]
+                                        : index == opciones.count - 1 ? [.topRight, .bottomRight]
+                                        : []
+                                )
+                            )
                         }
                     }
-                    .pickerStyle(.segmented)
-                    .tint(.verdeSistemaPuntos)
                     .padding(.horizontal, 50)
 
                     Spacer().frame(height: 16)
 
-                    switch pestaniaSeleccionada {
+                    switch pestaniaSeleccionada.wrappedValue {
                     case "Historial":
                         HistorialPuntos(misPuntosViewModel: misPuntosViewModel)
                     case "Productos":
@@ -170,6 +192,7 @@ private struct FilaHistorial: View {
         HStack(spacing: 12) {
             RemoteImage(url: URL(string: API.baseURL + "/" + item.logoURL))
                 .frame(width: 50, height: 50)
+                .background(Color.grisSurface)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .clipped()
 
@@ -288,7 +311,10 @@ private struct ProductosPuntos: View {
                                     idComercio: idComercio,
                                     email: perfilUsuarioState.usuario?.email ?? ""
                                 ) { exito in
-                                    if !exito {
+                                    if exito {
+                                        misPuntosViewModel.cargarPremiosCanjeados(email: perfilUsuarioState.usuario?.email ?? "")
+                                        misPuntosViewModel.pestaniaActiva = "Canjeados"
+                                    } else {
                                         mensajeToast = "Error al canjear el producto"
                                     }
                                     onComplete()
@@ -390,6 +416,7 @@ private struct RowFront: View {
         HStack(spacing: 12) {
             RemoteImage(url: URL(string: API.baseURL + "/" + (item.logoComercioURL ?? "")))
                 .frame(width: 62.5, height: 62.5)
+                .background(Color.grisSurface)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .clipped()
 
@@ -408,6 +435,7 @@ private struct RowFront: View {
 
             RemoteImage(url: URL(string: API.baseURL + "/" + (item.imagenURL ?? "")))
                 .frame(width: 62.5, height: 62.5)
+                .background(Color.grisSurface)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .clipped()
         }
@@ -512,6 +540,7 @@ private struct FilaPremioCanjeado: View {
         HStack(spacing: 12) {
             RemoteImage(url: URL(string: API.baseURL + "/" + (item.logoComercioURL ?? "")))
                 .frame(width: 62.5, height: 62.5)
+                .background(Color.grisSurface)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .clipped()
 
@@ -536,6 +565,7 @@ private struct FilaPremioCanjeado: View {
 
             RemoteImage(url: URL(string: API.baseURL + "/" + (item.imagenURL ?? "")))
                 .frame(width: 62.5, height: 62.5)
+                .background(Color.grisSurface)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .clipped()
         }

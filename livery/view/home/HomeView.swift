@@ -58,9 +58,40 @@ struct HomeView: View {
                     } else {
                         FranjaBusqueda(homeViewModel: homeViewModel)
                         ListaComerciosProductos(homeViewModel: homeViewModel)
+}
+                }
+
+                VStack(spacing: 0) {
+                    Spacer()
+                    Rectangle()
+                        .fill(Color.grisSecundario)
+                        .frame(height: 1)
+                    Button {
+                        navManager.irAMisPuntos()
+                    } label: {
+                        HStack {
+                            Text("Mis Puntos Livery")
+                                .font(.custom("Barlow", size: 13))
+                                .bold()
+                                .foregroundColor(.blanco)
+
+                            Spacer()
+
+                            Text("\(DoubleUtils.formatearPuntos(valor: homeViewModel.puntos ?? 0)) pts")
+                                .font(.custom("Barlow", size: 13))
+                                .bold()
+                                .foregroundColor(.blanco)
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.blanco)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.verdePrincipal)
                     }
                 }
-                }
+            }
                 .padding(.bottom, 16)
 
                 if sinDireccionSeleccionada {
@@ -100,6 +131,37 @@ struct HomeView: View {
                             .padding(.trailing, 20)
                             .padding(.bottom, 16)
                         }
+                    }
+                }
+
+                VStack(spacing: 0) {
+                    Spacer()
+                    Rectangle()
+                        .fill(Color.grisSecundario)
+                        .frame(height: 1)
+                    Button {
+                        navManager.irAMisPuntos()
+                    } label: {
+                        HStack {
+                            Text("Mis Puntos Livery")
+                                .font(.custom("Barlow", size: 13))
+                                .bold()
+                                .foregroundColor(.blanco)
+
+                            Spacer()
+
+                            Text("\(DoubleUtils.formatearPuntos(valor: homeViewModel.puntos ?? 0)) pts")
+                                .font(.custom("Barlow", size: 13))
+                                .bold()
+                                .foregroundColor(.blanco)
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.blanco)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.verdePrincipal)
                     }
                 }
             }
@@ -498,45 +560,14 @@ struct ListaComercios: View {
                                 }
                             }
                         }
-                        .onTapGesture {
+.onTapGesture {
                             navManager.homePath.append(NavigationManager.HomeDestination.comercio(idComercio: comercio.idInterno))
-}
-                }
-            }
-            .padding(.bottom, 16)
-            .overlay(alignment: .bottom) {
-                VStack(spacing: 0) {
-                    Rectangle()
-                        .fill(Color.grisSecundario)
-                        .frame(height: 1)
-                    
-                    Button {
-                        navManager.irAMisPuntos()
-                    } label: {
-                        HStack {
-                            Text("Mis Puntos Livery")
-                                .font(.custom("Barlow", size: 13))
-                                .bold()
-                                .foregroundColor(.blanco)
-                            
-                            Spacer()
-                            
-                            Text("\(DoubleUtils.formatearPuntos(valor: homeViewModel.puntos ?? 0)) pts")
-                                .font(.custom("Barlow", size: 13))
-                                .bold()
-                                .foregroundColor(.blanco)
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.blanco)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color.verdePrincipal)
-                    }
                 }
             }
-            }
+        }
+    }
+}
         }
     }
 }

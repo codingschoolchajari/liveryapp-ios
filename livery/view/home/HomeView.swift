@@ -536,7 +536,6 @@ struct ListaComercios: View {
                     }
                 }
             }
-            }
         }
     }
 }

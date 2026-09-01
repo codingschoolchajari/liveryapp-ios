@@ -231,9 +231,7 @@ private struct TarjetaPuntos: View {
     var body: some View {
         HStack(spacing: 0) {
             RemoteImage(url: URL(string: API.baseURL + "/" + item.imagenURL))
-                .background(Color.blanco)
-                .frame(width: 100, height: 80)
-                .clipped()
+                .frame(width: 80, height: 80)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 0) {
@@ -261,7 +259,7 @@ private struct TarjetaPuntos: View {
         }
         .frame(width: 330, height: 80)
         .background(Color.blanco)
-        .cornerRadius(16)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
     }
 }

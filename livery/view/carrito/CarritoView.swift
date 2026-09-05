@@ -387,6 +387,8 @@ struct ResumenView: View {
                 .font(.custom("Barlow", size: 18))
                 .bold()
                 .foregroundColor(.negro)
+
+            Spacer().frame(height: 4)
             
             HStack {
                 Text("Productos")

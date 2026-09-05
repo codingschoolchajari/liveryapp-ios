@@ -394,14 +394,6 @@ struct ResumenView: View {
                 Text(DoubleUtils.formatearPrecio(valor: carritoViewModel.precioTotal))
             }
             .font(.custom("Barlow", size: 16))
-            .foregroundColor(.negro)
-
-            HStack {
-                Text("Subtotal")
-                Spacer()
-                Text(DoubleUtils.formatearPrecio(valor: subtotal))
-            }
-            .font(.custom("Barlow", size: 16))
             .bold()
             .foregroundColor(.negro)
 
@@ -413,7 +405,7 @@ struct ResumenView: View {
                 HStack {
                     HStack(spacing: 6) {
                         Text("Productos")
-                            .font(.custom("Barlow", size: 14))
+                            .font(.custom("Barlow", size: 16))
                             .bold()
                             .foregroundColor(.negro)
                         Text(descuentoEfectivo.descripcionAbreviada ?? "")
@@ -427,7 +419,7 @@ struct ResumenView: View {
                     }
                     Spacer()
                     Text(DoubleUtils.formatearPrecio(valor: precioConDescuento))
-                        .font(.custom("Barlow", size: 14))
+                        .font(.custom("Barlow", size: 16))
                         .bold()
                         .foregroundColor(.negro)
                 }

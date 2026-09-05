@@ -354,7 +354,7 @@ struct ComercioTitulo: View {
                 // Grupo Derecho
                 HStack(spacing: 8) {
                     if mostrarEstadoApertura {
-                        VStack(spacing: 2) {
+                        VStack(alignment: .trailing, spacing: 2) {
                             Text(estaAbierto ? "Abierto" : "Cerrado")
                                 .font(.custom("Barlow", size: 11).bold())
                                 .foregroundColor(.white)

@@ -37,6 +37,7 @@ struct ComercioDescuento: Codable {
     var idInterno: String = ""
     var palabraClave: String = ""
     var descripcion: String = ""
+    var descripcionAbreviada: String? = nil
     var porcentaje: Double = 0.0
 }
 

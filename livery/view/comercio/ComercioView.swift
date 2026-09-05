@@ -234,17 +234,13 @@ private struct BoxDescuentoPortada: View {
         Text("\(descuento.descripcion) (\(porcentajeTexto)%)")
             .font(.custom("Barlow", size: 13))
             .bold()
-            .foregroundColor(.verdePrincipal)
+            .foregroundColor(.negro)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity)
             .frame(height: 38)
-            .background(Color.blanco)
+            .background(Color.amarilloDescuento)
             .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.grisSecundario, lineWidth: 2)
-            )
     }
 }
 
@@ -358,13 +354,25 @@ struct ComercioTitulo: View {
                 // Grupo Derecho
                 HStack(spacing: 8) {
                     if mostrarEstadoApertura {
-                        Text(estaAbierto ? "Abierto" : "Cerrado")
-                            .font(.custom("Barlow", size: 11).bold())
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(estaAbierto ? Color.verdePrincipal : Color.naranjaPrincipal)
-                            .clipShape(Capsule())
+                        VStack(spacing: 2) {
+                            Text(estaAbierto ? "Abierto" : "Cerrado")
+                                .font(.custom("Barlow", size: 11).bold())
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(estaAbierto ? Color.verdePrincipal : Color.naranjaPrincipal)
+                                .clipShape(Capsule())
+                            if let descripcionAbreviada = (comercio.descuentos?.first?.descripcionAbreviada)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                               !descripcionAbreviada.isEmpty {
+                                Text(descripcionAbreviada)
+                                    .font(.custom("Barlow", size: 12).bold())
+                                    .foregroundColor(.negro)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.amarilloDescuento)
+                                    .clipShape(Capsule())
+                            }
+                        }
                     } else if mostrarBotonAdd {
                         Image("icono_add_circle")
                             .resizable()

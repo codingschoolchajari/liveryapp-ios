@@ -404,6 +404,34 @@ struct ResumenView: View {
             .font(.custom("Barlow", size: 16))
             .bold()
             .foregroundColor(.negro)
+
+            let descuentoEfectivo = carritoViewModel.comercio?.descuentos?.first { $0.palabraClave.caseInsensitiveCompare("efectivo") == .orderedSame }
+            if let descuentoEfectivo = descuentoEfectivo, descuentoEfectivo.porcentaje > 0 {
+                Divider().padding(.vertical, 4)
+                let montoDescuento = (precioTotal * descuentoEfectivo.porcentaje) / 100.0
+                let precioConDescuento = precioTotal - montoDescuento
+                HStack {
+                    HStack(spacing: 6) {
+                        Text("Productos")
+                            .font(.custom("Barlow", size: 14))
+                            .bold()
+                            .foregroundColor(.negro)
+                        Text(descuentoEfectivo.descripcionAbreviada ?? "")
+                            .font(.custom("Barlow", size: 12))
+                            .bold()
+                            .foregroundColor(.negro)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.amarilloDescuento)
+                            .clipShape(Capsule())
+                    }
+                    Spacer()
+                    Text(DoubleUtils.formatearPrecio(valor: precioConDescuento))
+                        .font(.custom("Barlow", size: 14))
+                        .bold()
+                        .foregroundColor(.negro)
+                }
+            }
             
             if carritoViewModel.tipoEntregaSeleccionada != .retiroEnComercio {
                 Divider().padding(.vertical, 4)

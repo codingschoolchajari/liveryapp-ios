@@ -564,6 +564,19 @@ struct TarjetaComercio: View {
                     .background(estaAbierto ? Color.verdePrincipal : Color.naranjaPrincipal)
                     .clipShape(Capsule())
                     .padding(8)
+
+                if let descripcionAbreviada = (comercio.descuentos?.first?.descripcionAbreviada)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                   !descripcionAbreviada.isEmpty {
+                    Text(descripcionAbreviada)
+                        .font(.custom("Barlow", size: 12).bold())
+                        .foregroundColor(.negro)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.amarilloDescuento)
+                        .clipShape(Capsule())
+                        .padding(8)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                }
             }
 
             // Mitad Inferior:
@@ -597,6 +610,7 @@ struct ListaComerciosProductos: View {
                         estadoApertura: comercioProductos.estadoApertura,
                         horarios: comercioProductos.horarios,
                         logoURL: comercioProductos.logoComercioURL,
+                        descuentos: comercioProductos.descuentos,
                         distanciaUsuario: comercioProductos.distanciaUsuario
                     )
                     

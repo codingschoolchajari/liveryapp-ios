@@ -15,5 +15,6 @@ struct ComercioProductos: Codable {
     var direccion: ComercioDireccion = ComercioDireccion()
     var productos: [Producto] = []
     var promociones: [Promocion] = []
+    var descuentos: [ComercioDescuento]? = nil
     var distanciaUsuario: Int? = nil
 }

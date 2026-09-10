@@ -249,6 +249,25 @@ class CarritoViewModel: ObservableObject {
                 usuarioDireccion: direccion
             )
         }
+
+        if !itemProducto.esPremio && (itemProducto.complementos?.isEmpty ?? true) {
+            if let existente = itemsProductos.first(where: { existente in
+                existente.idProducto == itemProducto.idProducto &&
+                existente.nombreAlternativaProducto == itemProducto.nombreAlternativaProducto &&
+                existente.opcionesPersonalizables == itemProducto.opcionesPersonalizables &&
+                existente.seleccionables.count == itemProducto.seleccionables.count &&
+                existente.seleccionables.allSatisfy { sel in
+                    itemProducto.seleccionables.contains { $0.idSeleccionable == sel.idSeleccionable && $0.cantidad == sel.cantidad }
+                }
+            }) {
+                if let index = itemsProductos.firstIndex(where: { $0.idInterno == existente.idInterno }) {
+                    itemsProductos[index].cantidad += itemProducto.cantidad
+                    itemsProductos[index].precio += itemProducto.precio
+                }
+                return
+            }
+        }
+
         itemsProductos.append(itemProducto)
     }
     

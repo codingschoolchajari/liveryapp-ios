@@ -294,6 +294,11 @@ struct TipoEntregaView: View {
                             tipoEntrega: tipo,
                             usuarioDireccion: perfilUsuarioState.obtenerUsuarioDireccion()
                         )
+                        if tipo == .envioLivery {
+                            if let email = perfilUsuarioState.usuario?.email {
+                                carritoViewModel.verificarEnvioGratisPremio(perfilUsuarioState: perfilUsuarioState, email: email)
+                            }
+                        }
                     }
                 }
             }
@@ -443,7 +448,7 @@ struct ResumenView: View {
                 HStack {
                     Text("Envío")
                     Spacer()
-                    if carritoViewModel.comercio?.envios.envioGratisParaCliente == true {
+                    if carritoViewModel.comercio?.envios.envioGratisParaCliente == true || carritoViewModel.tieneEnvioGratisPremio {
                         Text("Gratis")
                             .fontWeight(.bold)
                             .foregroundColor(.verdePrincipal)
@@ -631,7 +636,8 @@ struct BottomSheetConfirmarDireccionYPagoCarrito: View {
     }
 
     private var textoCostoEnvio: String {
-        if carritoViewModel.comercio?.envios.envioGratisParaCliente == true {
+        let envioGratis = (carritoViewModel.comercio?.envios.envioGratisParaCliente ?? false) || carritoViewModel.tieneEnvioGratisPremio
+        if envioGratis {
             return "Gratis"
         }
         if carritoViewModel.envio > 0 {
@@ -930,7 +936,7 @@ struct BottomSheetPagoCarrito: View {
                             totalDescuentos: carritoViewModel.calcularTotalDescuentosSeleccionPago()
                         ),
                         tipoEntrega: carritoViewModel.tipoEntregaSeleccionada,
-                        envioGratisParaCliente: carritoViewModel.comercio?.envios.envioGratisParaCliente ?? false
+                        envioGratisParaCliente: (carritoViewModel.comercio?.envios.envioGratisParaCliente ?? false) || carritoViewModel.tieneEnvioGratisPremio
                     )
 
                     Spacer().frame(height: 8)

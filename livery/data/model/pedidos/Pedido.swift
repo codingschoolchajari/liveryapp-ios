@@ -34,6 +34,7 @@ struct Pedido: Codable, Identifiable {
     let tarifaServicio: Double
     let envio: Double
     var envioGratisParaCliente: Bool? = nil
+    var tipoEnvioGratisParaCliente: String? = nil
     var tiempoRecorridoEstimado: Int? = nil
     let precioTotal: Double
     var descuentos: [DescuentoPedido]? = nil
@@ -51,7 +52,7 @@ struct Pedido: Codable, Identifiable {
     enum CodingKeys: String, CodingKey {
         case idInterno, email, nombreUsuario, idComercio, nombreComercio
         case logoComercioURL, localidad, idRepartidor, direccion, notas
-        case tipoEntrega, tarifaServicio, envio, envioGratisParaCliente, tiempoRecorridoEstimado
+        case tipoEntrega, tarifaServicio, envio, envioGratisParaCliente, tipoEnvioGratisParaCliente, tiempoRecorridoEstimado
         case precioTotal, descuentos, modalidadPago, itemsProductos, itemsPromociones, estado, comentario
     }
 }

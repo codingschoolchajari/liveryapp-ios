@@ -28,6 +28,7 @@ class CarritoViewModel: ObservableObject {
     private let enviosService = EnviosService()
     private let pedidosService = PedidosService()
     private let coberturasService = CoberturasService()
+    private let premiosService = PremiosService()
     private let locationService: LocationServicing
 
     @Published var itemsProductos: [ItemProducto] = []
@@ -43,6 +44,7 @@ class CarritoViewModel: ObservableObject {
     @Published var cargandoComprobante: Bool = false
     @Published var pedidoConfirmado: Bool = false
     @Published var pagoTransferencia: Bool = true
+    @Published var tieneEnvioGratisPremio: Bool = false
 
     // MARK: Efectivo – validación por ubicación
     @Published var estadoValidacionUbicacion: EstadoValidacionUbicacion = .idle
@@ -162,6 +164,7 @@ class CarritoViewModel: ObservableObject {
         coordenadasEfectivo = nil
         esperandoUbicacionPago = false
         perfilUsuarioStatePago = nil
+        tieneEnvioGratisPremio = false
     }
     
     func validacionComercioAbierto(
@@ -356,7 +359,8 @@ class CarritoViewModel: ObservableObject {
             tipoEntrega: tipoEntregaSeleccionada.rawValue,
             tarifaServicio: tarifaServicio,
             envio: envio,
-            envioGratisParaCliente: comercioActual.envios.envioGratisParaCliente ?? false,
+            envioGratisParaCliente: (comercioActual.envios.envioGratisParaCliente ?? false) || tieneEnvioGratisPremio,
+            tipoEnvioGratisParaCliente: tieneEnvioGratisPremio ? "PREMIO_LIVERY_CANJEADO" : nil,
             tiempoRecorridoEstimado: tiempoRecorridoEstimado,
             precioTotal: precioTotal,
             descuentos: descuentosPedido,
@@ -447,6 +451,11 @@ class CarritoViewModel: ObservableObject {
             perfilUsuarioState: perfilUsuarioState,
             usuarioDireccion: usuarioDireccion
         )
+        if tipoEntrega == .envioLivery {
+            if let email = perfilUsuarioState.usuario?.email {
+                verificarEnvioGratisPremio(perfilUsuarioState: perfilUsuarioState, email: email)
+            }
+        }
     }
 
     func refrescarCostoEnvio(
@@ -491,6 +500,7 @@ class CarritoViewModel: ObservableObject {
         comercio = nil
         comprobanteSeleccionado = nil
         pagoTransferencia = true
+        tieneEnvioGratisPremio = false
         resetEfectivo()
     }
 
@@ -502,6 +512,27 @@ class CarritoViewModel: ObservableObject {
 
     func limpiarComprobante() {
         comprobanteSeleccionado = nil
+    }
+
+    func verificarEnvioGratisPremio(
+        perfilUsuarioState: PerfilUsuarioState,
+        email: String
+    ) {
+        Task {
+            do {
+                await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+                let accessToken = TokenRepository.repository.accessToken ?? ""
+                let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+                let response = try await premiosService.tieneEnvioGratis(
+                    token: accessToken,
+                    dispositivoID: dispositivoID,
+                    email: email
+                )
+                tieneEnvioGratisPremio = response.tieneEnvioGratis
+            } catch {
+                print("Error al verificar envio gratis premio: \(error)")
+            }
+        }
     }
 
     func onPagoTransferenciaChange(_ esTransferencia: Bool) {

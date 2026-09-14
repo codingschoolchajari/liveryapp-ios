@@ -45,6 +45,7 @@ class CarritoViewModel: ObservableObject {
     @Published var pedidoConfirmado: Bool = false
     @Published var pagoTransferencia: Bool = true
     @Published var tieneEnvioGratisPremio: Bool = false
+    @Published var tipoEnvioGratisParaCliente: String? = nil
 
     // MARK: Efectivo – validación por ubicación
     @Published var estadoValidacionUbicacion: EstadoValidacionUbicacion = .idle
@@ -165,6 +166,7 @@ class CarritoViewModel: ObservableObject {
         esperandoUbicacionPago = false
         perfilUsuarioStatePago = nil
         tieneEnvioGratisPremio = false
+        tipoEnvioGratisParaCliente = nil
     }
     
     func validacionComercioAbierto(
@@ -360,7 +362,7 @@ class CarritoViewModel: ObservableObject {
             tarifaServicio: tarifaServicio,
             envio: envio,
             envioGratisParaCliente: (comercioActual.envios.envioGratisParaCliente ?? false) || tieneEnvioGratisPremio,
-            tipoEnvioGratisParaCliente: tieneEnvioGratisPremio ? "PREMIO_LIVERY_CANJEADO" : nil,
+            tipoEnvioGratisParaCliente: tipoEnvioGratisParaCliente,
             tiempoRecorridoEstimado: tiempoRecorridoEstimado,
             precioTotal: precioTotal,
             descuentos: descuentosPedido,
@@ -501,6 +503,7 @@ class CarritoViewModel: ObservableObject {
         comprobanteSeleccionado = nil
         pagoTransferencia = true
         tieneEnvioGratisPremio = false
+        tipoEnvioGratisParaCliente = nil
         resetEfectivo()
     }
 
@@ -529,6 +532,7 @@ class CarritoViewModel: ObservableObject {
                     email: email
                 )
                 tieneEnvioGratisPremio = response.tieneEnvioGratis
+                tipoEnvioGratisParaCliente = response.tipoEnvioGratisParaCliente
             } catch {
                 print("Error al verificar envio gratis premio: \(error)")
             }

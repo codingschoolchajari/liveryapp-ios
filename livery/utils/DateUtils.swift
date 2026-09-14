@@ -150,6 +150,24 @@ struct DateUtils {
         }
     }
 
+    static func formatearVencimiento(_ fecha: String) -> String {
+        let partes = fecha.components(separatedBy: " ")
+        guard partes.count >= 2 else { return fecha }
+
+        let fechaParte = partes[0]                                   // "2026-09-14"
+        let horaMin = String(partes[1].prefix(5)).replacingOccurrences(of: ":", with: ".")  // "23.59"
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let hoy = formatter.string(from: Date())
+
+        if fechaParte == hoy {
+            return "HOY a las \(horaMin)"
+        } else {
+            return "\(fechaParte) \(String(partes[1].prefix(5)))"
+        }
+    }
+
     static func obtenerHorariosReducidosHoy(horarioReducido: ComercioHorarioReducido) -> String {
         let intervalos = obtenerIntervalosHoy(horarioReducido: horarioReducido)
 

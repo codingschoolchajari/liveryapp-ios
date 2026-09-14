@@ -412,7 +412,7 @@ struct PremioDescripcion: View {
                 .foregroundColor(.negro)
 
             if let fechaVenc = premio.fechaVencimiento, !fechaVenc.isEmpty {
-                Text("Vence : \(DateUtils.fechaSinSegundos(fechaVenc))")
+                Text("Vence : \(DateUtils.formatearVencimiento(fechaVenc))")
                     .font(.custom("Barlow", size: 13))
                     .bold()
                     .foregroundColor(.red)
@@ -494,6 +494,15 @@ struct DialogoResultadoGirarRuleta: View {
                                 Text(descripcion)
                                     .font(.custom("Barlow", size: 14))
                                     .foregroundColor(.grisSecundario)
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+                            }
+
+                            if let fechaVenc = resultado?.fechaVencimiento, !fechaVenc.isEmpty {
+                                Text("Vence : \(DateUtils.formatearVencimiento(fechaVenc))")
+                                    .font(.custom("Barlow", size: 14))
+                                    .bold()
+                                    .foregroundColor(.red)
                                     .multilineTextAlignment(.center)
                                     .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
                             }

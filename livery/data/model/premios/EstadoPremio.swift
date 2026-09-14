@@ -18,7 +18,7 @@ enum EstadoPremio: String, Codable, CaseIterable {
         case .utilizado:
             return "Premio utilizado"
         case .vencido:
-            return "Premio vencido"
+            return "Premio Vencido"
         }
     }
 
@@ -29,7 +29,7 @@ enum EstadoPremio: String, Codable, CaseIterable {
         case .utilizado:
             return Color(red: 0.188, green: 0.686, blue: 0.243) // #30AF3E
         case .vencido:
-            return Color(red: 0.620, green: 0.620, blue: 0.620) // #9E9E9E
+            return Color(red: 0.827, green: 0.184, blue: 0.184) // #D32F2F
         }
     }
 

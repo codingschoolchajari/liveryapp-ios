@@ -507,6 +507,26 @@ class CarritoViewModel: ObservableObject {
         resetEfectivo()
     }
 
+    // MARK: - Share Sheet (comprobante compartido desde otra app)
+
+    /// Rastrea si el bottom sheet de pago está actualmente visible.
+    /// Usado por recibirComprobanteCompartido para descartar comprobantes
+    /// cuando el bottom sheet no está abierto (equivalente a _bottomSheetPagoVisible en Android).
+    private var bottomSheetPagoVisible: Bool = false
+
+    func onBottomSheetPagoShown()     { bottomSheetPagoVisible = true  }
+    func onBottomSheetPagoDismissed() { bottomSheetPagoVisible = false }
+
+    /// Recibe un comprobante compartido desde otra app (via application(_:open:url:options:)).
+    /// Solo lo carga si el bottom sheet de pago está abierto en ese momento;
+    /// si está cerrado el comprobante se descarta.
+    /// Equivalente a recibirComprobanteCompartido() en CarritoViewModel de Android.
+    func recibirComprobanteCompartido(_ comprobante: Comprobante) {
+        if bottomSheetPagoVisible {
+            cargarComprobante(comprobante: comprobante)
+        }
+    }
+
     func cargarComprobante(comprobante: Comprobante) {
         cargandoComprobante = true
         comprobanteSeleccionado = comprobante

@@ -31,11 +31,58 @@ struct liveryApp: App {
                     delegate.perfilUsuarioState = perfilUsuarioState
                     NotificationManager.shared.perfilUsuarioState = perfilUsuarioState
                 }
+                // Recibe archivos compartidos desde otras apps vía el share sheet.
+                // AppDelegate publica .archivoCompartido cuando el sistema llama a
+                // application(_:open:url:options:) — equivalente a onNewIntent en Android.
+                .onReceive(NotificationCenter.default.publisher(for: .archivoCompartido)) { notification in
+                    guard let url = notification.object as? URL else { return }
+                    Task { await procesarArchivoCompartido(url) }
+                }
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 ImageCache.shared.clearAll()
             }
+        }
+    }
+
+    // MARK: - Procesamiento de archivo compartido
+
+    /// Procesa el URL de un archivo compartido desde el share sheet, convierte imagen/PDF
+    /// a un Comprobante y lo entrega al CarritoViewModel.
+    /// Equivalente a procesarIntentCompartido() en MainActivity de Android.
+    private func procesarArchivoCompartido(_ url: URL) async {
+        let accediendo = url.startAccessingSecurityScopedResource()
+        defer { if accediendo { url.stopAccessingSecurityScopedResource() } }
+
+        do {
+            let bytesOriginales = try Data(contentsOf: url)
+            let esPdf = url.pathExtension.lowercased() == "pdf"
+
+            let bytesProcesados: Data?
+            if esPdf {
+                // Convierte la primera página del PDF a JPEG y lo redimensiona
+                bytesProcesados = convertirPdfAJpg(pdfData: bytesOriginales).flatMap {
+                    redimensionarImagen(imageBytes: $0, maxWidth: 1000, maxHeight: 1200)
+                }
+            } else {
+                bytesProcesados = redimensionarImagen(imageBytes: bytesOriginales, maxWidth: 1000, maxHeight: 1200)
+            }
+
+            guard let datos = bytesProcesados else { return }
+
+            let comprobante = Comprobante(
+                contenido: datos,
+                nombre: "comprobante_compartido.jpg",
+                extension: "jpg"
+            )
+
+            // tryEmit: si el bottom sheet está cerrado, CarritoViewModel descarta el comprobante
+            await MainActor.run {
+                carritoViewModel.recibirComprobanteCompartido(comprobante)
+            }
+        } catch {
+            print("Error procesando archivo compartido: \(error)")
         }
     }
 }

@@ -57,5 +57,19 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("❌ APNs registration failed: \(error.localizedDescription)")
     }
+
+    // Llamado cuando el sistema abre la app con un archivo compartido desde el share sheet
+    // (equivalente a onNewIntent en Android)
+    func application(_ app: UIApplication, open url: URL,
+                     options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        NotificationCenter.default.post(name: .archivoCompartido, object: url)
+        return true
+    }
+}
+
+// MARK: - Notification Names
+extension Notification.Name {
+    /// Publicado por AppDelegate cuando se recibe un archivo desde el share sheet.
+    static let archivoCompartido = Notification.Name("archivoCompartido")
 }
 

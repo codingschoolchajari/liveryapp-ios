@@ -836,6 +836,9 @@ struct BottomSheetPagoCarrito: View {
     var contentHorizontalPadding: CGFloat = 16
 
     @State private var tabSeleccionado: Int = 0
+    // Fuerza la re-inicialización de SeccionDesplegable("Comprobante") cuando llega
+    // un comprobante compartido desde otra app, garantizando que quede expandido.
+    @State private var seccionComprobanteRefreshID: UUID = UUID()
 
     private var numeroWhatsappSoporte: String {
         (perfilUsuarioState.configuracion?.numeroWhatsappSoporte ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
@@ -893,9 +896,25 @@ struct BottomSheetPagoCarrito: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.blanco)
+        // Notifica al ViewModel que el bottom sheet está visible.
+        // onDisappear lo marca como cerrado, haciendo que recibirComprobanteCompartido
+        // descarte cualquier comprobante que llegue después.
+        // Equivalente al DisposableEffect(Unit) en BottomSheetPago de Android.
+        .onAppear  { carritoViewModel.onBottomSheetPagoShown()     }
+        .onDisappear { carritoViewModel.onBottomSheetPagoDismissed() }
         .onAppear {
             if tabSeleccionado == 1 {
                 carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
+            }
+        }
+        // Cuando llega un comprobante compartido desde otra app, auto-cambia al tab
+        // Transferencia y colapsa Datos Bancarios forzando la re-inicialización de
+        // SeccionDesplegable("Comprobante") con expandidoInicialmente: true.
+        // Equivalente al LaunchedEffect(comprobante) en BottomSheetPago de Android.
+        .onChange(of: carritoViewModel.comprobanteSeleccionado) { _, comprobante in
+            if comprobante != nil {
+                tabSeleccionado = 0
+                seccionComprobanteRefreshID = UUID()
             }
         }
         .onChange(of: tabSeleccionado) { _, newTab in
@@ -973,6 +992,10 @@ struct BottomSheetPagoCarrito: View {
                                 )
                             }
                         )
+                        // Cambiar seccionComprobanteRefreshID fuerza la re-inicialización
+                        // con expandidoInicialmente: true cuando llega un comprobante
+                        // compartido desde otra app (share sheet).
+                        .id(seccionComprobanteRefreshID)
                     case 1:
                         SeccionEfectivo(
                             superaLimite: superaLimiteEfectivo,

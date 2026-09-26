@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct Comprobante: Codable {
+struct Comprobante: Codable, Equatable {
     var contenido: Data = Data()
     var nombre: String = ""
     var `extension`: String = ""

@@ -22,7 +22,7 @@ class ItemPromocionViewModel: ObservableObject {
         $productosSeleccionablesState
             .flatMap { mapa -> AnyPublisher<Bool, Never> in
                 if mapa.isEmpty {
-                    return Just(false).eraseToAnyPublisher()
+                    return Just(true).eraseToAnyPublisher()
                 }
                 
                 // 1. Escuchamos el "WillChange" de todos los hijos

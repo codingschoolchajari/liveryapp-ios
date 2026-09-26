@@ -288,6 +288,7 @@ class CarritoViewModel: ObservableObject {
         direccion: UsuarioDireccion
     ) {
         itemsProductos = []
+        itemsPromociones = []
         self.comercio = comercio
         agregarItemProducto(
             perfilUsuarioState: perfilUsuarioState,
@@ -321,6 +322,7 @@ class CarritoViewModel: ObservableObject {
         comercio: Comercio,
         direccion: UsuarioDireccion
     ) {
+        itemsProductos = []
         itemsPromociones = []
         self.comercio = comercio
         agregarItemPromocion(

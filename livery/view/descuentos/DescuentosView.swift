@@ -41,6 +41,20 @@ struct DescuentosView: View {
             }
             .background(Color.blanco)
         }
+        .sheet(item: $descuentosViewModel.promocionSeleccionada) { promocionSeleccionada in
+            if(descuentosViewModel.comercio != nil){
+                BottomSheetSeleccionPromocion(
+                    promocion: promocionSeleccionada,
+                    comercio: descuentosViewModel.comercio!,
+                    onClose: {
+                        descuentosViewModel.limpiarPromocionSeleccionada()
+                    }
+                )
+                .onDisappear {
+                    descuentosViewModel.limpiarPromocionSeleccionada()
+                }
+            }
+        }
         .sheet(item: $descuentosViewModel.productoSeleccionado) { productoSeleccionado in
             if(descuentosViewModel.categoria != nil &&
                descuentosViewModel.comercio != nil
@@ -116,6 +130,17 @@ struct FilaComercioDescuento: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
+                    ForEach(comercioDescuentos.promociones) { promocion in
+                        PromocionMiniatura(promocion: promocion) {
+                            Task {
+                                await descuentosViewModel.inicializarPromocionSeleccionada(
+                                    idComercio: comercio.idInterno,
+                                    idPromocion: promocion.idInterno
+                                )
+                            }
+                        }
+                        .frame(height: 190)
+                    }
                     ForEach(comercioDescuentos.productos) { producto in
                         if producto.disponible && producto.esComplemento != true {
                             ProductoMiniatura(producto: producto) {

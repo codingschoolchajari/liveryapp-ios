@@ -14,6 +14,7 @@ class DescuentosViewModel: ObservableObject {
     private let coordenadasPorDefecto: [Double] = [-30.7586722, -57.980121000000004]
     
     @Published var productoSeleccionado: Producto? = nil
+    @Published var promocionSeleccionada: Promocion? = nil
     @Published var comerciosDescuentos: [ComercioDescuentos] = []
     
     private let comerciosService = ComerciosService()
@@ -68,6 +69,33 @@ class DescuentosViewModel: ObservableObject {
     func limpiarProductoSeleccionado() {
         self.productoSeleccionado = nil
         self.categoria = nil
+        self.comercio = nil
+    }
+    
+    func inicializarPromocionSeleccionada(idComercio: String, idPromocion: String) async {
+        
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+            
+            comercio = try await comerciosService.buscarComercio(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                idInterno: idComercio
+            )
+            
+            if(comercio != nil) {
+                promocionSeleccionada = ComerciosHelper.obtenerPromocion(comercio: comercio!, idPromocion: idPromocion)
+            }
+        } catch {
+            print("Error al iniciar promoción seleccionada : \(error)")
+        }
+    }
+    
+    func limpiarPromocionSeleccionada() {
+        self.promocionSeleccionada = nil
         self.comercio = nil
     }
     

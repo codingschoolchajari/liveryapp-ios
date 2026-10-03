@@ -15,6 +15,7 @@ struct ComercioDescuentos: Codable, Identifiable {
     var horarios: [ComercioHorario]? = []
     var distanciaUsuario: Int? = nil
     var productos: [Producto] = []
+    var promociones: [Promocion] = []
     
     var id: String {
         idComercio

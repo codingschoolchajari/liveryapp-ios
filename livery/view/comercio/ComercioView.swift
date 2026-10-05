@@ -11,6 +11,7 @@ struct ComercioView: View {
     @Environment(\.scenePhase) var scenePhase
     @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
     @State private var categoriaSeleccionadaId: String? = nil
+    @State private var textoBusqueda: String = ""
     @State private var mostrarComentarios = false
     @State private var categoriaDropdownExpandido = false
     @State private var mostrarPopupContactoExterno = false
@@ -35,13 +36,15 @@ struct ComercioView: View {
                     InformacionExtra(
                         comercio: comercio,
                         categoriaSeleccionadaId: $categoriaSeleccionadaId,
-                        dropdownExpandido: $categoriaDropdownExpandido
+                        dropdownExpandido: $categoriaDropdownExpandido,
+                        textoBusqueda: $textoBusqueda
                     )
                     .zIndex(1)
                     Spacer().frame(height: 8)
                     Productos(
                         comercioViewModel: comercioViewModel,
-                        categoriaSeleccionadaId: categoriaSeleccionadaId
+                        categoriaSeleccionadaId: categoriaSeleccionadaId,
+                        textoBusqueda: textoBusqueda
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .clipped()
@@ -389,6 +392,11 @@ struct InformacionExtra: View {
     let comercio: Comercio
     @Binding var categoriaSeleccionadaId: String?
     @Binding var dropdownExpandido: Bool
+    @Binding var textoBusqueda: String
+
+    private var formatoHorizontal: Bool {
+        (comercio.formato ?? "").uppercased() == "HORIZONTAL"
+    }
 
     private var horariosReducidos: [ComercioHorarioReducido] {
         (comercio.horariosReducidos ?? []).filter {
@@ -453,11 +461,15 @@ struct InformacionExtra: View {
                 Spacer().frame(height: 4)
             }
             
-            SelectorCategoriasComercio(
-                categorias: comercio.categorias,
-                categoriaSeleccionadaId: $categoriaSeleccionadaId,
-                estaExpandido: $dropdownExpandido
-            )
+            if formatoHorizontal {
+                BuscadorComercio(textoBusqueda: $textoBusqueda)
+            } else {
+                SelectorCategoriasComercio(
+                    categorias: comercio.categorias,
+                    categoriaSeleccionadaId: $categoriaSeleccionadaId,
+                    estaExpandido: $dropdownExpandido
+                )
+            }
         }
     }
 }
@@ -592,90 +604,102 @@ struct BannerAviso: View {
 struct Productos: View {
     @ObservedObject var comercioViewModel: ComercioViewModel
     let categoriaSeleccionadaId: String?
+    let textoBusqueda: String
 
     var body: some View {
         if let comercio = comercioViewModel.comercio {
             let mostrarPromociones = !comercio.promociones.isEmpty && comercio.hayPromocionesDisponibles()
 
             let avisoHabilitado = comercio.aviso.habilitado && !comercio.aviso.mensaje.isEmpty
+            let formatoHorizontal = (comercio.formato ?? "").uppercased() == "HORIZONTAL"
 
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        Color.clear
-                            .frame(height: 0)
-                            .id("top")
-
-                        if mostrarPromociones {
+            Group {
+                if formatoHorizontal {
+                    ProductosHorizontalView(
+                        comercioViewModel: comercioViewModel,
+                        comercio: comercio,
+                        textoBusqueda: textoBusqueda
+                    )
+                } else {
+                    ScrollViewReader { proxy in
+                        ScrollView(showsIndicators: false) {
                             VStack(spacing: 0) {
-                                TituloPromociones()
+                                Color.clear
+                                    .frame(height: 0)
+                                    .id("top")
 
-                                ForEach(Array(comercio.promociones.enumerated()), id: \.element.id) { promoIndex, promocion in
-                                    if promocion.disponible {
-                                        PromocionTitulo(
-                                            comercioViewModel: comercioViewModel,
-                                            promocion: promocion,
-                                            onSelect: {
-                                                comercioViewModel.seleccionarPromocion(promocion: promocion)
-                                            },
-                                            displayIndex: -(comercio.promociones.count - promoIndex)
-                                        )
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 4)
+                                if mostrarPromociones {
+                                    VStack(spacing: 0) {
+                                        TituloPromociones()
+
+                                        ForEach(Array(comercio.promociones.enumerated()), id: \.element.id) { promoIndex, promocion in
+                                            if promocion.disponible {
+                                                PromocionTitulo(
+                                                    comercioViewModel: comercioViewModel,
+                                                    promocion: promocion,
+                                                    onSelect: {
+                                                        comercioViewModel.seleccionarPromocion(promocion: promocion)
+                                                    },
+                                                    displayIndex: -(comercio.promociones.count - promoIndex)
+                                                )
+                                                .padding(.horizontal, 16)
+                                                .padding(.vertical, 4)
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }
 
-                        let categoriaProductos: [(Categoria, [(Int, Producto)])] = {
-                            var idx = 0
-                            var result: [(Categoria, [(Int, Producto)])] = []
-                            for cat in comercio.categorias {
-                                let disponibles = cat.productos.filter { $0.disponible && $0.esComplemento != true }
-                                guard !disponibles.isEmpty else { continue }
-                                let indexados = disponibles.map { p -> (Int, Producto) in
-                                    let i = idx; idx += 1; return (i, p)
-                                }
-                                result.append((cat, indexados))
-                            }
-                            return result
-                        }()
+                                let categoriaProductos: [(Categoria, [(Int, Producto)])] = {
+                                    var idx = 0
+                                    var result: [(Categoria, [(Int, Producto)])] = []
+                                    for cat in comercio.categorias {
+                                        let disponibles = cat.productos.filter { $0.disponible && $0.esComplemento != true }
+                                        guard !disponibles.isEmpty else { continue }
+                                        let indexados = disponibles.map { p -> (Int, Producto) in
+                                            let i = idx; idx += 1; return (i, p)
+                                        }
+                                        result.append((cat, indexados))
+                                    }
+                                    return result
+                                }()
 
-                        ForEach(categoriaProductos, id: \.0.id) { categoria, productosIndexados in
-                            VStack(spacing: 0) {
-                                TituloSeccionComercio(titulo: categoria.nombre)
-                                    .id(categoria.idInterno)
+                                ForEach(categoriaProductos, id: \.0.id) { categoria, productosIndexados in
+                                    VStack(spacing: 0) {
+                                        TituloSeccionComercio(titulo: categoria.nombre)
+                                            .id(categoria.idInterno)
 
-                                ForEach(productosIndexados, id: \.1.id) { index, producto in
-                                    ProductoTitulo(
-                                        comercioViewModel: comercioViewModel,
-                                        producto: producto,
-                                        categoria: categoria,
-                                        onSelect: {
-                                            comercioViewModel.seleccionarProducto(
+                                        ForEach(productosIndexados, id: \.1.id) { index, producto in
+                                            ProductoTitulo(
+                                                comercioViewModel: comercioViewModel,
                                                 producto: producto,
-                                                categoria: categoria
+                                                categoria: categoria,
+                                                onSelect: {
+                                                    comercioViewModel.seleccionarProducto(
+                                                        producto: producto,
+                                                        categoria: categoria
+                                                    )
+                                                },
+                                                displayIndex: index
                                             )
-                                        },
-                                        displayIndex: index
-                                    )
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 4)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 4)
+                                        }
+                                    }
+                                }
+
+                                if avisoHabilitado {
+                                    Spacer().frame(height: 64)
                                 }
                             }
                         }
-
-                        if avisoHabilitado {
-                            Spacer().frame(height: 64)
+                        .clipped()
+                        .onChange(of: categoriaSeleccionadaId) { _, newValue in
+                            if let newValue {
+                                proxy.scrollTo(newValue, anchor: .top)
+                            } else {
+                                proxy.scrollTo("top", anchor: .top)
+                            }
                         }
-                    }
-                }
-                .clipped()
-                .onChange(of: categoriaSeleccionadaId) { _, newValue in
-                    if let newValue {
-                        proxy.scrollTo(newValue, anchor: .top)
-                    } else {
-                        proxy.scrollTo("top", anchor: .top)
                     }
                 }
             }
@@ -705,6 +729,242 @@ struct Productos: View {
                         comercioViewModel.limpiarSeleccionado()
                     }
                 }
+            }
+        }
+    }
+}
+
+struct ProductosHorizontalView: View {
+    @ObservedObject var comercioViewModel: ComercioViewModel
+    let comercio: Comercio
+    let textoBusqueda: String
+
+    var body: some View {
+        let query = textoBusqueda.trimmingCharacters(in: .whitespacesAndNewlines)
+        let mostrarPromociones = !comercio.promociones.isEmpty && comercio.hayPromocionesDisponibles()
+        let avisoHabilitado = comercio.aviso.habilitado && !comercio.aviso.mensaje.isEmpty
+
+        let categoriaProductos: [(Categoria, [Producto])] = comercio.categorias.compactMap { cat in
+            let disponibles = cat.productos.filter {
+                $0.disponible && $0.esComplemento != true &&
+                (query.isEmpty || $0.nombre.localizedCaseInsensitiveContains(query))
+            }
+            return disponibles.isEmpty ? nil : (cat, disponibles)
+        }
+
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 0) {
+                if mostrarPromociones {
+                    VStack(spacing: 0) {
+                        TituloPromociones()
+                        Spacer().frame(height: 4)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(comercio.promociones.filter { $0.disponible }) { promocion in
+                                    ZStack(alignment: .topTrailing) {
+                                        PromocionMiniatura(promocion: promocion) {
+                                            comercioViewModel.seleccionarPromocion(promocion: promocion)
+                                        }
+                                        .frame(height: 190)
+                                        BotonFavoritoPromocion(comercio: comercio, promocion: promocion)
+                                            .padding(6)
+                                    }
+                                    .frame(height: 190)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.grisSecundario, lineWidth: 2)
+                        )
+                        .padding(.horizontal, 16)
+                    }
+                }
+
+                ForEach(categoriaProductos, id: \.0.id) { categoria, productos in
+                    VStack(spacing: 0) {
+                        TituloSeccionComercio(titulo: categoria.nombre)
+                        Spacer().frame(height: 4)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(productos) { producto in
+                                    ZStack(alignment: .topTrailing) {
+                                        ProductoMiniatura(producto: producto) {
+                                            comercioViewModel.seleccionarProducto(producto: producto, categoria: categoria)
+                                        }
+                                        .frame(height: 190)
+                                        BotonFavoritoProducto(comercio: comercio, producto: producto)
+                                            .padding(6)
+                                    }
+                                    .frame(height: 190)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.grisSecundario, lineWidth: 2)
+                        )
+                        .padding(.horizontal, 16)
+                        Spacer().frame(height: 8)
+                    }
+                }
+
+                if avisoHabilitado {
+                    Spacer().frame(height: 64)
+                }
+            }
+        }
+        .clipped()
+    }
+}
+
+struct BuscadorComercio: View {
+    @Binding var textoBusqueda: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+                .foregroundColor(.negro)
+
+            TextField("Buscar producto", text: $textoBusqueda)
+                .font(.custom("Barlow", size: 12))
+                .bold()
+                .foregroundColor(.negro)
+
+            if !textoBusqueda.isEmpty {
+                Button {
+                    textoBusqueda = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                        .foregroundColor(.grisSecundario)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 10)
+        .frame(height: 24)
+        .background(Color.blanco)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Color.grisSecundario, lineWidth: 1)
+        )
+        .padding(.horizontal, 80)
+        .padding(.vertical, 2)
+    }
+}
+
+private struct BotonFavoritoProducto: View {
+    let comercio: Comercio
+    let producto: Producto
+
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @State private var esFavorito = false
+
+    var body: some View {
+        let idFavorito = perfilUsuarioState.usuario?.obtenerIdProductoFavorito(
+            idComercio: comercio.idInterno,
+            idProducto: producto.idInterno
+        )
+        Button {
+            toggleFavorito(idFavorito: idFavorito)
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 25, height: 25)
+                Image(esFavorito ? "icono_favoritos_relleno" : "icono_favoritos_vacio")
+                    .resizable()
+                    .renderingMode(.template)
+                    .frame(width: 18, height: 18)
+                    .foregroundColor(esFavorito ? .verdePrincipal : .negro)
+            }
+        }
+        .buttonStyle(.plain)
+        .onAppear {
+            esFavorito = (idFavorito != nil)
+        }
+    }
+
+    private func toggleFavorito(idFavorito: String?) {
+        esFavorito.toggle()
+        Task {
+            if esFavorito {
+                await perfilUsuarioState.agregarFavorito(
+                    idFavorito: UUID().uuidString.lowercased(),
+                    idComercio: comercio.idInterno,
+                    nombreComercio: comercio.nombre,
+                    logoComercioURL: comercio.logoURL,
+                    idProducto: producto.idInterno,
+                    idPromocion: nil,
+                    nombre: producto.nombre,
+                    imagenURL: producto.imagenURL
+                )
+            } else if let idFav = idFavorito {
+                await perfilUsuarioState.eliminarFavorito(idFavorito: idFav)
+            }
+        }
+    }
+}
+
+private struct BotonFavoritoPromocion: View {
+    let comercio: Comercio
+    let promocion: Promocion
+
+    @EnvironmentObject var perfilUsuarioState: PerfilUsuarioState
+    @State private var esFavorito = false
+
+    var body: some View {
+        let idFavorito = perfilUsuarioState.usuario?.obtenerIdPromocionFavorita(
+            idComercio: comercio.idInterno,
+            idPromocion: promocion.idInterno
+        )
+        Button {
+            toggleFavorito(idFavorito: idFavorito)
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 25, height: 25)
+                Image(esFavorito ? "icono_favoritos_relleno" : "icono_favoritos_vacio")
+                    .resizable()
+                    .renderingMode(.template)
+                    .frame(width: 18, height: 18)
+                    .foregroundColor(esFavorito ? .verdePrincipal : .negro)
+            }
+        }
+        .buttonStyle(.plain)
+        .onAppear {
+            esFavorito = (idFavorito != nil)
+        }
+    }
+
+    private func toggleFavorito(idFavorito: String?) {
+        esFavorito.toggle()
+        Task {
+            if esFavorito {
+                await perfilUsuarioState.agregarFavorito(
+                    idFavorito: UUID().uuidString.lowercased(),
+                    idComercio: comercio.idInterno,
+                    nombreComercio: comercio.nombre,
+                    logoComercioURL: comercio.logoURL,
+                    idProducto: nil,
+                    idPromocion: promocion.idInterno,
+                    nombre: promocion.nombre,
+                    imagenURL: promocion.imagenURL
+                )
+            } else if let idFav = idFavorito {
+                await perfilUsuarioState.eliminarFavorito(idFavorito: idFav)
             }
         }
     }

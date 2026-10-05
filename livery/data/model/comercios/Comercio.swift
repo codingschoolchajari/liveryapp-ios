@@ -101,6 +101,7 @@ struct Comercio: Codable, Identifiable {
     var descuentos: [ComercioDescuento]? = nil
     var menuOpciones: [ComercioMenuOpcion] = []
     var menuActivo: String? = nil
+    var formato: String? = nil
     var distanciaUsuario: Int? = nil
     
     var id: String {

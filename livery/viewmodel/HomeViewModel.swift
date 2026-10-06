@@ -162,7 +162,12 @@ class HomeViewModel: ObservableObject {
                 noHayMasComercios = true
                 print("[Home] No hay más comercios para ciudad=\(ciudad), categoria=\(categoria)")
             } else {
-                nuevos.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
+                nuevos.sort {
+                    let abierto0 = DateUtils.comercioEstaAbierto(horarios: $0.horarios, estadoApertura: $0.estadoApertura)
+                    let abierto1 = DateUtils.comercioEstaAbierto(horarios: $1.horarios, estadoApertura: $1.estadoApertura)
+                    if abierto0 != abierto1 { return abierto0 }
+                    return ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max)
+                }
                 comercios += nuevos
                 paginaActualComercios += 1
                 print("[Home] Cargados \(nuevos.count) comercios. Total: \(comercios.count)")
@@ -214,7 +219,12 @@ class HomeViewModel: ObservableObject {
                 }
                 
                 // Ordenar por distancia
-                nuevos.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
+                nuevos.sort {
+                    let abierto0 = DateUtils.comercioEstaAbierto(horarios: $0.horarios, estadoApertura: $0.estadoApertura)
+                    let abierto1 = DateUtils.comercioEstaAbierto(horarios: $1.horarios, estadoApertura: $1.estadoApertura)
+                    if abierto0 != abierto1 { return abierto0 }
+                    return ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max)
+                }
                 
                 comerciosProductos += nuevos
                 paginaActualComerciosProductos += 1
@@ -325,7 +335,12 @@ print("Error iniciando promoción seleccionada: \(error)")
             comercioProductosActualizado.distanciaUsuario = nuevaDistancia
             return comercioProductosActualizado
         }
-        listaActualizadaComerciosProductos.sort { ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max) }
+        listaActualizadaComerciosProductos.sort {
+            let abierto0 = DateUtils.comercioEstaAbierto(horarios: $0.horarios, estadoApertura: $0.estadoApertura)
+            let abierto1 = DateUtils.comercioEstaAbierto(horarios: $1.horarios, estadoApertura: $1.estadoApertura)
+            if abierto0 != abierto1 { return abierto0 }
+            return ($0.distanciaUsuario ?? Int.max) < ($1.distanciaUsuario ?? Int.max)
+        }
         comerciosProductos = listaActualizadaComerciosProductos
     }
 }

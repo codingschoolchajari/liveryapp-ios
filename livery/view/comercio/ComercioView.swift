@@ -759,21 +759,22 @@ struct ProductosHorizontalView: View {
                         TituloPromociones()
                         Spacer().frame(height: 4)
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
+                            HStack(spacing: 4) {
                                 ForEach(comercio.promociones.filter { $0.disponible }) { promocion in
                                     ZStack(alignment: .topTrailing) {
                                         PromocionMiniatura(promocion: promocion) {
                                             comercioViewModel.seleccionarPromocion(promocion: promocion)
                                         }
-                                        .frame(height: 190)
+                                        .frame(height: 171)
                                         BotonFavoritoPromocion(comercio: comercio, promocion: promocion)
-                                            .padding(6)
+                                            .padding(6).padding(.leading, 6)
                                     }
-                                    .frame(height: 190)
+                                    .frame(height: 171)
                                 }
                             }
                             .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
+                            .padding(.top, 8)
+                            .padding(.bottom, 4)
                         }
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
@@ -788,21 +789,22 @@ struct ProductosHorizontalView: View {
                         TituloSeccionComercio(titulo: categoria.nombre)
                         Spacer().frame(height: 4)
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
+                            HStack(spacing: 4) {
                                 ForEach(productos) { producto in
                                     ZStack(alignment: .topTrailing) {
                                         ProductoMiniatura(producto: producto) {
                                             comercioViewModel.seleccionarProducto(producto: producto, categoria: categoria)
                                         }
-                                        .frame(height: 190)
+                                        .frame(height: 171)
                                         BotonFavoritoProducto(comercio: comercio, producto: producto)
-                                            .padding(6)
+                                            .padding(6).padding(.leading, 6)
                                     }
-                                    .frame(height: 190)
+                                    .frame(height: 171)
                                 }
                             }
                             .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
+                            .padding(.top, 8)
+                            .padding(.bottom, 4)
                         }
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)

@@ -52,15 +52,8 @@ struct PagoTab: View {
                             estaCargando: false,
                             comprobanteEnMemoria: nil,
                             urlComprobante: API.baseURL + "/" + PedidosHelper.generarURLComprobante(pedido: pedido) + "?ts=\(Date().timeIntervalSince1970)",
-                            botonHabilitado: estadoPedido == .pendienteAprobacion,
-                            onCargarComprobante: { comprobante in
-                                Task {
-                                    await pedidosViewModel.cargarComprobante(
-                                        pedido: pedido,
-                                        comprobante: comprobante
-                                    )
-                                }
-                            }
+                            botonHabilitado: false,
+                            onCargarComprobante: { _ in }
                         )
                     }
                 )

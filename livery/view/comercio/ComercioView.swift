@@ -833,10 +833,17 @@ struct BuscadorComercio: View {
                 .frame(width: 16, height: 16)
                 .foregroundColor(.negro)
 
-            TextField("Buscar producto", text: $textoBusqueda)
-                .font(.custom("Barlow", size: 12))
-                .bold()
-                .foregroundColor(.negro)
+            TextField(
+                "",
+                text: $textoBusqueda,
+                prompt: Text("Buscá tu Producto")
+                    .font(.custom("Barlow", size: 12))
+                    .bold()
+                    .foregroundColor(.grisSecundario)
+            )
+            .font(.custom("Barlow", size: 12))
+            .bold()
+            .foregroundColor(.negro)
 
             if !textoBusqueda.isEmpty {
                 Button {

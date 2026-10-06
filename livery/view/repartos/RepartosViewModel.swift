@@ -111,29 +111,6 @@ class RepartosViewModel: ObservableObject {
         }
     }
 
-    func cargarComprobante(reparto: Reparto, comprobante: Comprobante) async {
-        cargandoComprobante = true
-        do {
-            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
-            let accessToken = TokenRepository.repository.accessToken ?? ""
-            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
-            let email = perfilUsuarioState.usuario?.email ?? ""
-
-            try await repartosService.cargarComprobante(
-                token: accessToken,
-                dispositivoID: dispositivoID,
-                email: email,
-                idReparto: reparto.idInterno,
-                comprobante: comprobante
-            )
-
-            await refrescarRepartoSeleccionado(reparto: reparto)
-        } catch {
-            print("Error al cargar comprobante reparto: \(error)")
-        }
-        cargandoComprobante = false
-    }
-
     func cancelarReparto(motivoCancelacion: String) async {
         guard let reparto = repartoSeleccionado else { return }
 

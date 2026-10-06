@@ -17,12 +17,8 @@ struct PagoRepartoTab: View {
                             estaCargando: repartosViewModel.cargandoComprobante,
                             comprobanteEnMemoria: nil,
                             urlComprobante: urlComprobante,
-                            botonHabilitado: estadoReparto == .pendienteAsignacion,
-                            onCargarComprobante: { comprobante in
-                                Task {
-                                    await repartosViewModel.cargarComprobante(reparto: reparto, comprobante: comprobante)
-                                }
-                            }
+                            botonHabilitado: false,
+                            onCargarComprobante: { _ in }
                         )
                     }
                 )

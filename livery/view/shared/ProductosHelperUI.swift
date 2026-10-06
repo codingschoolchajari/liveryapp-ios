@@ -102,7 +102,7 @@ struct ProductoMiniatura: View {
             }
             Spacer()
         }
-        .frame(width: 120)
+        .frame(width: 110)
         .contentShape(Rectangle())
         .onTapGesture {
             onMostrarBottomSheet()

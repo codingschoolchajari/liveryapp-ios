@@ -767,7 +767,7 @@ struct ProductosHorizontalView: View {
                                         }
                                         .frame(height: 171)
                                         BotonFavoritoPromocion(comercio: comercio, promocion: promocion)
-                                            .padding(6).padding(.leading, 6)
+                                            .padding(6).padding(.trailing, 6)
                                     }
                                     .frame(height: 171)
                                 }
@@ -797,7 +797,7 @@ struct ProductosHorizontalView: View {
                                         }
                                         .frame(height: 171)
                                         BotonFavoritoProducto(comercio: comercio, producto: producto)
-                                            .padding(6).padding(.leading, 6)
+                                            .padding(6).padding(.trailing, 6)
                                     }
                                     .frame(height: 171)
                                 }

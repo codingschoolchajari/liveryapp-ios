@@ -844,6 +844,16 @@ struct BottomSheetPagoCarrito: View {
         (perfilUsuarioState.configuracion?.numeroWhatsappSoporte ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    private var modalidadesPagoDisponibles: [String] {
+        carritoViewModel.modalidadesPagoDisponibles
+    }
+
+    private var modalidadSeleccionada: String {
+        modalidadesPagoDisponibles.indices.contains(tabSeleccionado)
+            ? modalidadesPagoDisponibles[tabSeleccionado]
+            : (modalidadesPagoDisponibles.first ?? "TRANSFERENCIA")
+    }
+
     private var limitePagoEfectivo: Double {
         carritoViewModel.comercio?.limitePagoEfectivo ?? perfilUsuarioState.configuracion?.limitePagoEfectivo ?? 0.0
     }
@@ -856,10 +866,10 @@ struct BottomSheetPagoCarrito: View {
     }
 
     private var confirmarHabilitado: Bool {
-        switch tabSeleccionado {
-        case 0:
+        switch modalidadSeleccionada {
+        case "TRANSFERENCIA":
             return carritoViewModel.comprobanteSeleccionado != nil
-        case 1:
+        case "EFECTIVO":
             return !superaLimiteEfectivo && (
                 carritoViewModel.estadoValidacionUbicacion == .cubierto
                 || carritoViewModel.estadoValidacionUbicacion == .clienteFrecuente
@@ -903,7 +913,21 @@ struct BottomSheetPagoCarrito: View {
         .onAppear  { carritoViewModel.onBottomSheetPagoShown()     }
         .onDisappear { carritoViewModel.onBottomSheetPagoDismissed() }
         .onAppear {
-            if tabSeleccionado == 1 {
+            Task {
+                await carritoViewModel.revalidarModalidadesPago(perfilUsuarioState: perfilUsuarioState)
+            }
+            if modalidadSeleccionada == "EFECTIVO" {
+                carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
+            }
+        }
+        // Cuando cambian las modalidades disponibles (p.ej. revalidación al abrir el
+        // sheet), ajustar el tab seleccionado y sincronizar la modalidad con el ViewModel.
+        .onChange(of: carritoViewModel.modalidadesPagoDisponibles) { _, _ in
+            if !modalidadesPagoDisponibles.indices.contains(tabSeleccionado) {
+                tabSeleccionado = 0
+            }
+            carritoViewModel.onPagoTransferenciaChange(modalidadSeleccionada == "TRANSFERENCIA")
+            if modalidadSeleccionada == "EFECTIVO" {
                 carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
             }
         }
@@ -913,13 +937,15 @@ struct BottomSheetPagoCarrito: View {
         // Equivalente al LaunchedEffect(comprobante) en BottomSheetPago de Android.
         .onChange(of: carritoViewModel.comprobanteSeleccionado) { _, comprobante in
             if comprobante != nil {
-                tabSeleccionado = 0
+                if let idx = modalidadesPagoDisponibles.firstIndex(of: "TRANSFERENCIA") {
+                    tabSeleccionado = idx
+                }
                 seccionComprobanteRefreshID = UUID()
             }
         }
-        .onChange(of: tabSeleccionado) { _, newTab in
-            carritoViewModel.onPagoTransferenciaChange(newTab == 0)
-            if newTab == 1 {
+        .onChange(of: tabSeleccionado) { _, _ in
+            carritoViewModel.onPagoTransferenciaChange(modalidadSeleccionada == "TRANSFERENCIA")
+            if modalidadSeleccionada == "EFECTIVO" {
                 carritoViewModel.iniciarValidacionUbicacion(perfilUsuarioState: perfilUsuarioState)
             }
         }
@@ -964,8 +990,8 @@ struct BottomSheetPagoCarrito: View {
 
                     Spacer().frame(height: 8)
 
-                    switch tabSeleccionado {
-                    case 0:
+                    switch modalidadSeleccionada {
+                    case "TRANSFERENCIA":
                         SeccionDesplegable(
                             titulo: "Datos Bancarios",
                             expandidoInicialmente: false,
@@ -996,7 +1022,7 @@ struct BottomSheetPagoCarrito: View {
                         // con expandidoInicialmente: true cuando llega un comprobante
                         // compartido desde otra app (share sheet).
                         .id(seccionComprobanteRefreshID)
-                    case 1:
+                    case "EFECTIVO":
                         SeccionEfectivo(
                             superaLimite: superaLimiteEfectivo,
                             limitePagoEfectivo: limitePagoEfectivo,
@@ -1250,8 +1276,12 @@ private struct SelectorMetodoPagoView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            botonTab(titulo: "Transferencia", index: 0)
-            botonTab(titulo: "Efectivo", index: 1)
+            ForEach(Array(carritoViewModel.modalidadesPagoDisponibles.enumerated()), id: \.offset) { index, modalidad in
+                botonTab(
+                    titulo: modalidad == "TRANSFERENCIA" ? "Transferencia" : "Efectivo",
+                    index: index
+                )
+            }
         }
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(

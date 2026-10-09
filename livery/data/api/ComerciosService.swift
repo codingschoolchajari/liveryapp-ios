@@ -240,4 +240,28 @@ class ComerciosService {
 
         return try JSONDecoder().decode(BooleanResponse.self, from: data)
     }
+
+    func modalidadesPago(
+        token: String,
+        dispositivoID: String,
+        idInterno: String
+    ) async throws -> ModalidadesPagoResponse {
+        
+        guard let url = URL(string: "\(comerciosURL)/modalidadesPago/\(idInterno)") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        return try JSONDecoder().decode(ModalidadesPagoResponse.self, from: data)
+    }
 }

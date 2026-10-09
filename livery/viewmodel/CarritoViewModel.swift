@@ -46,6 +46,7 @@ class CarritoViewModel: ObservableObject {
     @Published var pagoTransferencia: Bool = true
     @Published var tieneEnvioGratisPremio: Bool = false
     @Published var tipoEnvioGratisParaCliente: String? = nil
+    @Published var modalidadesPagoDisponibles: [String] = ["TRANSFERENCIA", "EFECTIVO"]
 
     // MARK: Efectivo – validación por ubicación
     @Published var estadoValidacionUbicacion: EstadoValidacionUbicacion = .idle
@@ -139,6 +140,7 @@ class CarritoViewModel: ObservableObject {
     func validacionComercio(comercio: Comercio) -> Bool {
         if itemsProductos.isEmpty && itemsPromociones.isEmpty {
             self.comercio = comercio
+            sincronizarModalidadesDesdeComercio()
             return true
         }
         return comercio.idInterno == self.comercio?.idInterno
@@ -191,6 +193,32 @@ class CarritoViewModel: ObservableObject {
         } catch {
             print("Error al validar comercio abierto: \(error)")
             return false
+        }
+    }
+    
+    private func sincronizarModalidadesDesdeComercio() {
+        let modalidades = comercio?.modalidadesPago ?? []
+        modalidadesPagoDisponibles = modalidades.isEmpty ? ["TRANSFERENCIA", "EFECTIVO"] : modalidades
+    }
+
+    func revalidarModalidadesPago(perfilUsuarioState: PerfilUsuarioState) async {
+        guard let comercioActual = comercio else { return }
+        do {
+            await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
+            let accessToken = TokenRepository.repository.accessToken ?? ""
+            let dispositivoID = UserDefaults.standard.string(forKey: ConfiguracionesUtil.ID_DISPOSITIVO_KEY) ?? ""
+
+            let response: ModalidadesPagoResponse = try await comerciosService.modalidadesPago(
+                token: accessToken,
+                dispositivoID: dispositivoID,
+                idInterno: comercioActual.idInterno
+            )
+
+            if !response.modalidadesPago.isEmpty {
+                modalidadesPagoDisponibles = response.modalidadesPago
+            }
+        } catch {
+            print("Error al revalidar modalidades de pago: \(error)")
         }
     }
     
@@ -290,6 +318,7 @@ class CarritoViewModel: ObservableObject {
         itemsProductos = []
         itemsPromociones = []
         self.comercio = comercio
+        sincronizarModalidadesDesdeComercio()
         agregarItemProducto(
             perfilUsuarioState: perfilUsuarioState,
             itemProducto: itemProducto,
@@ -325,6 +354,7 @@ class CarritoViewModel: ObservableObject {
         itemsProductos = []
         itemsPromociones = []
         self.comercio = comercio
+        sincronizarModalidadesDesdeComercio()
         agregarItemPromocion(
             perfilUsuarioState: perfilUsuarioState,
             itemPromocion: itemPromocion,

@@ -12,10 +12,14 @@ struct HomeView: View {
     @EnvironmentObject var notificacionesState: NotificacionesState
     @EnvironmentObject var navManager: NavigationManager
     @StateObject var homeViewModel : HomeViewModel
+    @StateObject var comentarioPopupViewModel: ComentarioPopupViewModel
     
     init(perfilUsuarioState: PerfilUsuarioState) {
         _homeViewModel = StateObject(
             wrappedValue: HomeViewModel(perfilUsuarioState: perfilUsuarioState)
+        )
+        _comentarioPopupViewModel = StateObject(
+            wrappedValue: ComentarioPopupViewModel(perfilUsuarioState: perfilUsuarioState)
         )
     }
 
@@ -143,12 +147,25 @@ struct HomeView: View {
                 notificacionesState.refrescarNotificaciones(receptor: email)
                 homeViewModel.cargarPuntos(email: email)
             }
+            Task {
+                await comentarioPopupViewModel.cargarPedidoParaComentar()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             if let email = perfilUsuarioState.usuario?.email {
                 notificacionesState.refrescarNotificaciones(receptor: email)
                 homeViewModel.cargarPuntos(email: email)
             }
+            Task {
+                await comentarioPopupViewModel.cargarPedidoParaComentar()
+            }
+        }
+        .sheet(item: $comentarioPopupViewModel.pedidoParaComentar) { pedido in
+            ComentarioPopupView(
+                pedido: pedido,
+                nombreUsuario: perfilUsuarioState.usuario?.datosPersonales?.nombre ?? "",
+                viewModel: comentarioPopupViewModel
+            )
         }
     }
 

@@ -12,6 +12,8 @@ struct ComentarioTab: View {
     
     @State private var cantidadEstrellas: Int = 0
     @State private var textoComentario: String = ""
+    @State private var cantidadEstrellasRepartidor: Int = 0
+    @State private var textoComentarioRepartidor: String = ""
     @State private var mensajeToast: String? = nil
     
     var body: some View {
@@ -21,13 +23,15 @@ struct ComentarioTab: View {
         ZStack {
             VStack {
                 if estadoPedido == .entregado {
+                    let esEnvioLivery = TipoEntrega.desdeString(pedido?.tipoEntrega ?? "") == .envioLivery
+                    let camposEnabled = pedido?.comentario == nil && pedido?.comentarioRepartidor == nil
+                    
                     VStack(spacing: 16) {
                         
-                        // ⭐ Estrellas clickeables
+                        // ⭐ Estrellas clickeables del comercio
                         HStack(spacing: 10) {
                             ForEach(1...5, id: \.self) { i in
                                 let seleccionada = i <= cantidadEstrellas
-                                let camposEnabled = pedido?.comentario == nil
                                 
                                 Image(seleccionada ? "icono_estrella_relleno" : "icono_estrella_vacio")
                                     .resizable()
@@ -42,8 +46,6 @@ struct ComentarioTab: View {
                         }
                         .padding(.top, 16)
 
-                        let camposEnabled = pedido?.comentario == nil
-                        
                         VStack(alignment: .leading, spacing: 4) {
                             TextEditor(text: $textoComentario)
                                 .scrollContentBackground(.hidden)
@@ -66,8 +68,53 @@ struct ComentarioTab: View {
                                 }
                         }
 
+                        if esEnvioLivery {
+                            // ⭐ Estrellas clickeables del repartidor
+                            HStack(spacing: 10) {
+                                ForEach(1...5, id: \.self) { i in
+                                    let seleccionada = i <= cantidadEstrellasRepartidor
+                                    
+                                    Image(seleccionada ? "icono_estrella_relleno" : "icono_estrella_vacio")
+                                        .resizable()
+                                        .frame(width: 40, height: 40)
+                                        .foregroundColor(seleccionada ? .verdePrincipal : .negro)
+                                        .onTapGesture {
+                                            if camposEnabled {
+                                                cantidadEstrellasRepartidor = i
+                                            }
+                                        }
+                                }
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                TextEditor(text: $textoComentarioRepartidor)
+                                    .scrollContentBackground(.hidden)
+                                    .background(Color.blanco)
+                                    .tint(.verdePrincipal)
+                                    .font(.custom("Barlow", size: 16))
+                                    .bold()
+                                    .foregroundColor(.negro)
+                                    .frame(minHeight: 70, maxHeight: 70)
+                                    .padding(8)
+                                    .disabled(!camposEnabled)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.grisSecundario, lineWidth: 1)
+                                    )
+                                    .onChange(of: textoComentarioRepartidor) { oldValue, newValue in
+                                        if newValue.count > 100 {
+                                            textoComentarioRepartidor = String(newValue.prefix(100))
+                                        }
+                                    }
+                            }
+                        }
+
                         // Botón Enviar
-                        let botonEnabled = cantidadEstrellas > 0 && !textoComentario.trimmingCharacters(in: .whitespaces).isEmpty && pedido?.comentario == nil
+                        let comentarioComercioCompleto = cantidadEstrellas > 0 && !textoComentario.trimmingCharacters(in: .whitespaces).isEmpty
+                        let comentarioRepartidorCompleto = cantidadEstrellasRepartidor > 0 && !textoComentarioRepartidor.trimmingCharacters(in: .whitespaces).isEmpty
+                        let botonEnabled = comentarioComercioCompleto
+                            && (!esEnvioLivery || comentarioRepartidorCompleto)
+                            && pedido?.comentario == nil
                         
                         Button(action: {
                             enviarComentario()
@@ -92,6 +139,10 @@ struct ComentarioTab: View {
                         if let comentarioExistente = pedido?.comentario {
                             cantidadEstrellas = comentarioExistente.cantidadEstrellas
                             textoComentario = comentarioExistente.texto
+                        }
+                        if let comentarioRepartidorExistente = pedido?.comentarioRepartidor {
+                            cantidadEstrellasRepartidor = comentarioRepartidorExistente.cantidadEstrellas
+                            textoComentarioRepartidor = comentarioRepartidorExistente.texto
                         }
                     }
                 } else {
@@ -118,7 +169,9 @@ struct ComentarioTab: View {
             pedidosViewModel.enviarComentario(
                 estrellas: cantidadEstrellas,
                 texto: textoComentario,
-                nombreUsuario: perfilUsuarioState.usuario?.datosPersonales?.nombre ?? ""
+                nombreUsuario: perfilUsuarioState.usuario?.datosPersonales?.nombre ?? "",
+                estrellasRepartidor: cantidadEstrellasRepartidor,
+                textoRepartidor: textoComentarioRepartidor
             )
             
             // 2. Mostrar el toast con animación

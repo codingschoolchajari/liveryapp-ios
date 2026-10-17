@@ -13,7 +13,7 @@ class ComentariosService {
         dispositivoID: String,
         email: String,
         idPedido: String,
-        comentario: Comentario
+        comentarios: [Comentario]
     ) async throws {
 
         let url = URL(string: comentariosURL + "/enviarComentario/\(email)/\(idPedido)")!
@@ -24,15 +24,35 @@ class ComentariosService {
         request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        request.httpBody = try JSONEncoder().encode(comentario)
+        request.httpBody = try JSONEncoder().encode(comentarios)
         
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+    }
+
+    func omitirComentario(
+        token: String,
+        dispositivoID: String,
+        email: String,
+        idPedido: String
+    ) async throws {
+
+        let url = URL(string: comentariosURL + "/omitir/\(email)/\(idPedido)")!
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(dispositivoID, forHTTPHeaderField: "dispositivoID")
+
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
               200...299 ~= httpResponse.statusCode else {
             throw URLError(.badServerResponse)
         }
-
-        _ = try await URLSession.shared.data(for: request)
+        _ = data
     }
 
     func buscar(

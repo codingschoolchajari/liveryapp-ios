@@ -115,6 +115,15 @@ struct ComercioView: View {
                 mostrarPopupContactoExterno = true
             }
         }
+        .onReceive(comercioViewModel.$comercio) { nuevo in
+            if let id = categoriaSeleccionadaId,
+               let categorias = nuevo?.categorias,
+               !categorias.contains(where: { categoria in
+                   categoria.idInterno == id && categoria.productos.contains { $0.disponible && $0.esComplemento != true }
+               }) {
+                categoriaSeleccionadaId = nil
+            }
+        }
         .sheet(isPresented: $mostrarComentarios) {
             if let comercio = comercioViewModel.comercio {
                 BottomSheetComentarios(
@@ -183,27 +192,48 @@ struct Portada: View {
     }
     
     var body: some View {
-        // offsetY = 100 para 0 descuentos; se eleva 46pt por cada descuento (44 height + 2 spacing)
         let descuentos = descuentosFiltrados
-        let offsetY: CGFloat = 100 - CGFloat(descuentos.count) * 46
+        let alturaImagen: CGFloat = descuentos.isEmpty ? 180 : 220
         
         ZStack(alignment: .top) {
             VStack {
                 RemoteImage(url: URL(string: API.baseURL + "/" + comercio.imagenURL))
             }
-            .frame(width: UIScreen.main.bounds.width, height: 180)
+            .frame(width: UIScreen.main.bounds.width, height: alturaImagen)
             .clipShape(RoundedCorners(radius: 32, corners: [.bottomLeft, .bottomRight]))
             .background(Color.blanco)
 
-            // Título + descuentos en una sola columna anclada al fondo (igual que Android)
+            // Contenido anclado al fondo (botón de opiniones + título + descuentos)
             VStack(spacing: 4) {
+                Button(action: onComentariosTap) {
+                    HStack(spacing: 8) {
+                        Image("icono_comentarios")
+                            .resizable()
+                            .renderingMode(.template)
+                            .foregroundColor(.negro)
+                            .frame(width: 26, height: 26)
+
+                        Text("Leer Opiniones (\(comercio.cantidadOpiniones))")
+                            .font(.custom("Barlow", size: 13))
+                            .bold()
+                            .foregroundColor(.negro)
+                    }
+                    .padding(.horizontal, 24)
+                    .frame(height: 44)
+                    .background(Color.blanco)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.grisSecundario, lineWidth: 2)
+                    )
+                }
+                .buttonStyle(.plain)
+
                 VStack {
                     ComercioTitulo(
                         comercio: comercio,
                         mostrarBotonAdd: false,
-                        mostrarHorarios: false,
-                        mostrarBotonComentarios: true,
-                        onComentariosTap: onComentariosTap
+                        mostrarHorarios: false
                     )
                     .padding(.horizontal, 16)
                 }
@@ -221,7 +251,7 @@ struct Portada: View {
                 }
             }
             .padding(.horizontal, 20)
-            .offset(y: offsetY)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
     }
 }
@@ -254,8 +284,6 @@ struct ComercioTitulo: View {
     var mostrarHorarios: Bool = false
     var mostrarEncabezado: Bool = false
     var mostrarSubtituloDistancia: Bool = false
-    var mostrarBotonComentarios: Bool = false
-    var onComentariosTap: () -> Void = {}
 
     private var estaAbierto: Bool {
         DateUtils.comercioEstaAbierto(horarios: comercio.horarios, estadoApertura: comercio.estadoApertura)
@@ -312,17 +340,6 @@ struct ComercioTitulo: View {
                                 .foregroundColor(.negro)
                                 .lineLimit(1)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-
-                            if mostrarBotonComentarios {
-                                Button(action: onComentariosTap) {
-                                    Image("icono_comentarios")
-                                        .resizable()
-                                        .renderingMode(.template)
-                                        .foregroundColor(.negro)
-                                        .frame(width: 28, height: 28)
-                                }
-                                .buttonStyle(.plain)
-                            }
                         }
                         
                         if let nombreComplemento = comercio.nombreComplemento?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -479,9 +496,15 @@ struct SelectorCategoriasComercio: View {
     @Binding var categoriaSeleccionadaId: String?
     @Binding var estaExpandido: Bool
 
+    private var categoriasFiltradas: [Categoria] {
+        categorias.filter { categoria in
+            categoria.productos.contains { $0.disponible && $0.esComplemento != true }
+        }
+    }
+
     private var categoriaSeleccionadaNombre: String {
         guard let categoriaSeleccionadaId,
-              let categoria = categorias.first(where: { $0.idInterno == categoriaSeleccionadaId }) else {
+              let categoria = categoriasFiltradas.first(where: { $0.idInterno == categoriaSeleccionadaId }) else {
             return "Todas las categorías"
         }
 
@@ -544,7 +567,7 @@ struct SelectorCategoriasComercio: View {
                                         .padding(.horizontal, 20)
                                 }
 
-                                ForEach(categorias) { categoria in
+                                ForEach(categoriasFiltradas) { categoria in
                                     Button(action: {
                                         categoriaSeleccionadaId = categoria.idInterno
                                         withAnimation { estaExpandido = false }

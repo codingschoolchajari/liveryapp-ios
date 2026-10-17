@@ -43,6 +43,8 @@ struct Pedido: Codable, Identifiable {
     let itemsPromociones: [ItemPromocion]
     var estado: Estado? = nil
     var comentario: Comentario? = nil
+    var comentarioRepartidor: Comentario? = nil
+    var comentarioOmitido: Bool? = nil
     
     var id: String {
         idInterno
@@ -54,5 +56,6 @@ struct Pedido: Codable, Identifiable {
         case logoComercioURL, localidad, idRepartidor, direccion, notas
         case tipoEntrega, tarifaServicio, envio, envioGratisParaCliente, tipoEnvioGratisParaCliente, tiempoRecorridoEstimado
         case precioTotal, descuentos, modalidadPago, itemsProductos, itemsPromociones, estado, comentario
+        case comentarioRepartidor, comentarioOmitido
     }
 }

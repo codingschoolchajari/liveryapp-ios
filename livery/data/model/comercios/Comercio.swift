@@ -83,6 +83,7 @@ struct Comercio: Codable, Identifiable {
     var nombreComplemento: String? = nil
     var contactoExterno: Bool? = nil
     var puntuacion: Double = 0.0
+    var cantidadOpiniones: Int = 0
     var limitePagoEfectivo: Double? = nil
     var modalidadesPago: [String] = []
     var aviso: ComercioAviso = ComercioAviso()

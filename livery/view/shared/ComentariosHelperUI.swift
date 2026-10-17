@@ -109,18 +109,39 @@ struct ListaPedidosComentarios: View {
 }
                         
 struct PedidoItemsView: View {
-    let pedidoComentario: PedidoComentario
+    let itemsPromociones: [ItemPromocion]
+    let itemsProductos: [ItemProducto]
+
+    init(pedidoComentario: PedidoComentario) {
+        self.itemsPromociones = pedidoComentario.itemsPromociones
+        self.itemsProductos = pedidoComentario.itemsProductos
+    }
+
+    init(itemsPromociones: [ItemPromocion], itemsProductos: [ItemProducto]) {
+        self.itemsPromociones = itemsPromociones
+        self.itemsProductos = itemsProductos
+    }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 // Promociones
-                ForEach(pedidoComentario.itemsPromociones) { item in
-                    itemRow(nombre: item.nombrePromocion, url: item.imagenPromocionURL)
+                ForEach(itemsPromociones) { item in
+                    ItemComentarioCard(
+                        idInterno: item.idInterno,
+                        imagenURL: item.imagenPromocionURL,
+                        nombre: item.nombrePromocion,
+                        seleccionables: item.seleccionablesPorProducto.values.flatMap { $0 }
+                    )
                 }
                 // Productos
-                ForEach(pedidoComentario.itemsProductos) { item in
-                    itemRow(nombre: item.nombreProducto, url: item.imagenProductoURL)
+                ForEach(itemsProductos) { item in
+                    ItemComentarioCard(
+                        idInterno: item.idInterno,
+                        imagenURL: item.imagenProductoURL,
+                        nombre: item.nombreProducto,
+                        seleccionables: item.seleccionables
+                    )
                 }
             }
             .padding(.horizontal, 12)
@@ -129,24 +150,42 @@ struct PedidoItemsView: View {
         .background(.grisSurface)
         .cornerRadius(12)
     }
+}
 
-    @ViewBuilder
-    private func itemRow(nombre: String, url: String) -> some View {
+private struct ItemComentarioCard: View {
+    let idInterno: String
+    let imagenURL: String
+    let nombre: String
+    let seleccionables: [SeleccionableProducto]
+
+    var body: some View {
         HStack(spacing: 8) {
             RemoteImage(
-                url: URL(string: API.baseURL + "/" + url),
-                fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(url))
+                url: URL(string: API.baseURL + "/" + imagenURL),
+                fallbackURL: URL(string: API.baseURL + "/" + imagenPorDefectoURL(imagenURL))
             )
             .frame(width: 60, height: 60)
             .cornerRadius(12)
-            
-            Text(nombre)
-                .font(.custom("Barlow", size: 14))
-                .foregroundColor(.negro)
-                .lineLimit(2)
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(nombre)
+                    .font(.custom("Barlow", size: 14))
+                    .bold()
+                    .foregroundColor(.negro)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if !seleccionables.isEmpty {
+                    Text(seleccionables.map { $0.nombreSeleccionable }.joined(separator: ", "))
+                        .font(.custom("Barlow", size: 12))
+                        .foregroundColor(.negro)
+                        .lineLimit(2)
+                        .truncationMode(.tail)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
         }
-        .frame(width: 200, height: 60)
+        .frame(width: 200)
     }
 }
 

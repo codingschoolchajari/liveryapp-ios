@@ -263,7 +263,9 @@ class PedidosViewModel: ObservableObject {
     func enviarComentario(
         estrellas: Int,
         texto: String,
-        nombreUsuario: String
+        nombreUsuario: String,
+        estrellasRepartidor: Int = 0,
+        textoRepartidor: String = ""
     ) {
         Task {
             let comentario = Comentario(
@@ -276,6 +278,20 @@ class PedidosViewModel: ObservableObject {
             // Verificamos si hay un pedido seleccionado de forma segura
             guard let pedidoActual = self.pedidoSeleccionado else { return }
 
+            var comentarios = [comentario]
+            let esEnvioLivery = TipoEntrega.desdeString(pedidoActual.tipoEntrega) == .envioLivery
+
+            if esEnvioLivery {
+                let comentarioRepartidor = Comentario(
+                    fecha: "",
+                    texto: textoRepartidor,
+                    nombreUsuario: nombreUsuario,
+                    cantidadEstrellas: estrellasRepartidor
+                )
+                comentarios.append(comentarioRepartidor)
+                self.pedidoSeleccionado?.comentarioRepartidor = comentarioRepartidor
+            }
+
             do {
                 await TokenRepository.repository.validarToken(perfilUsuarioState: perfilUsuarioState)
                 let accessToken = TokenRepository.repository.accessToken ?? ""
@@ -287,8 +303,10 @@ class PedidosViewModel: ObservableObject {
                     dispositivoID: dispositivoID,
                     email: pedidoActual.email,
                     idPedido: pedidoActual.idInterno,
-                    comentario: comentario
+                    comentarios: comentarios
                 )
+
+                self.pedidoSeleccionado?.comentario = comentario
             } catch {
                 print("Error al enviar comentario: \(error.localizedDescription)")
             }

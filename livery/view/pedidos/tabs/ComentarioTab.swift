@@ -47,6 +47,12 @@ struct ComentarioTab: View {
                         .padding(.top, 16)
 
                         VStack(alignment: .leading, spacing: 4) {
+                            Text("Comentario para el comercio")
+                                .font(.custom("Barlow", size: 12))
+                                .bold()
+                                .foregroundColor(.negro)
+                                .padding(.leading, 4)
+
                             TextEditor(text: $textoComentario)
                                 .scrollContentBackground(.hidden)
                                 .background(Color.blanco)
@@ -87,6 +93,12 @@ struct ComentarioTab: View {
                             }
 
                             VStack(alignment: .leading, spacing: 4) {
+                                Text("Comentario para el repartidor")
+                                    .font(.custom("Barlow", size: 12))
+                                    .bold()
+                                    .foregroundColor(.negro)
+                                    .padding(.leading, 4)
+
                                 TextEditor(text: $textoComentarioRepartidor)
                                     .scrollContentBackground(.hidden)
                                     .background(Color.blanco)

@@ -55,32 +55,14 @@ struct ComentarioPopupView: View {
                     enabled: !viewModel.enviando
                 ) { cantidadEstrellas = $0 }
 
-                TextEditor(text: $textoComentario)
-                    .scrollContentBackground(.hidden)
-                    .background(Color.blanco)
-                    .tint(.verdePrincipal)
-                    .font(.custom("Barlow", size: 16))
-                    .bold()
-                    .foregroundColor(.negro)
-                    .frame(minHeight: 70, maxHeight: 70)
-                    .padding(8)
-                    .disabled(viewModel.enviando)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.grisSecundario, lineWidth: 1)
-                    )
-                    .onChange(of: textoComentario) { oldValue, newValue in
-                        textoComentario = normalizarTextoComentario(newValue, max: 100)
-                    }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Comentario para el Comercio")
+                        .font(.custom("Barlow", size: 12))
+                        .bold()
+                        .foregroundColor(.negro)
+                        .padding(.leading, 4)
 
-                if esEnvioLivery {
-                    // Repartidor (opcional)
-                    SelectorEstrellas(
-                        cantidad: cantidadEstrellasRepartidor,
-                        enabled: !viewModel.enviando
-                    ) { cantidadEstrellasRepartidor = $0 }
-
-                    TextEditor(text: $textoComentarioRepartidor)
+                    TextEditor(text: $textoComentario)
                         .scrollContentBackground(.hidden)
                         .background(Color.blanco)
                         .tint(.verdePrincipal)
@@ -94,9 +76,43 @@ struct ComentarioPopupView: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.grisSecundario, lineWidth: 1)
                         )
-                        .onChange(of: textoComentarioRepartidor) { oldValue, newValue in
-                            textoComentarioRepartidor = normalizarTextoComentario(newValue, max: 100)
+                        .onChange(of: textoComentario) { oldValue, newValue in
+                            textoComentario = normalizarTextoComentario(newValue, max: 100)
                         }
+                }
+
+                if esEnvioLivery {
+                    // Repartidor (opcional)
+                    SelectorEstrellas(
+                        cantidad: cantidadEstrellasRepartidor,
+                        enabled: !viewModel.enviando
+                    ) { cantidadEstrellasRepartidor = $0 }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Comentario para el Repartidor (Opcional)")
+                            .font(.custom("Barlow", size: 12))
+                            .bold()
+                            .foregroundColor(.negro)
+                            .padding(.leading, 4)
+
+                        TextEditor(text: $textoComentarioRepartidor)
+                            .scrollContentBackground(.hidden)
+                            .background(Color.blanco)
+                            .tint(.verdePrincipal)
+                            .font(.custom("Barlow", size: 16))
+                            .bold()
+                            .foregroundColor(.negro)
+                            .frame(minHeight: 70, maxHeight: 70)
+                            .padding(8)
+                            .disabled(viewModel.enviando)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.grisSecundario, lineWidth: 1)
+                            )
+                            .onChange(of: textoComentarioRepartidor) { oldValue, newValue in
+                                textoComentarioRepartidor = normalizarTextoComentario(newValue, max: 100)
+                            }
+                    }
                 }
 
                 // Botones

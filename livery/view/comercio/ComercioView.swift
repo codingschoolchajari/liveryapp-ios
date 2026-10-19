@@ -194,6 +194,7 @@ struct Portada: View {
     var body: some View {
         let descuentos = descuentosFiltrados
         let alturaImagen: CGFloat = descuentos.isEmpty ? 180 : 220
+        let offsetY: CGFloat = alturaImagen - CGFloat(128 + descuentos.count * 42)
         
         ZStack(alignment: .top) {
             VStack {
@@ -251,7 +252,7 @@ struct Portada: View {
                 }
             }
             .padding(.horizontal, 20)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .offset(y: offsetY)
         }
     }
 }

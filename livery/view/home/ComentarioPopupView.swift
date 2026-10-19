@@ -30,18 +30,20 @@ struct ComentarioPopupView: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 16) {
                 // Título
-                Text("Pedido en \(pedido.nombreComercio)")
-                    .font(.custom("Barlow", size: 15))
-                    .bold()
-                    .foregroundColor(.verdePrincipal)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                Text("¿Querés dejar un Comentario?")
-                    .font(.custom("Barlow", size: 15))
-                    .bold()
-                    .foregroundColor(.negro)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
+                VStack(spacing: 4) {
+                    Text("Pedido en \(pedido.nombreComercio)")
+                        .font(.custom("Barlow", size: 15))
+                        .bold()
+                        .foregroundColor(.verdePrincipal)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                    Text("¿Querés dejar un Comentario?")
+                        .font(.custom("Barlow", size: 15))
+                        .bold()
+                        .foregroundColor(.negro)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                }
 
                 // Scroll horizontal de productos
                 PedidoItemsView(
